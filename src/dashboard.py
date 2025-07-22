@@ -27,6 +27,9 @@ def initialize_data():
     
     # Try different possible paths for the results file
     possible_paths = [
+        "./data/educational_examples.json",
+        "../data/educational_examples.json", 
+        "data/educational_examples.json",
         "./data/small_experiment_results.json",
         "../data/small_experiment_results.json",
         "data/small_experiment_results.json"

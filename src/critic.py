@@ -46,24 +46,74 @@ class StepFormatter:
         if not text:
             return ""
         
-        # Remove common escaping patterns
-        text = text.replace('\\\\(', '$(')
-        text = text.replace('\\\\)', '$)')
-        text = text.replace('\\\\[', '$[')
-        text = text.replace('\\\\]', '$]')
+        # Store original for debugging
+        original_text = text
+        
+        # Fix double-escaped LaTeX delimiters first
+        text = text.replace('\\\\(', '$')
+        text = text.replace('\\\\)', '$')
+        text = text.replace('\\\\[', '$$')  # Display math
+        text = text.replace('\\\\]', '$$')  # Display math
+        
+        # Fix textbackslash escaping
         text = text.replace('\\textbackslash{}', '\\')
-        text = text.replace('\\\\', '\\')
+        text = text.replace('\\textbackslash', '\\')
         
-        # Clean up double backslashes in LaTeX commands
-        text = re.sub(r'\\\\([a-zA-Z]+)', r'\\\1', text)
+        # Clean up double backslashes in LaTeX commands more comprehensively
+        # Handle common LaTeX commands that got double-escaped
+        text = re.sub(r'\\\\([a-zA-Z]+)\{', r'\\\1{', text)  # Commands with braces
+        text = re.sub(r'\\\\([a-zA-Z]+)\s', r'\\\1 ', text)  # Commands with space
+        text = re.sub(r'\\\\([a-zA-Z]+)([^a-zA-Z])', r'\\\1\2', text)  # Commands at boundaries
         
-        # Fix common LaTeX commands
-        text = text.replace('\\frac', '\\frac')
-        text = text.replace('\\sqrt', '\\sqrt')
-        text = text.replace('\\cos', '\\cos')
-        text = text.replace('\\sin', '\\sin')
+        # Fix specific mathematical symbols and commands
+        math_fixes = {
+            '\\\\frac': '\\frac',
+            '\\\\sqrt': '\\sqrt',
+            '\\\\cos': '\\cos',
+            '\\\\sin': '\\sin',
+            '\\\\tan': '\\tan',
+            '\\\\log': '\\log',
+            '\\\\ln': '\\ln',
+            '\\\\pi': '\\pi',
+            '\\\\theta': '\\theta',
+            '\\\\alpha': '\\alpha',
+            '\\\\beta': '\\beta',
+            '\\\\gamma': '\\gamma',
+            '\\\\delta': '\\delta',
+            '\\\\epsilon': '\\epsilon',
+            '\\\\phi': '\\phi',
+            '\\\\left': '\\left',
+            '\\\\right': '\\right',
+            '\\\\cdot': '\\cdot',
+            '\\\\times': '\\times',
+            '\\\\div': '\\div',
+            '\\\\pm': '\\pm',
+            '\\\\mp': '\\mp',
+            '\\\\leq': '\\leq',
+            '\\\\geq': '\\geq',
+            '\\\\neq': '\\neq',
+            '\\\\approx': '\\approx',
+            '\\\\infty': '\\infty',
+            '\\\\sum': '\\sum',
+            '\\\\prod': '\\prod',
+            '\\\\int': '\\int',
+            '\\\\partial': '\\partial',
+            '\\\\nabla': '\\nabla',
+            '\\\\triangle': '\\triangle',
+            '\\\\boxed': '\\boxed',
+        }
         
-        return text.strip()
+        for escaped, fixed in math_fixes.items():
+            text = text.replace(escaped, fixed)
+        
+        # Final cleanup: remove any remaining double backslashes not part of LaTeX commands
+        # But preserve intentional double backslashes in text
+        text = re.sub(r'\\\\([^a-zA-Z\\])', r'\\\1', text)
+        
+        # Clean up any artifacts
+        text = text.strip()
+        
+        return text
     
     @staticmethod
     def extract_step_content(step_dict: Dict[str, Any]) -> str:

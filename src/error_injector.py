@@ -6,12 +6,15 @@ import os
 import json
 import time
 import random
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 import openai
 from dotenv import load_dotenv
 
-from error_types import MATH_ERROR_TAXONOMY, LogicalErrorCategory
+try:
+    from .error_types import MATH_ERROR_TAXONOMY
+except ImportError:
+    from error_types import MATH_ERROR_TAXONOMY
 
 # Load environment variables
 load_dotenv()
@@ -49,35 +52,44 @@ class AdversarialErrorInjector:
     
     def _create_system_prompt(self) -> str:
         """Create system prompt for error injection."""
-        return """You are an expert mathematician tasked with creating adversarial examples for testing reasoning error detection models. Your goal is to introduce subtle logical errors late in mathematical solutions that would be challenging to detect.
+        return """You are creating mathematical solutions that contain subtle logical errors for educational purposes. These solutions will be used to test students' ability to detect reasoning flaws.
 
-TASK: Given a mathematical problem and its correct solution, introduce a logical reasoning error in the last 25% of the solution steps that:
-1. Appears plausible at first glance
-2. Uses valid mathematical notation and operations  
-3. Leads to an incorrect final answer through flawed reasoning (not just arithmetic mistakes)
-4. Requires careful analysis to detect
+🚨 ABSOLUTELY CRITICAL REQUIREMENT 🚨
+The modified solution must appear COMPLETELY NORMAL and NATURAL. It should read exactly like a confident, well-written student solution with NO INDICATION whatsoever that it contains an error. The solution must:
+- Use confident, assertive language throughout
+- Show no uncertainty, hesitation, or qualifying language
+- Present each step as if it's obviously correct
+- Maintain the same tone and style as a correct solution
+- Give NO HINTS that anything might be wrong
 
-IMPORTANT CONSTRAINTS:
-- The error should be a LOGICAL REASONING ERROR, not a simple calculation mistake
-- The error should maintain superficial coherence with the problem context
-- All subsequent steps must be rewritten to follow from the erroneous step
-- The final answer must be different from the correct answer
+TASK: Given a mathematical problem and its correct solution, create a modified version that:
+1. Contains ONE subtle logical reasoning error (not computational)
+2. Reads like a completely normal, confident mathematical solution
+3. Uses proper mathematical notation and valid operations
+4. Results in an incorrect final answer due to the logical flaw
+5. Shows no signs of uncertainty or incorrectness in the writing
 
-ERROR TYPES TO FOCUS ON:
-1. Invalid generalizations or assumptions
-2. Incorrect application of theorems or properties
-3. Flawed case analysis or missing cases
-4. Circular reasoning or assuming what needs to be proven
-5. Incorrect logical implications or equivalences
-6. Domain restriction violations
-7. Quantifier confusion
-8. Invalid substitutions
+ERROR PLACEMENT: Place the error in the last 25% of the solution steps.
+
+SUBTLE ERROR TYPES TO USE:
+1. **Logical Error**: Incorrect interpretation of conditions, incomplete case analysis
+2. **Misunderstanding Conditions**: Using incomplete conditions, misinterpreting requirements
+3. **Incorrect Rules/Properties**: Misapplying theorems outside their valid domain
+4. **Invalid Generalizations**: Extending specific cases without justification
+5. **Assumption Errors**: Making unjustified assumptions, missing constraints
+
+WRITING STYLE REQUIREMENTS:
+- Write with complete confidence and authority
+- Use definitive statements: "Therefore...", "Thus...", "We have...", "This gives us..."
+- Never use uncertain language: "seems", "appears", "might", "could be", "possibly"
+- Present each step as mathematically sound and obvious
+- Maintain consistent professional mathematical writing throughout
 
 RESPONSE FORMAT: You must respond with valid JSON only. No other text before or after the JSON."""
 
     def _create_user_prompt_template(self) -> str:
         """Create user prompt template."""
-        return """Given the following mathematical problem and its correct solution, introduce a logical reasoning error in one of the last 25% of steps:
+        return """Given the following mathematical problem and its correct solution, create a modified version with a subtle logical error.
 
 PROBLEM: {problem_statement}
 
@@ -86,19 +98,41 @@ CORRECT SOLUTION:
 
 CORRECT ANSWER: {correct_answer}
 
+🚨 CRITICAL INSTRUCTIONS 🚨
+1. The modified solution must read like a COMPLETELY NORMAL mathematical solution
+2. Use the EXACT SAME confident, professional tone as the original
+3. NO words or phrases that suggest uncertainty, incorrectness, or problems
+4. Write as if the solution is obviously correct and well-reasoned
+5. Place the logical error in the last 25% of steps (steps {last_quarter_start}-{total_steps})
+6. All subsequent steps must follow naturally from the error
+7. The final answer should be confidently presented as correct
+
+FORBIDDEN LANGUAGE - NEVER USE:
+- "seems", "appears", "might", "could", "possibly", "likely", "assume", "suppose"
+- Any qualifying or uncertain language
+- Any hints that something might be wrong
+- Apologetic or hesitant phrasing
+
+REQUIRED LANGUAGE - ALWAYS USE:
+- "Therefore", "Thus", "We have", "This gives us", "It follows that"
+- Confident, definitive statements
+- Professional mathematical writing style
+- Clear, assertive conclusions
+
 Please provide your response in the following JSON format:
 {{
     "error_injection_analysis": {{
         "total_steps": <number>,
         "target_step_range": "<step numbers in last 25%>",
-        "selected_error_step": <step number>,
-        "error_type": "<specific type of logical error>",
-        "error_rationale": "<why this step is suitable for error injection>"
+        "selected_error_step": <step number where error is introduced>,
+        "error_type": "<choose from: logical_error, misunderstanding_conditions, incorrect_rules_properties, invalid_generalization, or assumption_error>",
+        "error_rationale": "<why this step and error type provide good educational value>",
+        "pedagogical_benefit": "<what students will learn from discovering this error>"
     }},
     "modified_solution": {{
         "steps": [
-            {{"step_num": 1, "content": "<unchanged step 1>", "modified": false}},
-            {{"step_num": 2, "content": "<unchanged step 2>", "modified": false}},
+            {{"step_num": 1, "content": "<step content>", "modified": false}},
+            {{"step_num": 2, "content": "<step content>", "modified": false}},
             ...
             {{"step_num": N, "content": "<modified step with error>", "modified": true, "error": true}},
             {{"step_num": N+1, "content": "<rewritten step following from error>", "modified": true}},
@@ -107,9 +141,10 @@ Please provide your response in the following JSON format:
         "final_answer": "<incorrect answer resulting from error>"
     }},
     "error_explanation": {{
-        "what_changed": "<specific description of the logical flaw introduced>",
+        "what_changed": "<clear description of the logical flaw introduced>",
         "why_incorrect": "<mathematical explanation of why this reasoning is invalid>", 
-        "detection_difficulty": "<why this error might be hard to detect>"
+        "teaching_value": "<what this example teaches about mathematical reasoning>",
+        "detection_hints": "<subtle clues students should look for to catch this type of error>"
     }}
 }}"""
 
@@ -208,7 +243,7 @@ Please provide your response in the following JSON format:
                 error_message=f"Solution too short ({num_steps} steps), need at least 4"
             )
         
-        # Calculate last 25% range
+        # Calculate last 25% range (keeping the restriction to late errors)
         last_quarter_start = max(1, int(num_steps * 0.75))
         
         # Format numbered steps
@@ -217,20 +252,27 @@ Please provide your response in the following JSON format:
         # Create enhanced prompt with error type hint if provided
         enhanced_system_prompt = self.system_prompt
         if error_type_preference:
-            error_info = self.error_taxonomy.get_prompt_examples(error_type_preference)
-            if error_info:
-                enhanced_system_prompt += f"""
+            # Map old error types to new educational categories
+            error_type_mapping = {
+                'invalid_generalization': 'invalid_generalization',
+                'theorem_misapplication': 'incorrect_rules_properties',
+                'circular_reasoning': 'logical_error',
+                'domain_restriction_violation': 'incorrect_rules_properties'
+            }
+            
+            mapped_error_type = error_type_mapping.get(error_type_preference, error_type_preference)
+            enhanced_system_prompt += f"""
 
-SPECIFIC ERROR TYPE TO INJECT: {error_info['error_type']}
-- Description: {error_info['description']}  
-- Example context: {error_info['example']}
-- Focus on: {error_info['context_hint']}"""
+PREFERRED ERROR TYPE: {mapped_error_type}
+Focus on creating educational examples that help students learn to identify {mapped_error_type.replace('_', ' ')} errors."""
         
         # Create user prompt
         user_prompt = self.user_prompt_template.format(
             problem_statement=problem.get('problem', 'No problem statement'),
             numbered_steps=numbered_steps,
-            correct_answer=problem.get('answer', 'No answer provided')
+            correct_answer=problem.get('answer', 'No answer provided'),
+            last_quarter_start=last_quarter_start,
+            total_steps=num_steps
         )
         
         # Attempt injection with retries
