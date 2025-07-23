@@ -1,0 +1,758 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <h1>LateBench</h1>
+            <p>Mathematical Reasoning Error Analysis</p>
+        </div>
+        
+        <!-- Statistics -->
+        <div class="stats-panel">
+            <h3>Statistics</h3>
+            <div class="stat-item">
+                <span class="number">{{ stats.total_examples }}</span>
+                <span class="label">Total Problems</span>
+            </div>
+            <div class="stat-item">
+                <span class="number">{{ stats.unique_error_types }}</span>
+                <span class="label">Error Types</span>
+            </div>
+            <div class="stat-item">
+                <span class="number">{{ "%.1f"|format(stats.avg_steps) }}</span>
+                <span class="label">Avg Steps</span>
+            </div>
+        </div>
+        
+        <!-- Filters -->
+        <div class="filter-panel">
+            <h3>Filters</h3>
+            
+            <div class="filter-group">
+                <label for="error-type-filter">Error Type:</label>
+                <select id="error-type-filter" onchange="applyFilters()">
+                    <option value="all">All Types</option>
+                    {% for error_type in error_types %}
+                    <option value="{{ error_type }}">{{ error_type.replace('_', ' ').title() }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="step-range">Steps:</label>
+                <div class="range-inputs">
+                    <input type="number" id="min-steps" placeholder="Min" min="1" onchange="applyFilters()">
+                    <input type="number" id="max-steps" placeholder="Max" min="1" onchange="applyFilters()">
+                </div>
+            </div>
+            
+            <div class="filter-group">
+                <label>
+                    <input type="checkbox" id="has-critic-filter" onchange="applyFilters()">
+                    Has Critic Analysis
+                </label>
+            </div>
+            
+            <div class="filter-group">
+                <label for="decision-filter">Decision Status:</label>
+                <select id="decision-filter" onchange="applyFilters()">
+                    <option value="hide_no">Hide "No" (Default)</option>
+                    <option value="all">All Problems</option>
+                    <option value="yes_only">Yes Only</option>
+                    <option value="maybe_only">Maybe Only</option>
+                    <option value="no_only">No Only</option>
+                    <option value="undecided_only">Undecided Only</option>
+                </select>
+            </div>
+            
+            <button onclick="clearFilters()" class="clear-filters-btn">Clear Filters</button>
+        </div>
+        
+        <!-- Problem List -->
+        <div class="problem-list">
+            <h3>Problems <span id="problem-count">({{ examples|length }})</span></h3>
+            <div id="problems-container">
+                {% for example in examples %}
+                <div class="problem-card" data-id="{{ example.id }}" 
+                     onclick="selectExample('{{ example.id }}')"
+                     {% if current_example and example.id == current_example.id %}class="problem-card selected"{% endif %}>
+                    <div class="problem-title">{{ example.title }}</div>
+                    <div class="problem-meta">
+                        <span class="error-type">{{ (example.error_info.type if example.error_info else example.source).replace('_', ' ').title() }}</span>
+                        <span class="step-info">{{ example.original_solution.num_steps if example.original_solution else example.solution.total_steps }} steps</span>
+                    </div>
+                    <div class="problem-status">
+                        {% if example.critic_result %}
+                        <span class="critic-badge">✓ Analyzed</span>
+                        {% endif %}
+                        <span class="error-step">{{ 'Error: Step ' + (example.error_info.step|string if example.error_info else 'N/A') }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        {% if current_example %}
+        <!-- Actions Bar -->
+        <div class="actions-bar">
+            <button onclick="previousExample()" id="prev-btn">← Previous</button>
+            <button onclick="nextExample()" id="next-btn">Next →</button>
+            <button onclick="runCritic()" id="critic-btn" class="critic-btn">
+                <span id="critic-btn-text">Run Critic</span>
+                <span id="critic-spinner" class="spinner" style="display: none;"></span>
+            </button>
+            <button onclick="exportExample()" class="export-btn">Export</button>
+            <select onchange="jumpToExample(this.value)" id="example-selector">
+                <option value="">Jump to Problem...</option>
+                {% for ex in examples %}
+                <option value="{{ ex.id }}" {% if current_example.id == ex.id %}selected{% endif %}>
+                    {{ ex.title }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <!-- Five Panel Layout -->
+        <div class="content-grid five-panel">
+            <!-- Panel 1: Problem Statement -->
+            <div class="panel problem-panel">
+                <h3>Problem Statement</h3>
+                <div class="panel-content">
+                    <div class="math-content">{{ current_example.problem }}</div>
+                    <div class="problem-meta">
+                        <span class="source-badge">Source: {{ current_example.source }}</span>
+                        <span class="difficulty-badge">{{ current_example.original_solution.num_steps }} Steps</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Panel 2: Original Solution -->
+            <div class="panel solution-panel original">
+                <h3>Correct Solution</h3>
+                <div class="panel-content">
+                    <div class="steps-list">
+                        {% for step in current_example.original_steps %}
+                        <div class="step step-correct step-importance-{{ step.importance }}">
+                            <div class="step-number">{{ step.step_number }}</div>
+                            <div class="step-content">{{ step.content }}</div>
+                            <div class="step-meta">
+                                <div class="step-status">✓</div>
+                                <div class="step-importance">{{ step.importance }}</div>
+                                <div class="step-reasoning">{{ step.reasoning_type }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="final-answer correct">
+                        <strong>Answer:</strong> {{ current_example.original_solution.answer }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Panel 3: Modified Solution -->
+            <div class="panel solution-panel modified">
+                <h3>Solution with Injected Error</h3>
+                <div class="panel-content">
+                    <div class="steps-list">
+                        {% for step in current_example.modified_steps %}
+                        <div class="step step-importance-{{ step.importance }}
+                                    {% if step.is_error %}step-error{% elif step.is_modified %}step-modified step-first-error{% else %}step-unchanged{% endif %}">
+                            <div class="step-number">{{ step.step_number }}</div>
+                            <div class="step-content">{{ step.content }}</div>
+                            <div class="step-meta">
+                                <div class="step-status">
+                                    {% if step.is_error %}⚠️{% elif step.is_modified %}🔴{% else %}✓{% endif %}
+                                </div>
+                                <div class="step-importance">{{ step.importance }}</div>
+                                <div class="step-reasoning">{{ step.reasoning_type }}</div>
+                                {% if step.is_modified %}
+                                <div class="first-error-badge">First Error</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="final-answer incorrect">
+                        <strong>Answer:</strong> {{ current_example.modified_solution.answer }}
+                    </div>
+                    
+                    <div class="error-info">
+                        <h4>Error Details</h4>
+                        <div class="error-detail">
+                            <strong>Type:</strong> {{ current_example.error_info.type.replace('_', ' ').title() }}
+                        </div>
+                        <div class="error-detail">
+                            <strong>Step:</strong> {{ current_example.error_info.step }}
+                        </div>
+                        <div class="error-detail">
+                            <strong>What Changed:</strong> 
+                            <p>{{ current_example.error_info.what_changed }}</p>
+                        </div>
+                        <div class="error-detail">
+                            <strong>Why Incorrect:</strong>
+                            <p>{{ current_example.error_info.why_incorrect }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Panel 4: Critic Evaluation -->
+            <div class="panel critic-panel">
+                <h3>Critic Analysis</h3>
+                <div class="panel-content" id="critic-content">
+                    {% if current_example.critic_result %}
+                    <div class="critic-result">
+                        <div class="conclusion {% if current_example.critic_result.has_errors %}has-errors{% else %}no-errors{% endif %}">
+                            <strong>Conclusion:</strong> 
+                            {% if current_example.critic_result.has_errors %}Errors Found{% else %}No Errors{% endif %}
+                        </div>
+                        
+                        {% if current_example.critic_result.has_errors %}
+                        <div class="detected-errors">
+                            <h4>Detected Issues:</h4>
+                            {% for step_num in current_example.critic_result.error_steps %}
+                            <div class="error-item">
+                                <strong>Step {{ step_num }}:</strong>
+                                <p>{{ current_example.critic_result.explanations.get(step_num|string, 'No explanation provided') }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if current_example.critic_analysis %}
+                        <div class="evaluation-summary">
+                            <h4>Performance Analysis:</h4>
+                            {% if current_example.critic_analysis.correct_detection %}
+                            <div class="accuracy-indicator success">
+                                ✅ Correctly identified error in step {{ current_example.error_info.step }}
+                            </div>
+                            {% elif current_example.critic_analysis.missed_error %}
+                            <div class="accuracy-indicator error">
+                                ❌ Missed error in step {{ current_example.error_info.step }}
+                            </div>
+                            {% endif %}
+                            
+                            {% if current_example.critic_analysis.false_positives %}
+                            <div class="accuracy-indicator warning">
+                                ⚠️ False positives in steps: {{ current_example.critic_analysis.false_positives|join(', ') }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="critic-meta">
+                            <small>
+                                Model: {{ current_example.critic_result.model_used }} | 
+                                Time: {{ "%.2f"|format(current_example.critic_result.processing_time) }}s
+                            </small>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="no-critic-result">
+                        <p>No critic analysis available yet.</p>
+                        <p>Click "Run Critic" to evaluate this solution.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Panel 5: Manual Error Injection -->
+            <div class="panel manual-injection-panel">
+                <h3>Manual Error Injection</h3>
+                <div class="panel-content" id="manual-injection-content">
+                    
+                    <!-- Custom Error Suggestion Section -->
+                    <div class="injection-section">
+                        <h4>Error Suggestion</h4>
+                        <div class="suggestion-input-group">
+                            <textarea 
+                                id="error-suggestion-input" 
+                                placeholder="Describe the type of error you want to inject (e.g., 'Invalid domain assumption', 'Circular reasoning', 'Missing case analysis')..."
+                                rows="3"
+                            ></textarea>
+                            <button 
+                                onclick="saveSuggestion()" 
+                                id="save-suggestion-btn" 
+                                class="save-suggestion-btn"
+                            >
+                                Save Suggestion
+                            </button>
+                        </div>
+                        
+                        <!-- Saved Suggestions Display -->
+                        <div id="saved-suggestions" class="saved-suggestions">
+                            <!-- Suggestions will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Manual Injection Section -->
+                    <div class="injection-section">
+                        <h4>Injection Attempt</h4>
+                        <div class="injection-input-group">
+                            <textarea 
+                                id="user-remarks-input" 
+                                placeholder="Optional remarks for this attempt..."
+                                rows="2"
+                            ></textarea>
+                            <button 
+                                onclick="runManualInjection()" 
+                                id="manual-inject-btn" 
+                                class="manual-inject-btn"
+                            >
+                                <span id="inject-btn-text">Inject Error</span>
+                                <span id="inject-spinner" class="spinner" style="display: none;"></span>
+                            </button>
+                        </div>
+                        
+                        <!-- Injection Attempts History -->
+                        <div id="injection-attempts" class="injection-attempts">
+                            <h5>Attempts (<span id="attempt-count">0</span>/2)</h5>
+                            <div id="attempts-list">
+                                <!-- Attempts will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Decision Section -->
+                    <div class="injection-section">
+                        <h4>Final Decision</h4>
+                        <div class="decision-buttons">
+                            <button onclick="setDecision('yes')" class="decision-btn yes-btn" id="yes-btn">
+                                ✓ Yes
+                            </button>
+                            <button onclick="setDecision('maybe')" class="decision-btn maybe-btn" id="maybe-btn">
+                                ? Maybe
+                            </button>
+                            <button onclick="setDecision('no')" class="decision-btn no-btn" id="no-btn">
+                                ✗ No
+                            </button>
+                        </div>
+                        
+                        <!-- Decision Status -->
+                        <div id="decision-status" class="decision-status">
+                            <!-- Current decision will be displayed here -->
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h2>No Example Selected</h2>
+            <p>Select an example from the sidebar to begin analysis.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Store current example ID
+let currentExampleId = {{ current_example.id if current_example else 'null' }};
+let allExamples = {{ examples|tojson }};
+let currentFilter = {};
+
+// Navigation functions
+function selectExample(exampleId) {
+    window.location.href = `/example/${exampleId}`;
+}
+
+function previousExample() {
+    const currentIndex = allExamples.findIndex(ex => ex.id === currentExampleId);
+    if (currentIndex > 0) {
+        selectExample(allExamples[currentIndex - 1].id);
+    }
+}
+
+function nextExample() {
+    const currentIndex = allExamples.findIndex(ex => ex.id === currentExampleId);
+    if (currentIndex < allExamples.length - 1) {
+        selectExample(allExamples[currentIndex + 1].id);
+    }
+}
+
+function jumpToExample(exampleId) {
+    if (exampleId) {
+        selectExample(exampleId);
+    }
+}
+
+// Critic evaluation
+async function runCritic() {
+    if (!currentExampleId) return;
+    
+    const btn = document.getElementById('critic-btn');
+    const btnText = document.getElementById('critic-btn-text');
+    const spinner = document.getElementById('critic-spinner');
+    
+    // Show loading state
+    btn.disabled = true;
+    btnText.textContent = 'Running...';
+    spinner.style.display = 'inline-block';
+    
+    try {
+        const response = await fetch(`/api/run_critic/${currentExampleId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Reload page to show results
+            window.location.reload();
+        } else {
+            alert('Error running critic: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error running critic: ' + error.message);
+    } finally {
+        // Reset button state
+        btn.disabled = false;
+        btnText.textContent = 'Run Critic';
+        spinner.style.display = 'none';
+    }
+}
+
+// Export function
+function exportExample() {
+    if (!currentExampleId) return;
+    window.open(`/export/${currentExampleId}`, '_blank');
+}
+
+// Filtering functions
+async function applyFilters() {
+    const errorType = document.getElementById('error-type-filter').value;
+    const minSteps = document.getElementById('min-steps').value;
+    const maxSteps = document.getElementById('max-steps').value;
+    const hasCritic = document.getElementById('has-critic-filter').checked;
+    const decisionFilter = document.getElementById('decision-filter').value;
+    
+    const params = new URLSearchParams();
+    if (errorType !== 'all') params.append('error_type', errorType);
+    if (minSteps) params.append('min_steps', minSteps);
+    if (maxSteps) params.append('max_steps', maxSteps);
+    if (hasCritic) params.append('has_critic', 'true');
+    if (decisionFilter) params.append('decision_filter', decisionFilter);
+    
+    try {
+        const response = await fetch(`/api/filter?${params}`);
+        const data = await response.json();
+        
+        updateProblemList(data.examples);
+        document.getElementById('problem-count').textContent = `(${data.count})`;
+    } catch (error) {
+        console.error('Error applying filters:', error);
+    }
+}
+
+function clearFilters() {
+    document.getElementById('error-type-filter').value = 'all';
+    document.getElementById('min-steps').value = '';
+    document.getElementById('max-steps').value = '';
+    document.getElementById('has-critic-filter').checked = false;
+    document.getElementById('decision-filter').value = 'hide_no';
+    applyFilters();
+}
+
+function updateProblemList(examples) {
+    const container = document.getElementById('problems-container');
+    container.innerHTML = '';
+    
+    examples.forEach(example => {
+        const card = document.createElement('div');
+        card.className = 'problem-card' + (example.id === currentExampleId ? ' selected' : '');
+        card.setAttribute('data-id', example.id);
+        card.onclick = () => selectExample(example.id);
+        
+        card.innerHTML = `
+            <div class="problem-title">${example.title}</div>
+            <div class="problem-meta">
+                <span class="error-type">${example.error_info.type.replace(/_/g, ' ')}</span>
+                <span class="step-info">${example.original_solution.num_steps} steps</span>
+            </div>
+            <div class="problem-status">
+                ${example.critic_result ? '<span class="critic-badge">✓ Analyzed</span>' : ''}
+                <span class="error-step">Error: Step ${example.error_info.step}</span>
+            </div>
+        `;
+        
+        container.appendChild(card);
+    });
+}
+
+// Manual Injection Functions
+async function saveSuggestion() {
+    if (!currentExampleId) return;
+    
+    const suggestion = document.getElementById('error-suggestion-input').value.trim();
+    if (!suggestion) {
+        alert('Please enter an error suggestion first.');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/save_suggestion/${currentExampleId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                suggestion: suggestion
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            document.getElementById('error-suggestion-input').value = '';
+            loadManualData(); // Refresh the manual data display
+        } else {
+            alert('Error saving suggestion: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error saving suggestion: ' + error.message);
+    }
+}
+
+async function runManualInjection() {
+    if (!currentExampleId) return;
+    
+    const btn = document.getElementById('manual-inject-btn');
+    const btnText = document.getElementById('inject-btn-text');
+    const spinner = document.getElementById('inject-spinner');
+    const userRemarks = document.getElementById('user-remarks-input').value.trim();
+    
+    // Show loading state
+    btn.disabled = true;
+    btnText.textContent = 'Injecting...';
+    spinner.style.display = 'inline-block';
+    
+    try {
+        const response = await fetch(`/api/manual_injection/${currentExampleId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                user_remarks: userRemarks
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            document.getElementById('user-remarks-input').value = '';
+            loadManualData(); // Refresh the manual data display
+            alert('Manual injection completed successfully!');
+        } else {
+            alert('Error running manual injection: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error running manual injection: ' + error.message);
+    } finally {
+        // Reset button state
+        btn.disabled = false;
+        btnText.textContent = 'Inject Error';
+        spinner.style.display = 'none';
+    }
+}
+
+async function setDecision(decision) {
+    if (!currentExampleId) return;
+    
+    try {
+        const response = await fetch(`/api/set_decision/${currentExampleId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                decision: decision
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            updateDecisionButtons(decision);
+            
+            // Auto-advance to next undecided problem if "no" was selected
+            if (decision === 'no') {
+                setTimeout(() => {
+                    const nextUndecided = findNextUndecidedExample();
+                    if (nextUndecided) {
+                        selectExample(nextUndecided.id);
+                    }
+                }, 1000);
+            }
+        } else {
+            alert('Error setting decision: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error setting decision: ' + error.message);
+    }
+}
+
+async function loadManualData() {
+    if (!currentExampleId) return;
+    
+    try {
+        const response = await fetch(`/api/manual_data/${currentExampleId}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            const data = result.data;
+            
+            // Update saved suggestions
+            updateSavedSuggestions(data.custom_suggestions || []);
+            
+            // Update injection attempts
+            updateInjectionAttempts(data.injection_attempts || []);
+            
+            // Update decision buttons
+            updateDecisionButtons(data.final_decision);
+        }
+    } catch (error) {
+        console.error('Error loading manual data:', error);
+    }
+}
+
+function updateSavedSuggestions(suggestions) {
+    const container = document.getElementById('saved-suggestions');
+    container.innerHTML = '';
+    
+    suggestions.forEach((suggestion, index) => {
+        const div = document.createElement('div');
+        div.className = 'suggestion-item';
+        div.innerHTML = `<span class="suggestion-text">"${suggestion}"</span>`;
+        container.appendChild(div);
+    });
+}
+
+function updateInjectionAttempts(attempts) {
+    const container = document.getElementById('attempts-list');
+    const countSpan = document.getElementById('attempt-count');
+    
+    countSpan.textContent = attempts.length;
+    container.innerHTML = '';
+    
+    attempts.forEach((attempt) => {
+        const div = document.createElement('div');
+        div.className = 'attempt-item';
+        div.innerHTML = `
+            <div class="attempt-header">
+                <strong>Attempt ${attempt.attempt_number}</strong>
+                <small>${new Date(attempt.timestamp).toLocaleString()}</small>
+            </div>
+            <div class="attempt-remarks">${attempt.user_remarks || 'No remarks'}</div>
+            <div class="attempt-result ${attempt.injection_result.success ? 'success' : 'failed'}">
+                ${attempt.injection_result.success ? '✓ Success' : '✗ Failed'}
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function updateDecisionButtons(currentDecision) {
+    const buttons = ['yes-btn', 'maybe-btn', 'no-btn'];
+    buttons.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        btn.classList.remove('active');
+    });
+    
+    if (currentDecision) {
+        const activeBtn = document.getElementById(`${currentDecision}-btn`);
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+        
+        const statusDiv = document.getElementById('decision-status');
+        statusDiv.innerHTML = `<div class="current-decision ${currentDecision}">Current: ${currentDecision.toUpperCase()}</div>`;
+    }
+}
+
+function findNextUndecidedExample() {
+    // This would need to be implemented based on the examples data
+    // For now, just return the next example
+    const currentIndex = allExamples.findIndex(ex => ex.id === currentExampleId);
+    if (currentIndex < allExamples.length - 1) {
+        return allExamples[currentIndex + 1];
+    }
+    return null;
+}
+
+// Load manual data when example changes
+function selectExample(exampleId) {
+    window.location.href = `/example/${exampleId}`;
+}
+
+// Trigger MathJax rendering after page load
+window.addEventListener('load', function() {
+    if (typeof MathJax !== 'undefined') {
+        MathJax.typesetPromise().catch(err => console.log('MathJax error:', err));
+    }
+    
+    // Load manual injection data for current example
+    loadManualData();
+    
+    // Apply default filter (hide "no" decisions)
+    applyFilters();
+    
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(event) {
+        // Only handle shortcuts if not typing in an input/textarea
+        if (event.target.tagName.toLowerCase() === 'input' || 
+            event.target.tagName.toLowerCase() === 'textarea') {
+            return;
+        }
+        
+        // Prevent default behavior for our shortcuts
+        const key = event.key.toLowerCase();
+        
+        switch (key) {
+            case 'y':
+                event.preventDefault();
+                setDecision('yes');
+                break;
+            case 'm':
+                event.preventDefault();
+                setDecision('maybe');
+                break;
+            case 'n':
+                event.preventDefault();
+                setDecision('no');
+                break;
+            case 'i':
+                event.preventDefault();
+                if (!document.getElementById('manual-inject-btn').disabled) {
+                    runManualInjection();
+                }
+                break;
+            case 's':
+                // Save suggestion with Ctrl/Cmd + S
+                if (event.ctrlKey || event.metaKey) {
+                    event.preventDefault();
+                    saveSuggestion();
+                }
+                break;
+            case 'arrowright':
+                event.preventDefault();
+                nextExample();
+                break;
+            case 'arrowleft':
+                event.preventDefault();
+                previousExample();
+                break;
+        }
+    });
+});
+</script>
+{% endblock %}

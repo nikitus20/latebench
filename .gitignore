@@ -50,16 +50,23 @@ Thumbs.db
 # Project Specific
 dashboard.log
 *.log
+logs/
 
-# Data (large files)
+# Data (large files) 
 data/numinamath_local/
 data/filtered_long_solutions.json
+data/filtered_long_solutions.json.gz
+data/experiments/
+data/datasets/latebench_*.json
+data/sources/
 
 # Results (generated files)
 data/checkpoint_batch_*.json
 data/*_results.json
 data/*.png
 data/*.html
+data/dashboard_critic_results.json
+data/manual_injection_data.json
 
 # Jupyter
 .ipynb_checkpoints/

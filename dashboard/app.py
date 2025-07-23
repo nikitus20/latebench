@@ -4,17 +4,26 @@ Flask web dashboard for manual inspection of adversarial mathematical examples.
 
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+import logging
+from datetime import datetime
+
+# Add parent directory to path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 import json
 from typing import Dict, Any, Optional
 
-from dashboard_utils import DashboardData, analyze_critic_performance
-from critic import LLMCritic, evaluate_single_example
+from dashboard.utils import DashboardData, analyze_critic_performance
+from src.critic import LLMCritic, evaluate_single_example
+
+# Configure logging (will be properly set up by run_dashboard.py)
+logger = logging.getLogger(__name__)
 
 # Initialize Flask app
-app = Flask(__name__)
+app = Flask(__name__, 
+           static_folder='static',
+           template_folder='templates')
 app.secret_key = 'latebench_dashboard_secret'
 
 # Global data manager
@@ -27,6 +36,13 @@ def initialize_data():
     
     # Try different possible paths for the results file
     possible_paths = [
+        # Prioritize new unified datasets
+        "./data/datasets/latebench_prm800k_raw.json",
+        "./data/datasets/latebench_numinamath_raw.json",
+        # Fallback to old experiment results
+        "./data/experiments/large_scale_20250721_180843/results/final_results_20250721_215748.json",
+        "data/experiments/large_scale_20250721_180843/results/final_results_20250721_215748.json",
+        # Then try standard paths
         "./data/educational_examples.json",
         "../data/educational_examples.json", 
         "data/educational_examples.json",
@@ -39,6 +55,7 @@ def initialize_data():
     for path in possible_paths:
         if os.path.exists(path):
             results_file = path
+            logger.info(f"Loading data from: {path}")
             break
     
     if results_file:
@@ -68,8 +85,8 @@ def index():
                          error_types=dashboard_data.get_error_types())
 
 
-@app.route('/example/<int:example_id>')
-def view_example(example_id: int):
+@app.route('/example/<example_id>')
+def view_example(example_id):
     """View a specific example."""
     example = dashboard_data.get_example(example_id)
     
@@ -98,8 +115,8 @@ def api_examples():
     })
 
 
-@app.route('/api/example/<int:example_id>')
-def api_example(example_id: int):
+@app.route('/api/example/<example_id>')
+def api_example(example_id):
     """API endpoint to get a specific example."""
     example = dashboard_data.get_example(example_id)
     
@@ -113,8 +130,8 @@ def api_example(example_id: int):
     return jsonify(example)
 
 
-@app.route('/api/run_critic/<int:example_id>', methods=['POST'])
-def api_run_critic(example_id: int):
+@app.route('/api/run_critic/<example_id>', methods=['POST'])
+def api_run_critic(example_id):
     """Run critic evaluation on a specific example."""
     example = dashboard_data.get_example(example_id)
     
@@ -173,8 +190,21 @@ def api_filter():
     min_steps = request.args.get('min_steps', type=int)
     max_steps = request.args.get('max_steps', type=int)
     has_critic = request.args.get('has_critic')
+    decision_filter = request.args.get('decision_filter')  # 'all', 'hide_no', 'yes_only', etc.
     
-    filtered_examples = dashboard_data.examples
+    # Start with decision-based filtering
+    if decision_filter == 'hide_no':
+        filtered_examples = dashboard_data.get_examples_by_decision(exclude_decision='no')
+    elif decision_filter == 'yes_only':
+        filtered_examples = dashboard_data.get_examples_by_decision(decision='yes')
+    elif decision_filter == 'maybe_only':
+        filtered_examples = dashboard_data.get_examples_by_decision(decision='maybe')
+    elif decision_filter == 'no_only':
+        filtered_examples = dashboard_data.get_examples_by_decision(decision='no')
+    elif decision_filter == 'undecided_only':
+        filtered_examples = dashboard_data.get_examples_by_decision(decision=None)
+    else:
+        filtered_examples = dashboard_data.examples
     
     # Apply filters
     if error_type and error_type != 'all':
@@ -214,8 +244,174 @@ def api_stats():
     return jsonify(dashboard_data.get_statistics())
 
 
-@app.route('/export/<int:example_id>')
-def export_example(example_id: int):
+@app.route('/api/save_suggestion/<example_id>', methods=['POST'])
+def api_save_suggestion(example_id):
+    """Save custom error suggestion for an example."""
+    try:
+        data = request.get_json()
+        suggestion = data.get('suggestion', '').strip()
+        
+        if not suggestion:
+            return jsonify({'success': False, 'error': 'Empty suggestion'}), 400
+        
+        dashboard_data.update_custom_suggestion(example_id, suggestion)
+        dashboard_data.save_manual_injection_data()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Suggestion saved successfully'
+        })
+    
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/manual_injection/<example_id>', methods=['POST'])
+def api_manual_injection(example_id):
+    """Run manual error injection with custom suggestions."""
+    example = dashboard_data.get_example(example_id)
+    
+    if not example:
+        return jsonify({'error': 'Example not found'}), 404
+    
+    try:
+        data = request.get_json()
+        user_remarks = data.get('user_remarks', '').strip()
+        custom_suggestions = dashboard_data.get_manual_injection_data(example_id)['custom_suggestions']
+        
+        if not custom_suggestions:
+            return jsonify({
+                'success': False,
+                'error': 'No custom error suggestions available. Please add a suggestion first.'
+            }), 400
+        
+        # Import error injector
+        from error_injector import AdversarialErrorInjector
+        
+        # Create injector instance
+        injector = AdversarialErrorInjector()
+        
+        # Prepare the original problem data for injection
+        raw_example = {
+            'problem': example['problem'],
+            'solution': '\n'.join([step['content'] for step in example['original_solution']['steps']]),
+            'answer': example['original_solution']['answer']
+        }
+        
+        # Use the most recent custom suggestion as error type preference
+        custom_suggestion = custom_suggestions[-1] if custom_suggestions else None
+        
+        # Run error injection with custom suggestion
+        injection_result = injector.inject_error_with_custom_suggestion(
+            raw_example,
+            custom_suggestion=custom_suggestion,
+            max_retries=3
+        )
+        
+        # Store the attempt
+        attempt_data = {
+            'user_remarks': user_remarks,
+            'injection_result': injection_result.__dict__ if injection_result else {},
+            'custom_suggestion': custom_suggestion
+        }
+        
+        dashboard_data.add_injection_attempt(example_id, attempt_data)
+        dashboard_data.save_manual_injection_data()
+        
+        if injection_result and injection_result.success:
+            return jsonify({
+                'success': True,
+                'injection_result': {
+                    'modified_solution': injection_result.modified_solution,
+                    'error_analysis': injection_result.error_analysis,
+                    'error_explanation': injection_result.error_explanation,
+                    'attempt_number': len(dashboard_data.get_manual_injection_data(example_id)['injection_attempts'])
+                }
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': injection_result.error_message if injection_result else 'Injection failed'
+            })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/set_decision/<example_id>', methods=['POST'])
+def api_set_decision(example_id):
+    """Set final decision (yes/maybe/no) for an example."""
+    try:
+        data = request.get_json()
+        decision = data.get('decision', '').strip().lower()
+        
+        if decision not in ['yes', 'maybe', 'no']:
+            return jsonify({
+                'success': False,
+                'error': 'Invalid decision. Must be yes, maybe, or no.'
+            }), 400
+        
+        dashboard_data.set_final_decision(example_id, decision)
+        dashboard_data.save_manual_injection_data()
+        
+        return jsonify({
+            'success': True,
+            'decision': decision,
+            'message': f'Decision set to "{decision}"'
+        })
+    
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/manual_data/<example_id>')
+def api_manual_data(example_id):
+    """Get manual injection data for an example."""
+    try:
+        manual_data = dashboard_data.get_manual_injection_data(example_id)
+        return jsonify({
+            'success': True,
+            'data': manual_data
+        })
+    
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/injection_history/<example_id>')
+def api_injection_history(example_id):
+    """Get manual injection history for an example."""
+    try:
+        manual_data = dashboard_data.get_manual_injection_data(example_id)
+        return jsonify({
+            'success': True,
+            'history': manual_data.get('injection_attempts', []),
+            'suggestions': manual_data.get('custom_suggestions', []),
+            'final_decision': manual_data.get('final_decision'),
+            'decision_timestamp': manual_data.get('decision_timestamp')
+        })
+    
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/export/<example_id>')
+def export_example(example_id):
     """Export example as JSON."""
     example = dashboard_data.get_example(example_id)
     
@@ -342,4 +538,4 @@ if __name__ == '__main__':
     print("Starting LateBench Dashboard...")
     print("Open http://localhost:5000 in your browser")
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=8000)

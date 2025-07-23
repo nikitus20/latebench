@@ -69,7 +69,7 @@ TASK: Given a mathematical problem and its correct solution, create a modified v
 4. Results in an incorrect final answer due to the logical flaw
 5. Shows no signs of uncertainty or incorrectness in the writing
 
-ERROR PLACEMENT: Place the error in the last 25% of the solution steps.
+ERROR PLACEMENT: Place the error in the last 33% of the solution steps.
 
 SUBTLE ERROR TYPES TO USE:
 1. **Logical Error**: Incorrect interpretation of conditions, incomplete case analysis
@@ -103,7 +103,7 @@ CORRECT ANSWER: {correct_answer}
 2. Use the EXACT SAME confident, professional tone as the original
 3. NO words or phrases that suggest uncertainty, incorrectness, or problems
 4. Write as if the solution is obviously correct and well-reasoned
-5. Place the logical error in the last 25% of steps (steps {last_quarter_start}-{total_steps})
+5. Place the logical error in the last 33% of steps (steps {last_quarter_start}-{total_steps})
 6. All subsequent steps must follow naturally from the error
 7. The final answer should be confidently presented as correct
 
@@ -243,8 +243,8 @@ Please provide your response in the following JSON format:
                 error_message=f"Solution too short ({num_steps} steps), need at least 4"
             )
         
-        # Calculate last 25% range (keeping the restriction to late errors)
-        last_quarter_start = max(1, int(num_steps * 0.75))
+        # Calculate last 33% range (updated from 25% to 33%)
+        last_third_start = max(1, int(num_steps * 0.67))
         
         # Format numbered steps
         numbered_steps = '\\n'.join([f"Step {i+1}: {step}" for i, step in enumerate(steps)])
@@ -271,7 +271,7 @@ Focus on creating educational examples that help students learn to identify {map
             problem_statement=problem.get('problem', 'No problem statement'),
             numbered_steps=numbered_steps,
             correct_answer=problem.get('answer', 'No answer provided'),
-            last_quarter_start=last_quarter_start,
+            last_quarter_start=last_third_start,
             total_steps=num_steps
         )
         
@@ -309,7 +309,7 @@ Focus on creating educational examples that help students learn to identify {map
                     error_explanation=result_json['error_explanation'],
                     metadata={
                         'num_original_steps': num_steps,
-                        'last_quarter_range': f"{last_quarter_start}-{num_steps}",
+                        'last_third_range': f"{last_third_start}-{num_steps}",
                         'model_used': self.model,
                         'attempt': attempt + 1,
                         'error_type_preference': error_type_preference
@@ -351,6 +351,152 @@ Focus on creating educational examples that help students learn to identify {map
             metadata={},
             error_message="Max retries exceeded"
         )
+    
+    def inject_error_with_custom_suggestion(self, problem: Dict[str, Any], 
+                                          custom_suggestion: str,
+                                          max_retries: int = 3) -> InjectionResult:
+        """Inject a logical error using a custom user suggestion."""
+        
+        # Parse solution steps
+        if 'solution' not in problem:
+            return InjectionResult(
+                success=False,
+                original_problem=problem,
+                modified_solution={},
+                error_analysis={},
+                error_explanation={},
+                metadata={},
+                error_message="No solution found in problem"
+            )
+        
+        steps = self.parse_solution_steps(problem['solution'])
+        num_steps = len(steps)
+        
+        if num_steps < 4:
+            return InjectionResult(
+                success=False,
+                original_problem=problem,
+                modified_solution={},
+                error_analysis={},
+                error_explanation={},
+                metadata={},
+                error_message=f"Solution too short ({num_steps} steps), need at least 4"
+            )
+        
+        # Calculate last 33% range
+        last_third_start = max(1, int(num_steps * 0.67))
+        
+        # Format numbered steps
+        numbered_steps = '\\n'.join([f"Step {i+1}: {step}" for i, step in enumerate(steps)])
+        
+        # Create enhanced system prompt with custom suggestion
+        enhanced_system_prompt = self._create_custom_suggestion_system_prompt(custom_suggestion)
+        
+        # Create user prompt
+        user_prompt = self.user_prompt_template.format(
+            problem_statement=problem.get('problem', 'No problem statement'),
+            numbered_steps=numbered_steps,
+            correct_answer=problem.get('answer', 'No answer provided'),
+            last_quarter_start=last_third_start,
+            total_steps=num_steps
+        )
+        
+        # Attempt injection with retries
+        for attempt in range(max_retries):
+            try:
+                # Rate limiting
+                self._rate_limit()
+                
+                # Call GPT-4
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": enhanced_system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    temperature=0.7,
+                    response_format={"type": "json_object"}
+                )
+                
+                # Parse response
+                result_json = json.loads(response.choices[0].message.content)
+                
+                # Validate response structure
+                required_keys = ['error_injection_analysis', 'modified_solution', 'error_explanation']
+                if not all(key in result_json for key in required_keys):
+                    raise ValueError(f"Missing required keys in response: {required_keys}")
+                
+                # Create successful result
+                return InjectionResult(
+                    success=True,
+                    original_problem=problem,
+                    modified_solution=result_json['modified_solution'],
+                    error_analysis=result_json['error_injection_analysis'],
+                    error_explanation=result_json['error_explanation'],
+                    metadata={
+                        'num_original_steps': num_steps,
+                        'last_third_range': f"{last_third_start}-{num_steps}",
+                        'model_used': self.model,
+                        'attempt': attempt + 1,
+                        'custom_suggestion': custom_suggestion,
+                        'injection_type': 'manual_custom'
+                    }
+                )
+                
+            except json.JSONDecodeError as e:
+                error_msg = f"JSON decode error on attempt {attempt + 1}: {e}"
+                if attempt == max_retries - 1:
+                    return InjectionResult(
+                        success=False,
+                        original_problem=problem,
+                        modified_solution={},
+                        error_analysis={},
+                        error_explanation={},
+                        metadata={},
+                        error_message=error_msg
+                    )
+                    
+            except Exception as e:
+                error_msg = f"Error on attempt {attempt + 1}: {e}"
+                if attempt == max_retries - 1:
+                    return InjectionResult(
+                        success=False,
+                        original_problem=problem,
+                        modified_solution={},
+                        error_analysis={},
+                        error_explanation={},
+                        metadata={},
+                        error_message=error_msg
+                    )
+        
+        return InjectionResult(
+            success=False,
+            original_problem=problem,
+            modified_solution={},
+            error_analysis={},
+            error_explanation={},
+            metadata={},
+            error_message="Max retries exceeded"
+        )
+    
+    def _create_custom_suggestion_system_prompt(self, custom_suggestion: str) -> str:
+        """Create system prompt incorporating custom user suggestion."""
+        base_prompt = self._create_system_prompt()
+        
+        custom_addition = f"""
+
+🎯 CUSTOM ERROR SUGGESTION FROM USER:
+"{custom_suggestion}"
+
+IMPLEMENTATION INSTRUCTIONS:
+- Incorporate this custom suggestion into your error injection approach
+- The suggestion should guide the TYPE of error you introduce, but adapt it to fit naturally within the mathematical context
+- If the suggestion is specific (e.g., "make an invalid assumption about domain"), implement that exact type of error
+- If the suggestion is general (e.g., "logical flaw"), choose the most appropriate logical error for this problem
+- The error must still appear in the last 33% of steps and maintain complete naturalness
+- Explain in your response how you incorporated the user's suggestion"""
+        
+        return base_prompt + custom_addition
     
     def batch_inject_errors(self, problems: List[Dict[str, Any]], 
                           error_distribution: Optional[Dict[str, float]] = None,

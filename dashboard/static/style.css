@@ -308,6 +308,37 @@ body {
     overflow: hidden;
 }
 
+/* Five Panel Grid Layout */
+.content-grid.five-panel {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+
+.five-panel .problem-panel {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.five-panel .original {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.five-panel .modified {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+.five-panel .critic-panel {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.five-panel .manual-injection-panel {
+    grid-column: 2 / 4;
+    grid-row: 2;
+}
+
 /* Panels */
 .panel {
     background: white;
@@ -656,6 +687,285 @@ body {
     margin-bottom: 1rem;
 }
 
+/* Manual Injection Panel Styles */
+.manual-injection-panel h3 {
+    background: linear-gradient(135deg, #e83e8c 0%, #fd7e14 100%);
+    color: white;
+}
+
+.injection-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.injection-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.injection-section h4 {
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.injection-section h5 {
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+/* Error Suggestion Styles */
+.suggestion-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+#error-suggestion-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    resize: vertical;
+    min-height: 60px;
+}
+
+#error-suggestion-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+.save-suggestion-btn {
+    padding: 0.5rem 1rem;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    align-self: flex-start;
+}
+
+.save-suggestion-btn:hover {
+    background: #0056b3;
+}
+
+.saved-suggestions {
+    margin-top: 0.5rem;
+}
+
+.suggestion-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.suggestion-text {
+    font-style: italic;
+    color: #495057;
+}
+
+/* Manual Injection Styles */
+.injection-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+#user-remarks-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    resize: vertical;
+    min-height: 50px;
+}
+
+#user-remarks-input:focus {
+    border-color: #e83e8c;
+    box-shadow: 0 0 0 0.2rem rgba(232, 62, 140, 0.25);
+    outline: none;
+}
+
+.manual-inject-btn {
+    padding: 0.5rem 1rem;
+    background: #e83e8c;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    align-self: flex-start;
+}
+
+.manual-inject-btn:hover {
+    background: #d73a87;
+}
+
+.manual-inject-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+/* Injection Attempts History */
+.injection-attempts {
+    margin-top: 1rem;
+}
+
+.attempts-list {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.attempt-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 0.25rem;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.attempt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.attempt-header strong {
+    color: #495057;
+}
+
+.attempt-header small {
+    color: #6c757d;
+    font-size: 0.75rem;
+}
+
+.attempt-remarks {
+    margin-bottom: 0.5rem;
+    color: #495057;
+    font-style: italic;
+}
+
+.attempt-result {
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.attempt-result.success {
+    color: #28a745;
+}
+
+.attempt-result.failed {
+    color: #dc3545;
+}
+
+/* Decision Buttons */
+.decision-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.decision-btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 2px solid;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.decision-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.yes-btn {
+    background: white;
+    color: #28a745;
+    border-color: #28a745;
+}
+
+.yes-btn:hover,
+.yes-btn.active {
+    background: #28a745;
+    color: white;
+}
+
+.maybe-btn {
+    background: white;
+    color: #ffc107;
+    border-color: #ffc107;
+}
+
+.maybe-btn:hover,
+.maybe-btn.active {
+    background: #ffc107;
+    color: #212529;
+}
+
+.no-btn {
+    background: white;
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.no-btn:hover,
+.no-btn.active {
+    background: #dc3545;
+    color: white;
+}
+
+.decision-status {
+    margin-top: 0.5rem;
+}
+
+.current-decision {
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.current-decision.yes {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.current-decision.maybe {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.current-decision.no {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .sidebar {
@@ -665,6 +975,20 @@ body {
     .content-grid {
         grid-template-columns: 1fr;
         grid-template-rows: auto auto auto auto;
+    }
+    
+    .content-grid.five-panel {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto auto;
+    }
+    
+    .five-panel .problem-panel,
+    .five-panel .original,
+    .five-panel .modified,
+    .five-panel .critic-panel,
+    .five-panel .manual-injection-panel {
+        grid-column: 1;
+        grid-row: auto;
     }
 }
 
@@ -692,4 +1016,108 @@ body {
         padding: 0.5rem;
         gap: 0.5rem;
     }
+}
+
+/* Enhanced Step Visualization */
+.step-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+    margin-left: 1rem;
+    flex-shrink: 0;
+}
+
+.step-importance {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.step-reasoning {
+    font-size: 0.7rem;
+    color: #6c757d;
+    font-style: italic;
+    text-align: right;
+}
+
+/* Step Importance Colors */
+.step-importance-high {
+    border-left: 4px solid #dc3545;
+}
+
+.step-importance-high .step-number {
+    background: #dc3545;
+}
+
+.step-importance-high .step-importance {
+    background: #dc3545;
+    color: white;
+}
+
+.step-importance-medium {
+    border-left: 4px solid #17a2b8;
+}
+
+.step-importance-medium .step-number {
+    background: #17a2b8;
+}
+
+.step-importance-medium .step-importance {
+    background: #17a2b8;
+    color: white;
+}
+
+.step-importance-low {
+    border-left: 4px solid #90ee90;
+}
+
+.step-importance-low .step-number {
+    background: #90ee90;
+    color: #333;
+}
+
+.step-importance-low .step-importance {
+    background: #90ee90;
+    color: #333;
+}
+
+/* First Error Badge */
+.first-error-badge {
+    background: #ff6b6b;
+    color: white;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.5rem;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+/* Enhanced Step Numbers with Better Contrast */
+.step-number {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 2px solid white;
+    font-weight: 700;
+}
+
+/* Step Hover Effects */
+.step:hover {
+    background: #f8f9fa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.step-first-error {
+    background: #fff5f5;
+    border: 2px solid #ff6b6b !important;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
 }
