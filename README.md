@@ -1,244 +1,302 @@
-# LateBench: Educational Mathematical Error Generation
+# LateBench: Mathematical Reasoning Error Analysis Framework
 
-LateBench creates educational examples by injecting subtle logical errors in mathematical solutions. The system generates naturally-written solutions with unnoticeable errors that appear in the final 25% of reasoning steps, designed to test mathematical reasoning capabilities.
+LateBench is a comprehensive benchmarking framework for analyzing mathematical reasoning errors in large language models (LLMs). It provides tools for error injection, detection, and analysis across multiple mathematical datasets, with a focus on understanding where and why AI models make mistakes in step-by-step reasoning.
 
-## 🎯 Core Purpose
+## 🎯 Overview
 
-Create mathematical solutions that:
-- **Look completely natural** - No hints that errors exist
-- **Contain subtle logical flaws** - Not computational mistakes
-- **Place errors late** - In the last 25% of solution steps  
-- **Test reasoning skills** - Challenge critics and reward models
-- **Provide learning value** - Educational error detection practice
+LateBench combines natural error analysis from human-annotated datasets (like PRM800K) with systematic error injection techniques to create a robust testing environment for mathematical reasoning capabilities. The framework enables researchers to:
 
-## ✨ Key Features
+- **Analyze Natural Errors**: Study real human-verified mathematical errors from existing datasets
+- **Inject Systematic Errors**: Create controlled error scenarios for testing model robustness  
+- **Evaluate Critic Models**: Test LLMs' ability to detect and locate mathematical errors
+- **Visualize Results**: Interactive dashboard for exploring errors and model performance
 
-- **Natural Writing**: Solutions read like genuine student work with confident, professional tone
-- **5 Error Types**: Logical errors, rule misapplication, invalid generalizations, assumption errors, condition misunderstanding
-- **GPT-4 Powered**: Intelligent error injection with context awareness
-- **Interactive Dashboard**: Browse, compare, and evaluate examples with GPT-4o-mini critic
-- **Educational Focus**: Each error provides valuable learning opportunities
+## 🚀 Key Features
 
-## 🚀 Quick Start
+### 📊 Multi-Dataset Support
+- **PRM800K Integration**: 500+ problems with human-verified step-by-step error annotations
+- **NuminaMath Support**: High-quality mathematical problems with detailed solutions
+- **Unified Data Format**: Consistent schema across all datasets for easy analysis
 
-### 1. Setup Environment
+### 🎯 Error Analysis Capabilities
+- **Natural Error Detection**: Human-annotated errors from mathematical reasoning steps
+- **Systematic Error Injection**: Controlled introduction of mathematical mistakes
+- **Step-Level Analysis**: Granular understanding of where reasoning breaks down
+- **Error Type Classification**: Categorization of different mathematical error patterns
 
-```bash
-git clone https://github.com/your-username/latebench.git
-cd latebench
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+### 🔍 Interactive Dashboard
+- **Visual Error Exploration**: Color-coded step importance and error highlighting
+- **Problem Navigation**: Browse through mathematical problems with filtering options
+- **Real-Time Analysis**: Interactive exploration of model predictions vs. ground truth
+- **Performance Metrics**: Comprehensive statistics on error detection accuracy
 
-# Configure API key
-cp .env.example .env
-# Edit .env and add your OpenAI API key
-```
-
-### 2. Download Dataset
-
-```bash
-python download_data.py
-```
-
-### 3. Test Installation
-
-```bash
-python test_system.py
-```
-
-### 4. Generate Examples
-
-```bash
-python run_experiment.py --experiment small --num_examples 5
-```
-
-### 5. Launch Dashboard
-
-```bash
-python start_dashboard.py
-```
-
-Visit http://localhost:8000 to browse examples interactively.
+### 🤖 LLM Integration
+- **Critic Model Evaluation**: Test language models' ability to identify mathematical errors
+- **Multiple Model Support**: Compatible with various LLM architectures
+- **Configurable Prompting**: Customizable prompts for different evaluation scenarios
 
 ## 📁 Project Structure
 
 ```
 latebench/
-├── src/                          # Core implementation
-│   ├── error_injector.py        # Main error injection system
-│   ├── error_types.py           # Error taxonomy definitions
-│   ├── critic.py                # GPT-4o-mini evaluation
-│   ├── dashboard.py             # Interactive web interface
-│   ├── dashboard_utils.py       # Dashboard utilities
-│   ├── data_loader.py           # Dataset handling
-│   ├── visualization.py         # Analysis tools
-│   ├── static/                  # CSS and JavaScript
-│   └── templates/               # HTML templates
-├── notebooks/                   # Jupyter exploration
-├── data/                        # Generated examples and datasets
-├── download_data.py             # Dataset download script
-├── run_experiment.py            # Batch generation
-├── start_dashboard.py           # Dashboard launcher
-├── test_system.py               # System validation
-└── requirements.txt             # Dependencies
+├── src/                          # Core library code
+│   ├── data_processing/          # Dataset processors and unified schema
+│   │   ├── unified_schema.py     # Common data format definitions
+│   │   ├── prm800k_processor.py  # PRM800K dataset processor
+│   │   └── numinamath_processor.py # NuminaMath processor
+│   ├── error_injector.py         # Error injection system
+│   ├── critic.py                 # LLM critic evaluation
+│   ├── dataset_manager.py        # Dataset loading and management
+│   └── error_types.py            # Error classification system
+├── dashboard/                    # Web interface
+│   ├── app.py                    # Flask application
+│   ├── utils.py                  # Dashboard utilities
+│   ├── static/                   # CSS, JavaScript, images
+│   └── templates/                # HTML templates
+├── scripts/                      # Experiment and utility scripts
+├── data/                         # Data directory (excluded from git)
+│   ├── datasets/                 # Processed datasets
+│   └── experiments/              # Experiment results
+├── logs/                         # Application logs (excluded from git)
+├── run_dashboard.py              # Dashboard entry point
+└── requirements.txt              # Python dependencies
 ```
 
-## 🎓 Error Types
+## 🛠️ Installation
 
-The system focuses on 5 educationally valuable error categories:
+### Prerequisites
+- Python 3.8+
+- Virtual environment (recommended)
 
-1. **Logical Error**: Incorrect interpretation of conditions, incomplete case analysis
-2. **Misunderstanding Conditions**: Using incomplete conditions, misinterpreting requirements  
-3. **Incorrect Rules/Properties**: Misapplying theorems outside their valid domain
-4. **Invalid Generalizations**: Extending specific cases without justification
-5. **Assumption Errors**: Making unjustified assumptions, missing constraints
+### Setup
 
-## 💻 Usage Examples
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/nikitus20/latebench.git
+   cd latebench
+   ```
 
-### Generate Single Example
+2. **Create and activate virtual environment**
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
 
-```python
-from src.error_injector import AdversarialErrorInjector
-import json
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-# Load a problem
-with open('data/filtered_long_solutions.json', 'r') as f:
-    problems = json.load(f)
+4. **Download and process datasets**
+   ```bash
+   # Download PRM800K dataset
+   python download_prm800k.py
+   
+   # Process datasets (this will create unified format files in data/datasets/)
+   python -c "
+   from src.dataset_manager import LateBenchDatasetManager
+   manager = LateBenchDatasetManager()
+   manager.process_all_datasets()
+   "
+   ```
 
-# Inject error
-injector = AdversarialErrorInjector()
-result = injector.inject_error(problems[0])
+## 🚀 Quick Start
 
-if result.success:
-    print(f"Error injected at step {result.error_analysis['selected_error_step']}")
-    print(f"Error type: {result.error_analysis['error_type']}")
+### 1. Launch the Dashboard
+
+```bash
+python run_dashboard.py
 ```
 
-### Batch Generation
+Open your browser to http://localhost:8000 to explore the interactive interface.
 
-```python
-# Generate multiple examples
-results = injector.batch_inject_errors(problems[:10])
-success_rate = sum(1 for r in results if r.success) / len(results)
-print(f"Success rate: {success_rate:.1%}")
-```
-
-### Critic Evaluation
-
-```python
-from src.critic import LLMCritic, evaluate_single_example
-
-# Evaluate an example
-critic = LLMCritic(model="gpt-4o-mini")
-evaluation = evaluate_single_example(result.modified_solution)
-print(f"Errors detected: {evaluation.has_errors}")
-```
-
-## 🌐 Interactive Dashboard
+### 2. Analyze Mathematical Errors
 
 The dashboard provides:
-- **Four-panel layout**: Problem, original solution, modified solution, critic analysis
-- **Example navigation**: Browse through generated examples
-- **One-click evaluation**: Run GPT-4o-mini critic on examples
-- **Error visualization**: See exactly where errors were placed
-- **Export functionality**: Save examples for further analysis
+- **Problem Browser**: Navigate through 500+ mathematical problems
+- **Step Visualization**: See step-by-step solutions with error highlighting
+- **Error Detection**: Human-verified errors marked with importance levels:
+  - 🔴 **High**: Error steps requiring attention
+  - 🟡 **Medium**: Correct but important steps  
+  - 🟢 **Low**: Questionable or less critical steps
 
-### Dashboard Features
-
-- **Keyboard shortcuts**: Arrow keys for navigation, Ctrl+R for critic evaluation
-- **Filtering**: Browse by error type or evaluation status
-- **Real-time evaluation**: Test critic performance against known errors
-- **Professional UI**: Clean, responsive design for research use
-
-## 📊 Example Output
-
-The system generates examples like:
-
-**Original Problem**: Find the maximum area of triangle ABC given constraints...
-
-**Modified Solution**: Uses confident mathematical language with a subtle logical error in step 6 of 8, leading to an incorrect final answer while appearing completely natural.
-
-**Error Analysis**: Identifies the specific logical flaw and its educational value.
-
-## ⚙️ Configuration
-
-### Environment Variables (.env)
-
-```bash
-OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_MODEL=gpt-4-turbo-preview  # Optional
-REQUESTS_PER_MINUTE=60           # Optional rate limiting
-```
-
-### Experiment Configuration
-
-```bash
-# Small test run
-python run_experiment.py --experiment small --num_examples 5
-
-# Larger dataset
-python run_experiment.py --experiment medium --num_examples 50
-```
-
-## 🔬 Research Applications
-
-LateBench is designed for:
-
-1. **Educational Assessment**: Train students to detect reasoning errors
-2. **Model Evaluation**: Test reasoning critics and reward models
-3. **Error Analysis**: Study common logical fallacies in mathematics
-4. **Curriculum Development**: Create challenging problem sets
-
-## 📈 Quality Metrics
-
-The system ensures:
-- **Natural writing**: No uncertain language or error hints
-- **Late placement**: Errors in final 25% of steps
-- **Logical consistency**: All steps follow naturally
-- **Educational value**: Each error teaches important concepts
-- **Answer differentiation**: Modified solutions have different final answers
-
-## 🛠️ Development
-
-### Running Tests
-
-```bash
-python test_system.py
-```
-
-### Adding Error Types
-
-Extend `src/error_types.py` with new error definitions:
+### 3. Run Error Analysis
 
 ```python
-"new_error": ErrorType(
-    name="new_error",
-    description="Description of the error",
-    example="Example case",
-    mathematical_context="When this occurs",
-    detection_difficulty="High - why it's subtle",
-    common_subjects=["algebra", "geometry"]
-)
+from src.dataset_manager import LateBenchDatasetManager
+from src.critic import LLMCritic
+
+# Load data
+manager = LateBenchDatasetManager()
+examples = manager.get_examples(dataset_name="prm800k", limit=10)
+
+# Analyze with LLM critic
+critic = LLMCritic()
+for example in examples:
+    result = critic.evaluate_solution(example)
+    print(f"Problem: {example.id}")
+    print(f"Detected Error: {result.has_error}")
+```
+
+## 📊 Dataset Information
+
+### PRM800K Integration
+- **Source**: Human-annotated mathematical reasoning dataset
+- **Coverage**: 500+ problems with step-by-step error analysis
+- **Error Types**: Human-verified mistakes in mathematical reasoning
+- **Annotations**: Step-level ratings (-1: error, 0: questionable, 1: correct)
+
+### NuminaMath Support  
+- **Source**: High-quality mathematical competition problems
+- **Focus**: Complex multi-step reasoning scenarios
+- **Integration**: Unified format compatible with error injection system
+
+## 🔧 Configuration
+
+### Environment Variables
+
+The dashboard and core system support configuration via environment variables:
+
+```bash
+# Dashboard configuration
+export PORT=8080                    # Dashboard port (default: 8000)
+export HOST=127.0.0.1               # Host address (default: 127.0.0.1)  
+export DEBUG=false                  # Debug mode (default: true)
+
+# Data paths
+export LATEBENCH_DATA_DIR=./data    # Data directory
+export LATEBENCH_LOG_DIR=./logs     # Log directory
+```
+
+### Custom Dataset Integration
+
+To add new datasets:
+
+1. **Create a processor** in `src/data_processing/`
+2. **Implement the unified schema** using `LateBenchExample` format
+3. **Register with the dataset manager** in `src/dataset_manager.py`
+
+Example processor structure:
+```python
+from .unified_schema import LateBenchExample, LateBenchStep
+
+class CustomProcessor:
+    def process_example(self, raw_data):
+        # Convert raw data to LateBenchExample format
+        steps = [LateBenchStep(...) for step in raw_data['steps']]
+        return LateBenchExample(steps=steps, ...)
+```
+
+## 🧪 Experiments and Scripts
+
+### Available Scripts
+
+- **`scripts/check_progress.py`**: Monitor dataset processing progress
+- **`scripts/create_large_dataset.py`**: Generate large-scale evaluation datasets
+- **`scripts/run_large_scale_injection.py`**: Execute batch error injection experiments
+
+### Running Experiments
+
+```bash
+# Large-scale error injection experiment
+python scripts/run_large_scale_injection.py --dataset prm800k --num_examples 1000
+
+# Check processing progress
+python scripts/check_progress.py --dataset all
+```
+
+## 📈 Performance and Metrics
+
+LateBench provides comprehensive metrics for mathematical reasoning evaluation:
+
+### Error Detection Metrics
+- **Precision**: Accuracy of error identification
+- **Recall**: Coverage of actual errors
+- **F1-Score**: Balanced error detection performance
+- **Step-Level Accuracy**: Granular reasoning step evaluation
+
+### Analysis Features
+- **Error Type Distribution**: Classification of mathematical mistake patterns
+- **Difficulty Analysis**: Performance correlation with problem complexity
+- **Step Importance**: Understanding critical reasoning points
+- **Model Comparison**: Side-by-side LLM performance analysis
+
+## 🤝 Contributing
+
+We welcome contributions to LateBench! Please see our contribution guidelines:
+
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/new-analysis`)
+3. **Make your changes** with proper tests and documentation
+4. **Submit a pull request** with a clear description
+
+### Development Setup
+
+```bash
+# Install development dependencies
+pip install -r requirements-dev.txt
+
+# Run tests
+python -m pytest tests/
+
+# Code formatting
+black src/ dashboard/ scripts/
+isort src/ dashboard/ scripts/
+```
+
+## 📝 Logging and Debugging
+
+LateBench includes comprehensive logging:
+
+- **Dashboard Logs**: `logs/dashboard_YYYYMMDD_HHMMSS.log`
+- **Processing Logs**: Detailed dataset processing information
+- **Error Tracking**: Automatic error logging and debugging information
+
+Log levels can be configured via environment variables:
+```bash
+export LATEBENCH_LOG_LEVEL=DEBUG  # DEBUG, INFO, WARNING, ERROR
+```
+
+## 📚 Citation
+
+If you use LateBench in your research, please cite:
+
+```bibtex
+@software{latebench2024,
+  title={LateBench: Mathematical Reasoning Error Analysis Framework},
+  author={LateBench Contributors},
+  year={2024},
+  url={https://github.com/nikitus20/latebench},
+  note={A comprehensive framework for analyzing mathematical reasoning errors in large language models}
+}
 ```
 
 ## 📄 License
 
-MIT License - see LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🤝 Contributing
+## 🆘 Support and Issues
 
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality  
-4. Submit a pull request
+- **GitHub Issues**: Report bugs and request features
+- **Documentation**: Comprehensive guides and API documentation
+- **Community**: Join discussions about mathematical reasoning evaluation
 
-## 📞 Support
+## 🔮 Roadmap
 
-- **Issues**: Report bugs on GitHub
-- **Documentation**: Full API docs in source code
-- **Examples**: Check `data/educational_examples.json` for sample output
+### Upcoming Features
+- [ ] Additional dataset integrations (GSM8K, MATH, etc.)
+- [ ] Advanced error pattern analysis
+- [ ] Multi-modal mathematical reasoning support
+- [ ] Automated error classification
+- [ ] Enhanced visualization tools
+- [ ] API endpoints for external integration
+
+### Long-term Goals
+- Standardized mathematical reasoning evaluation protocol
+- Integration with popular ML frameworks
+- Large-scale benchmarking infrastructure
+- Community-driven error taxonomy development
 
 ---
 
-**Note**: Requires OpenAI API key. Be mindful of API costs when generating large datasets.
+**LateBench** - Understanding where mathematical reasoning goes wrong, one step at a time. 🔢✨
