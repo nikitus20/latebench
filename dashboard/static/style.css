@@ -76,6 +76,28 @@ body {
     color: #6c757d;
 }
 
+/* Dataset Panel */
+.dataset-panel {
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+}
+
+.dataset-panel h3 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    color: #495057;
+}
+
+.dataset-info {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background-color: #e9ecef;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
 /* Filter Panel */
 .filter-panel {
     padding: 1rem;
@@ -138,6 +160,25 @@ body {
     flex: 1;
     overflow-y: auto;
     padding: 1rem;
+    scroll-behavior: smooth;
+}
+
+.problem-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.problem-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.problem-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.problem-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
 
 .problem-list h3 {
@@ -165,6 +206,8 @@ body {
     background: #007bff;
     color: white;
     border-color: #007bff;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+    transform: translateX(3px);
 }
 
 .problem-title {
@@ -293,8 +336,18 @@ body {
 
 #example-selector {
     margin-left: auto;
-    min-width: 200px;
+    min-width: 250px;
     padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    background: white;
+    font-size: 0.875rem;
+}
+
+#example-selector:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: none;
 }
 
 /* Content Grid */
@@ -1120,4 +1173,202 @@ body {
     background: #fff5f5;
     border: 2px solid #ff6b6b !important;
     box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+}
+
+/* Injection Progress Styles */
+.injection-progress {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.progress-header h5 {
+    margin: 0 0 0.5rem 0;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.progress-steps {
+    margin-bottom: 0.75rem;
+}
+
+.progress-step {
+    display: flex;
+    align-items: center;
+    padding: 0.3rem 0;
+    font-size: 0.85rem;
+}
+
+.progress-step-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+}
+
+.progress-step.pending .progress-step-icon {
+    color: #6c757d;
+}
+
+.progress-step.active .progress-step-icon {
+    color: #007bff;
+    animation: spin 1s linear infinite;
+}
+
+.progress-step.completed .progress-step-icon {
+    color: #28a745;
+}
+
+.progress-step.failed .progress-step-icon {
+    color: #dc3545;
+}
+
+.progress-details {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 0.75rem;
+    font-size: 0.8rem;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.progress-details.success {
+    border-color: #28a745;
+    background: #f8fff9;
+    color: #155724;
+}
+
+.progress-details.error {
+    border-color: #dc3545;
+    background: #fff5f5;
+    color: #721c24;
+}
+
+.progress-details.info {
+    border-color: #007bff;
+    background: #f8f9ff;
+    color: #004085;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Enhanced spinner */
+.spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    margin-left: 0.5rem;
+}
+
+/* Request status indicators */
+.request-status {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.8rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+    margin-left: 0.5rem;
+}
+
+.request-status.sending {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.request-status.success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.request-status.error {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Injection button states */
+.manual-inject-btn {
+    transition: all 0.3s ease;
+}
+
+.manual-inject-btn.injection-in-progress {
+    background: #fd7e14 !important; /* Orange color for in-progress */
+    border-color: #fd7e14 !important;
+    color: white !important;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.manual-inject-btn.injection-in-progress:hover {
+    background: #fd7e14 !important;
+    border-color: #fd7e14 !important;
+    transform: none;
+}
+
+.manual-inject-btn:disabled {
+    cursor: not-allowed;
+}
+
+/* Add a subtle pulse animation for in-progress state */
+.manual-inject-btn.injection-in-progress {
+    animation: pulse-orange 2s infinite;
+}
+
+@keyframes pulse-orange {
+    0% { 
+        background-color: #fd7e14;
+        box-shadow: 0 0 0 0 rgba(253, 126, 20, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(253, 126, 20, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(253, 126, 20, 0);
+    }
+}
+
+/* Critic button states */
+.critic-btn {
+    transition: all 0.3s ease;
+}
+
+.critic-btn.critic-in-progress {
+    background: #6f42c1 !important; /* Purple color for critic in-progress */
+    border-color: #6f42c1 !important;
+    color: white !important;
+    cursor: not-allowed;
+    opacity: 0.8;
+    animation: pulse-purple 2s infinite;
+}
+
+.critic-btn.critic-in-progress:hover {
+    background: #6f42c1 !important;
+    border-color: #6f42c1 !important;
+    transform: none;
+}
+
+.critic-btn:disabled {
+    cursor: not-allowed;
+}
+
+@keyframes pulse-purple {
+    0% { 
+        background-color: #6f42c1;
+        box-shadow: 0 0 0 0 rgba(111, 66, 193, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(111, 66, 193, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(111, 66, 193, 0);
+    }
 }

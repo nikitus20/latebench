@@ -9,7 +9,7 @@ import shutil
 from typing import List, Dict, Any, Optional, Union
 from datetime import datetime
 
-from data_processing.unified_schema import (
+from src.data_processing.unified_schema import (
     LateBenchExample, create_timestamp
 )
 
@@ -32,29 +32,51 @@ class LateBenchDatasetManager:
         self._load_manual_annotations()
         self._load_final_dataset()
     
-    def list_available_datasets(self) -> List[str]:
-        """List all available dataset files"""
+    def list_available_datasets(self) -> Dict[str, List[str]]:
+        """List all available dataset files organized by dataset type"""
         if not os.path.exists(self.datasets_dir):
-            return []
+            return {}
         
-        datasets = []
+        datasets = {}
         for file in os.listdir(self.datasets_dir):
-            if file.startswith("latebench_") and file.endswith("_raw.json"):
-                dataset_name = file.replace("latebench_", "").replace("_raw.json", "")
-                datasets.append(dataset_name)
+            if file.startswith("latebench_") and file.endswith(".json"):
+                # Extract dataset info from filename
+                name_part = file.replace("latebench_", "").replace(".json", "")
+                
+                if "_complete" in name_part:
+                    base_name = name_part.replace("_complete", "")
+                    if base_name not in datasets:
+                        datasets[base_name] = []
+                    datasets[base_name].append("complete")
+                elif "_errors" in name_part:
+                    base_name = name_part.replace("_errors", "")
+                    if base_name not in datasets:
+                        datasets[base_name] = []
+                    datasets[base_name].append("errors")
+                elif "_raw" in name_part:
+                    base_name = name_part.replace("_raw", "")
+                    if base_name not in datasets:
+                        datasets[base_name] = []
+                    datasets[base_name].append("all")
         
         return datasets
     
-    def load_dataset(self, dataset_name: str) -> bool:
-        """Load a specific dataset"""
-        dataset_file = os.path.join(self.datasets_dir, f"latebench_{dataset_name}_raw.json")
+    def load_dataset(self, dataset_name: str, problem_type: str = "all") -> bool:
+        """Load a specific dataset with optional problem type filtering"""
+        # Determine the correct file based on problem type
+        if problem_type == "complete":
+            dataset_file = os.path.join(self.datasets_dir, f"latebench_{dataset_name}_complete.json")
+        elif problem_type == "errors":
+            dataset_file = os.path.join(self.datasets_dir, f"latebench_{dataset_name}_errors.json")
+        else:  # "all"
+            dataset_file = os.path.join(self.datasets_dir, f"latebench_{dataset_name}_raw.json")
         
         if not os.path.exists(dataset_file):
             print(f"Dataset file not found: {dataset_file}")
             return False
         
         try:
-            print(f"Loading {dataset_name} dataset...")
+            print(f"Loading {dataset_name} ({problem_type}) dataset...")
             with open(dataset_file, 'r') as f:
                 data = json.load(f)
             
@@ -68,26 +90,29 @@ class LateBenchDatasetManager:
                     print(f"Error loading example {item.get('id', 'unknown')}: {e}")
                     continue
             
-            self.datasets[dataset_name] = examples
-            self.current_dataset = dataset_name
+            # Store with composite key to track both dataset and type
+            dataset_key = f"{dataset_name}_{problem_type}"
+            self.datasets[dataset_key] = examples
+            self.current_dataset = dataset_key
             self.current_examples = examples
             
-            print(f"✅ Loaded {len(examples)} examples from {dataset_name}")
+            print(f"✅ Loaded {len(examples)} examples from {dataset_name} ({problem_type})")
             return True
             
         except Exception as e:
             print(f"Error loading dataset {dataset_name}: {e}")
             return False
     
-    def switch_dataset(self, dataset_name: str) -> bool:
-        """Switch to a different dataset"""
-        if dataset_name in self.datasets:
-            self.current_dataset = dataset_name
-            self.current_examples = self.datasets[dataset_name]
-            print(f"Switched to {dataset_name} dataset ({len(self.current_examples)} examples)")
+    def switch_dataset(self, dataset_name: str, problem_type: str = "all") -> bool:
+        """Switch to a different dataset with specific problem type"""
+        dataset_key = f"{dataset_name}_{problem_type}"
+        if dataset_key in self.datasets:
+            self.current_dataset = dataset_key
+            self.current_examples = self.datasets[dataset_key]
+            print(f"Switched to {dataset_name} ({problem_type}) dataset ({len(self.current_examples)} examples)")
             return True
         else:
-            return self.load_dataset(dataset_name)
+            return self.load_dataset(dataset_name, problem_type)
     
     def get_current_examples(self) -> List[LateBenchExample]:
         """Get examples from currently active dataset"""
@@ -266,7 +291,8 @@ class LateBenchDatasetManager:
             "subjects": {},
             "step_counts": [],
             "importance_distribution": {"high": 0, "medium": 0, "low": 0},
-            "decision_status": {"yes": 0, "maybe": 0, "no": 0, "undecided": 0}
+            "decision_status": {"yes": 0, "maybe": 0, "no": 0, "undecided": 0},
+            "error_status": {"complete_solutions": 0, "error_labeled": 0}
         }
         
         for example in examples:
@@ -295,6 +321,13 @@ class LateBenchDatasetManager:
                 stats["decision_status"][decision] += 1
             else:
                 stats["decision_status"]["undecided"] += 1
+            
+            # Error status from metadata
+            has_errors = example.source.metadata.get('has_errors', False)
+            if has_errors:
+                stats["error_status"]["error_labeled"] += 1
+            else:
+                stats["error_status"]["complete_solutions"] += 1
         
         # Calculate averages
         if stats["step_counts"]:
@@ -309,7 +342,8 @@ class LateBenchDatasetManager:
                        dataset: Optional[str] = None,
                        min_steps: Optional[int] = None,
                        max_steps: Optional[int] = None,
-                       decision_filter: Optional[str] = None) -> List[LateBenchExample]:
+                       decision_filter: Optional[str] = None,
+                       problem_type_filter: Optional[str] = None) -> List[LateBenchExample]:
         """Filter current examples based on criteria"""
         filtered = self.current_examples
         
@@ -336,4 +370,22 @@ class LateBenchDatasetManager:
             elif decision_filter == "undecided":
                 filtered = [ex for ex in filtered if ex.error_injection.final_decision is None]
         
+        if problem_type_filter:
+            if problem_type_filter == "complete":
+                filtered = [ex for ex in filtered if not ex.source.metadata.get('has_errors', False)]
+            elif problem_type_filter == "errors":
+                filtered = [ex for ex in filtered if ex.source.metadata.get('has_errors', False)]
+            # "all" doesn't filter anything
+        
         return filtered
+    
+    def get_current_dataset_info(self) -> Dict[str, str]:
+        """Get information about the currently loaded dataset"""
+        if not self.current_dataset:
+            return {"name": "None", "type": "None"}
+        
+        if "_" in self.current_dataset:
+            parts = self.current_dataset.rsplit("_", 1)
+            return {"name": parts[0], "type": parts[1]}
+        else:
+            return {"name": self.current_dataset, "type": "all"}

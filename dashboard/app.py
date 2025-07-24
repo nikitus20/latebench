@@ -36,16 +36,10 @@ def initialize_data():
     
     # Try different possible paths for the results file
     possible_paths = [
-        # Prioritize new unified datasets
+        # Core datasets only
         "./data/datasets/latebench_prm800k_raw.json",
         "./data/datasets/latebench_numinamath_raw.json",
-        # Fallback to old experiment results
-        "./data/experiments/large_scale_20250721_180843/results/final_results_20250721_215748.json",
-        "data/experiments/large_scale_20250721_180843/results/final_results_20250721_215748.json",
-        # Then try standard paths
-        "./data/educational_examples.json",
-        "../data/educational_examples.json", 
-        "data/educational_examples.json",
+        # Fallback paths
         "./data/small_experiment_results.json",
         "../data/small_experiment_results.json",
         "data/small_experiment_results.json"
@@ -82,7 +76,9 @@ def index():
                          examples=dashboard_data.examples,
                          current_example=current_example,
                          stats=stats,
-                         error_types=dashboard_data.get_error_types())
+                         error_types=dashboard_data.get_error_types(),
+                         available_datasets=dashboard_data.get_available_datasets(),
+                         current_dataset=dashboard_data.get_current_dataset_info())
 
 
 @app.route('/example/<example_id>')
@@ -103,7 +99,9 @@ def view_example(example_id):
                          examples=dashboard_data.examples,
                          current_example=example,
                          stats=stats,
-                         error_types=dashboard_data.get_error_types())
+                         error_types=dashboard_data.get_error_types(),
+                         available_datasets=dashboard_data.get_available_datasets(),
+                         current_dataset=dashboard_data.get_current_dataset_info())
 
 
 @app.route('/api/examples')
@@ -143,17 +141,17 @@ def api_run_critic(example_id):
         raw_example = {
             'original_problem': {
                 'problem': example['problem'],
-                'parsed_steps': [step['content'] for step in example['original_solution']['steps']]
+                'parsed_steps': [step['content'] for step in example.get('original_steps', [])]
             },
             'modified_solution': {
                 'steps': [
                     {
-                        'step_num': step['number'],
+                        'step_num': step.get('step_number', step.get('number', i+1)),
                         'content': step['content'],
-                        'modified': step['is_modified'],
-                        'error': step['is_error']
+                        'modified': step.get('is_modified', False),
+                        'error': step.get('is_error', False)
                     }
-                    for step in example['modified_solution']['steps']
+                    for i, step in enumerate(example.get('modified_solution', {}).get('steps', []))
                 ]
             }
         }
@@ -289,16 +287,22 @@ def api_manual_injection(example_id):
             }), 400
         
         # Import error injector
-        from error_injector import AdversarialErrorInjector
+        from src.error_injector import AdversarialErrorInjector
         
         # Create injector instance
         injector = AdversarialErrorInjector()
         
         # Prepare the original problem data for injection
+        # Use modified_solution steps since that's where the dashboard stores the actual solution steps
+        steps = example.get('modified_solution', {}).get('steps', [])
+        if not steps:
+            # Fallback to original_steps if available
+            steps = example.get('original_steps', [])
+        
         raw_example = {
             'problem': example['problem'],
-            'solution': '\n'.join([step['content'] for step in example['original_solution']['steps']]),
-            'answer': example['original_solution']['answer']
+            'solution': '\n'.join([step['content'] for step in steps]),
+            'answer': example.get('modified_solution', {}).get('final_answer', 'No answer provided')
         }
         
         # Use the most recent custom suggestion as error type preference
@@ -348,8 +352,18 @@ def api_manual_injection(example_id):
 def api_set_decision(example_id):
     """Set final decision (yes/maybe/no) for an example."""
     try:
+        print(f"DEBUG: Received decision request for example_id: {example_id}")
         data = request.get_json()
+        print(f"DEBUG: Request data: {data}")
+        
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'No JSON data received'
+            }), 400
+        
         decision = data.get('decision', '').strip().lower()
+        print(f"DEBUG: Decision: {decision}")
         
         if decision not in ['yes', 'maybe', 'no']:
             return jsonify({
@@ -357,8 +371,18 @@ def api_set_decision(example_id):
                 'error': 'Invalid decision. Must be yes, maybe, or no.'
             }), 400
         
+        # Check if example exists
+        example = dashboard_data.get_example(example_id)
+        if not example:
+            return jsonify({
+                'success': False,
+                'error': f'Example {example_id} not found'
+            }), 404
+        
         dashboard_data.set_final_decision(example_id, decision)
         dashboard_data.save_manual_injection_data()
+        
+        print(f"DEBUG: Successfully set decision {decision} for {example_id}")
         
         return jsonify({
             'success': True,
@@ -367,6 +391,9 @@ def api_set_decision(example_id):
         })
     
     except Exception as e:
+        print(f"DEBUG: Error in set_decision: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             'success': False,
             'error': str(e)
@@ -403,6 +430,61 @@ def api_injection_history(example_id):
             'decision_timestamp': manual_data.get('decision_timestamp')
         })
     
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/datasets')
+def api_datasets():
+    """Get available datasets and current dataset info."""
+    try:
+        available_datasets = dashboard_data.get_available_datasets()
+        current_info = dashboard_data.get_current_dataset_info()
+        
+        return jsonify({
+            'success': True,
+            'available_datasets': available_datasets,
+            'current_dataset': current_info
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/switch_dataset', methods=['POST'])
+def api_switch_dataset():
+    """Switch to a different dataset and problem type."""
+    try:
+        data = request.get_json()
+        dataset_name = data.get('dataset_name')
+        problem_type = data.get('problem_type', 'all')
+        
+        if not dataset_name:
+            return jsonify({
+                'success': False,
+                'error': 'Dataset name is required'
+            }), 400
+        
+        success = dashboard_data.switch_dataset(dataset_name, problem_type)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'current_dataset': dashboard_data.get_current_dataset_info(),
+                'stats': dashboard_data.get_statistics(),
+                'examples_count': len(dashboard_data.examples)
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to switch to dataset {dataset_name} ({problem_type})'
+            }), 400
+            
     except Exception as e:
         return jsonify({
             'success': False,

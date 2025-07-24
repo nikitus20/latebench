@@ -73,7 +73,10 @@ class PRM800KProcessor:
                 solution_method="analytical"
             )
             
-            error_injection = LateBenchErrorInjection()
+            error_injection = LateBenchErrorInjection(
+                has_errors=any(step.is_error for step in solution_steps),
+                manual_attempts=[]
+            )
             
             processing = LateBenchProcessing(
                 added_to_latebench=create_timestamp(),
@@ -130,7 +133,7 @@ class PRM800KProcessor:
             reasoning_type = self._classify_reasoning_type(step_text)
             
             steps.append(LateBenchStep(
-                step_number=i + 1,
+                step_number=len(steps) + 1,  # Use sequential numbering instead of raw step index
                 content=step_text,
                 importance=importance,
                 reasoning_type=reasoning_type,
@@ -178,10 +181,19 @@ class PRM800KProcessor:
     def process_dataset(self, 
                        input_file: str, 
                        output_file: str,
-                       max_examples: Optional[int] = None) -> List[LateBenchExample]:
-        """Process PRM800K dataset"""
+                       max_examples: Optional[int] = None,
+                       separate_by_errors: bool = True,
+                       min_difficulty_level: Optional[int] = None,
+                       min_solution_steps: Optional[int] = None) -> List[LateBenchExample]:
+        """Process PRM800K dataset with advanced filtering and optional separation by error status"""
         
         print(f"Processing PRM800K dataset from {input_file}")
+        if min_difficulty_level:
+            print(f"Filtering for difficulty level >= {min_difficulty_level} (using solution complexity)")
+        if min_solution_steps:
+            print(f"Filtering for late error injection:")
+            print(f"   • Complete solutions: >= {min_solution_steps} total steps")
+            print(f"   • Error solutions: first error at step >= {min_solution_steps}")
         
         # Load JSONL data
         raw_data = []
@@ -192,26 +204,67 @@ class PRM800KProcessor:
         
         print(f"Loaded {len(raw_data)} raw examples")
         
-        # Process examples
+        # Process examples with filtering
         processed_examples = []
+        complete_solutions = []
+        error_labeled = []
         skipped = 0
+        filtered_difficulty = 0
+        filtered_steps = 0
         
         for i, raw_example in enumerate(raw_data):
             if max_examples and len(processed_examples) >= max_examples:
                 break
+            
+            # Apply pre-processing filters
+            if not self._passes_filters(raw_example, min_difficulty_level, min_solution_steps):
+                if min_difficulty_level and not self._meets_difficulty_threshold(raw_example, min_difficulty_level):
+                    filtered_difficulty += 1
+                if min_solution_steps and not self._meets_step_threshold(raw_example, min_solution_steps):
+                    filtered_steps += 1
+                skipped += 1
+                continue
                 
             processed = self.process_example(raw_example, i)
             if processed:
                 processed_examples.append(processed)
+                
+                # Separate by error status if requested
+                if separate_by_errors:
+                    if processed.source.metadata.get('has_errors', False):
+                        error_labeled.append(processed)
+                    else:
+                        complete_solutions.append(processed)
+                
                 if len(processed_examples) % 100 == 0:
                     print(f"Processed {len(processed_examples)} examples")
             else:
                 skipped += 1
         
         # Save results
+        if separate_by_errors:
+            # Save separate files for complete solutions and error-labeled problems
+            base_path = output_file.replace('.json', '')
+            complete_file = f"{base_path}_complete.json"
+            error_file = f"{base_path}_errors.json"
+            
+            self.save_to_json(complete_solutions, complete_file)
+            self.save_to_json(error_labeled, error_file)
+            
+            print(f"✅ Separated datasets:")
+            print(f"   Complete solutions: {len(complete_solutions)} examples -> {complete_file}")
+            print(f"   Error-labeled problems: {len(error_labeled)} examples -> {error_file}")
+        
+        # Still save the combined file
         self.save_to_json(processed_examples, output_file)
         
+        # Print detailed filtering statistics
         print(f"✅ Completed: {len(processed_examples)} examples processed, {skipped} skipped")
+        if filtered_difficulty > 0:
+            print(f"   Filtered by difficulty: {filtered_difficulty} examples")
+        if filtered_steps > 0:
+            print(f"   Filtered by step count: {filtered_steps} examples")
+        
         return processed_examples
     
     def save_to_json(self, examples: List[LateBenchExample], output_file: str):
@@ -249,7 +302,12 @@ class PRM800KProcessor:
                     "solution_method": example.solution.solution_method
                 },
                 "error_injection": {
-                    "has_errors": example.error_injection.has_errors
+                    "has_errors": example.error_injection.has_errors,
+                    "error_info": example.error_injection.error_info,
+                    "manual_attempts": [attempt.to_dict() for attempt in example.error_injection.manual_attempts],
+                    "final_decision": example.error_injection.final_decision,
+                    "decision_timestamp": example.error_injection.decision_timestamp,
+                    "custom_suggestions": example.error_injection.custom_suggestions
                 },
                 "processing": {
                     "added_to_latebench": example.processing.added_to_latebench,
@@ -262,3 +320,116 @@ class PRM800KProcessor:
             json.dump(json_data, f, indent=2)
         
         print(f"Saved {len(examples)} examples to {output_file}")
+    
+    def _passes_filters(self, raw_example: Dict[str, Any], min_difficulty: Optional[int], min_steps: Optional[int]) -> bool:
+        """Check if example passes all filtering criteria"""
+        if min_difficulty and not self._meets_difficulty_threshold(raw_example, min_difficulty):
+            return False
+        if min_steps and not self._meets_step_threshold(raw_example, min_steps):
+            return False
+        return True
+    
+    def _meets_difficulty_threshold(self, raw_example: Dict[str, Any], min_level: int) -> bool:
+        """Estimate difficulty based on solution complexity and mathematical content"""
+        try:
+            question = raw_example.get('question', {})
+            problem = question.get('problem', '')
+            solution = question.get('ground_truth_solution', '')
+            
+            # Calculate complexity score (1-5 scale)
+            complexity_score = 1
+            
+            # Content-based difficulty indicators
+            high_level_topics = [
+                'integration', 'derivative', 'limit', 'differential', 'calculus',
+                'matrix', 'eigenvalue', 'determinant', 'linear algebra',
+                'topology', 'complex analysis', 'real analysis',
+                'modular arithmetic', 'congruence', 'number theory',
+                'combinatorics', 'probability', 'statistics'
+            ]
+            
+            medium_level_topics = [
+                'polynomial', 'quadratic', 'logarithm', 'exponential',
+                'trigonometry', 'sine', 'cosine', 'tangent',
+                'geometry', 'triangle', 'circle', 'coordinate',
+                'sequence', 'series', 'function'
+            ]
+            
+            problem_lower = problem.lower()
+            
+            # Base score from topic complexity
+            if any(topic in problem_lower for topic in high_level_topics):
+                complexity_score += 2
+            elif any(topic in problem_lower for topic in medium_level_topics):
+                complexity_score += 1
+            
+            # Solution length indicator
+            solution_length = len(solution.split())
+            if solution_length > 200:
+                complexity_score += 2
+            elif solution_length > 100:
+                complexity_score += 1
+            
+            # Mathematical notation complexity
+            complex_notation = ['\\int', '\\sum', '\\prod', '\\lim', '\\frac', '\\sqrt', '\\partial']
+            notation_count = sum(1 for notation in complex_notation if notation in solution)
+            if notation_count > 5:
+                complexity_score += 1
+            
+            # Cap at 5
+            complexity_score = min(5, complexity_score)
+            
+            return complexity_score >= min_level
+            
+        except Exception:
+            return False
+    
+    def _meets_step_threshold(self, raw_example: Dict[str, Any], min_steps: int) -> bool:
+        """Check if solution has enough steps for late error injection
+        
+        For complete solutions: must have >= min_steps total
+        For error solutions: first error must be at step >= min_steps
+        """
+        try:
+            question = raw_example.get('question', {})
+            label = raw_example.get('label', {})
+            
+            # Get human annotation steps
+            annotation_steps = label.get('steps', [])
+            if not annotation_steps:
+                return False
+            
+            # Find first error step (rating = -1)
+            first_error_step = None
+            for i, step in enumerate(annotation_steps):
+                rating = step.get('completions', [{}])[0].get('rating', 1)
+                if rating == -1:
+                    first_error_step = i + 1  # Convert to 1-based indexing
+                    break
+            
+            if first_error_step is None:
+                # Complete solution - check total steps
+                return len(annotation_steps) >= min_steps
+            else:
+                # Error solution - first error must be at step >= min_steps  
+                return first_error_step >= min_steps
+            
+        except Exception as e:
+            print(f"Error in step threshold check: {e}")
+            return False
+    
+    def _get_first_error_step(self, raw_example: Dict[str, Any]) -> Optional[int]:
+        """Get the position of the first error step (1-based indexing)"""
+        try:
+            label = raw_example.get('label', {})
+            annotation_steps = label.get('steps', [])
+            
+            for i, step in enumerate(annotation_steps):
+                rating = step.get('completions', [{}])[0].get('rating', 1)
+                if rating == -1:
+                    return i + 1  # Convert to 1-based indexing
+            
+            return None  # No error found (complete solution)
+            
+        except Exception:
+            return None

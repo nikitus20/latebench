@@ -9,20 +9,27 @@
             <p>Mathematical Reasoning Error Analysis</p>
         </div>
         
-        <!-- Statistics -->
-        <div class="stats-panel">
-            <h3>Statistics</h3>
-            <div class="stat-item">
-                <span class="number">{{ stats.total_examples }}</span>
-                <span class="label">Total Problems</span>
+        
+        <!-- Dataset Selection -->
+        <div class="dataset-panel">
+            <h3>Dataset Selection</h3>
+            
+            <div class="filter-group">
+                <label for="dataset-selector">Dataset:</label>
+                <select id="dataset-selector" onchange="switchDataset()">
+                    {% for dataset_name, problem_types in available_datasets.items() %}
+                        {% for problem_type in problem_types %}
+                            <option value="{{ dataset_name }}|{{ problem_type }}" 
+                                {% if current_dataset.name == dataset_name and current_dataset.type == problem_type %}selected{% endif %}>
+                                {{ dataset_name.replace('_', ' ').title() }} ({{ problem_type.replace('_', ' ').title() }})
+                            </option>
+                        {% endfor %}
+                    {% endfor %}
+                </select>
             </div>
-            <div class="stat-item">
-                <span class="number">{{ stats.unique_error_types }}</span>
-                <span class="label">Error Types</span>
-            </div>
-            <div class="stat-item">
-                <span class="number">{{ "%.1f"|format(stats.avg_steps) }}</span>
-                <span class="label">Avg Steps</span>
+            
+            <div class="dataset-info">
+                <small>Current: {{ current_dataset.name.replace('_', ' ').title() }} - {{ current_dataset.type.replace('_', ' ').title() }}</small>
             </div>
         </div>
         
@@ -108,10 +115,10 @@
             </button>
             <button onclick="exportExample()" class="export-btn">Export</button>
             <select onchange="jumpToExample(this.value)" id="example-selector">
-                <option value="">Jump to Problem...</option>
+                <option value="">🔍 Jump to Problem...</option>
                 {% for ex in examples %}
                 <option value="{{ ex.id }}" {% if current_example.id == ex.id %}selected{% endif %}>
-                    {{ ex.title }}
+                    Problem {{ loop.index }}: {{ ex.title[:50] }}{% if ex.title|length > 50 %}...{% endif %}
                 </option>
                 {% endfor %}
             </select>
@@ -309,6 +316,19 @@
                             </button>
                         </div>
                         
+                        <!-- Injection Progress Status -->
+                        <div id="injection-progress" class="injection-progress" style="display: none;">
+                            <div class="progress-header">
+                                <h5>🔄 Injection Progress</h5>
+                            </div>
+                            <div id="progress-steps" class="progress-steps">
+                                <!-- Progress steps will be added here -->
+                            </div>
+                            <div id="progress-details" class="progress-details">
+                                <!-- Detailed progress info will be shown here -->
+                            </div>
+                        </div>
+                        
                         <!-- Injection Attempts History -->
                         <div id="injection-attempts" class="injection-attempts">
                             <h5>Attempts (<span id="attempt-count">0</span>/2)</h5>
@@ -353,9 +373,159 @@
 
 <script>
 // Store current example ID
-let currentExampleId = {{ current_example.id if current_example else 'null' }};
+let currentExampleId = {% if current_example %}"{{ current_example.id }}"{% else %}null{% endif %};
 let allExamples = {{ examples|tojson }};
 let currentFilter = {};
+
+// Track injection state per example
+let injectionStates = new Map(); // Maps example_id -> {inProgress: boolean, startTime: number}
+let injectionTimer = null; // Timer for updating button text
+
+// Track critic state per example
+let criticStates = new Map(); // Maps example_id -> {inProgress: boolean, startTime: number}
+let criticTimer = null; // Timer for updating critic button text
+
+// Injection state management functions
+function setInjectionInProgress(exampleId, inProgress = true) {
+    if (inProgress) {
+        injectionStates.set(exampleId, {
+            inProgress: true,
+            startTime: Date.now()
+        });
+        startInjectionTimer();
+    } else {
+        injectionStates.delete(exampleId);
+        stopInjectionTimer();
+    }
+    updateInjectionButtonState(exampleId);
+}
+
+function startInjectionTimer() {
+    // Clear existing timer
+    if (injectionTimer) {
+        clearInterval(injectionTimer);
+    }
+    
+    // Update button text every second
+    injectionTimer = setInterval(() => {
+        updateInjectionButtonState(currentExampleId);
+    }, 1000);
+}
+
+function stopInjectionTimer() {
+    if (injectionTimer) {
+        clearInterval(injectionTimer);
+        injectionTimer = null;
+    }
+}
+
+function isInjectionInProgress(exampleId) {
+    return injectionStates.has(exampleId) && injectionStates.get(exampleId).inProgress;
+}
+
+function getInjectionDuration(exampleId) {
+    const state = injectionStates.get(exampleId);
+    if (!state) return 0;
+    return Math.round((Date.now() - state.startTime) / 1000);
+}
+
+function updateInjectionButtonState(exampleId) {
+    // Only update if we're currently viewing this example
+    if (currentExampleId !== exampleId) return;
+    
+    const btn = document.getElementById('manual-inject-btn');
+    const btnText = document.getElementById('inject-btn-text');
+    const spinner = document.getElementById('inject-spinner');
+    
+    if (!btn) return;
+    
+    const inProgress = isInjectionInProgress(exampleId);
+    
+    if (inProgress) {
+        // Set in-progress state
+        btn.disabled = true;
+        btn.classList.add('injection-in-progress');
+        btnText.textContent = `Processing (${getInjectionDuration(exampleId)}s)...`;
+        spinner.style.display = 'inline-block';
+    } else {
+        // Set normal state
+        btn.disabled = false;
+        btn.classList.remove('injection-in-progress');
+        btnText.textContent = 'Inject Error';
+        spinner.style.display = 'none';
+    }
+}
+
+// Critic state management functions
+function setCriticInProgress(exampleId, inProgress = true) {
+    if (inProgress) {
+        criticStates.set(exampleId, {
+            inProgress: true,
+            startTime: Date.now()
+        });
+        startCriticTimer();
+    } else {
+        criticStates.delete(exampleId);
+        stopCriticTimer();
+    }
+    updateCriticButtonState(exampleId);
+}
+
+function startCriticTimer() {
+    // Clear existing timer
+    if (criticTimer) {
+        clearInterval(criticTimer);
+    }
+    
+    // Update button text every second
+    criticTimer = setInterval(() => {
+        updateCriticButtonState(currentExampleId);
+    }, 1000);
+}
+
+function stopCriticTimer() {
+    if (criticTimer) {
+        clearInterval(criticTimer);
+        criticTimer = null;
+    }
+}
+
+function isCriticInProgress(exampleId) {
+    return criticStates.has(exampleId) && criticStates.get(exampleId).inProgress;
+}
+
+function getCriticDuration(exampleId) {
+    const state = criticStates.get(exampleId);
+    if (!state) return 0;
+    return Math.round((Date.now() - state.startTime) / 1000);
+}
+
+function updateCriticButtonState(exampleId) {
+    // Only update if we're currently viewing this example
+    if (currentExampleId !== exampleId) return;
+    
+    const btn = document.getElementById('critic-btn');
+    const btnText = document.getElementById('critic-btn-text');
+    const spinner = document.getElementById('critic-spinner');
+    
+    if (!btn) return;
+    
+    const inProgress = isCriticInProgress(exampleId);
+    
+    if (inProgress) {
+        // Set in-progress state
+        btn.disabled = true;
+        btn.classList.add('critic-in-progress');
+        btnText.textContent = `Analyzing (${getCriticDuration(exampleId)}s)...`;
+        spinner.style.display = 'inline-block';
+    } else {
+        // Set normal state
+        btn.disabled = false;
+        btn.classList.remove('critic-in-progress');
+        btnText.textContent = 'Run Critic';
+        spinner.style.display = 'none';
+    }
+}
 
 // Navigation functions
 function selectExample(exampleId) {
@@ -386,14 +556,14 @@ function jumpToExample(exampleId) {
 async function runCritic() {
     if (!currentExampleId) return;
     
-    const btn = document.getElementById('critic-btn');
-    const btnText = document.getElementById('critic-btn-text');
-    const spinner = document.getElementById('critic-spinner');
+    // Check if critic is already running for this example
+    if (isCriticInProgress(currentExampleId)) {
+        console.log('Critic already running for this example');
+        return;
+    }
     
-    // Show loading state
-    btn.disabled = true;
-    btnText.textContent = 'Running...';
-    spinner.style.display = 'inline-block';
+    // Set critic in progress
+    setCriticInProgress(currentExampleId, true);
     
     try {
         const response = await fetch(`/api/run_critic/${currentExampleId}`, {
@@ -414,10 +584,8 @@ async function runCritic() {
     } catch (error) {
         alert('Error running critic: ' + error.message);
     } finally {
-        // Reset button state
-        btn.disabled = false;
-        btnText.textContent = 'Run Critic';
-        spinner.style.display = 'none';
+        // Clear critic in progress state
+        setCriticInProgress(currentExampleId, false);
     }
 }
 
@@ -493,10 +661,17 @@ async function saveSuggestion() {
     if (!currentExampleId) return;
     
     const suggestion = document.getElementById('error-suggestion-input').value.trim();
+    const saveBtn = document.getElementById('save-suggestion-btn');
+    
     if (!suggestion) {
         alert('Please enter an error suggestion first.');
         return;
     }
+    
+    // Show saving state
+    const originalText = saveBtn.textContent;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = 'Saving... <span class="spinner" style="display: inline-block;"></span>';
     
     try {
         const response = await fetch(`/api/save_suggestion/${currentExampleId}`, {
@@ -514,21 +689,50 @@ async function saveSuggestion() {
         if (result.success) {
             document.getElementById('error-suggestion-input').value = '';
             loadManualData(); // Refresh the manual data display
+            
+            // Show success feedback
+            saveBtn.innerHTML = '✅ Saved';
+            setTimeout(() => {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }, 1500);
+            
         } else {
             alert('Error saving suggestion: ' + result.error);
         }
     } catch (error) {
         alert('Error saving suggestion: ' + error.message);
+    } finally {
+        // Reset button if there was an error
+        if (saveBtn.disabled) {
+            setTimeout(() => {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }, 2000);
+        }
     }
 }
 
 async function runManualInjection() {
     if (!currentExampleId) return;
     
+    // Check if injection is already in progress for this example
+    if (isInjectionInProgress(currentExampleId)) {
+        const duration = getInjectionDuration(currentExampleId);
+        updateProgressDetails('info', `⏳ Injection already in progress for ${duration}s. Please wait for completion.`);
+        return;
+    }
+    
     const btn = document.getElementById('manual-inject-btn');
     const btnText = document.getElementById('inject-btn-text');
     const spinner = document.getElementById('inject-spinner');
     const userRemarks = document.getElementById('user-remarks-input').value.trim();
+    
+    // Set injection in progress for this example
+    setInjectionInProgress(currentExampleId, true);
+    
+    // Show progress panel
+    showInjectionProgress();
     
     // Show loading state
     btn.disabled = true;
@@ -536,6 +740,16 @@ async function runManualInjection() {
     spinner.style.display = 'inline-block';
     
     try {
+        // Step 1: Validate prerequisites
+        updateProgressStep('validate', 'active', 'Validating custom suggestions...');
+        await sleep(500); // Brief pause for visual feedback
+        
+        // Step 2: Send request
+        updateProgressStep('validate', 'completed', 'Prerequisites validated');
+        updateProgressStep('request', 'active', 'Sending injection request to GPT-4...');
+        updateProgressDetails('info', 'Connecting to OpenAI API...');
+        
+        const startTime = Date.now();
         const response = await fetch(`/api/manual_injection/${currentExampleId}`, {
             method: 'POST',
             headers: {
@@ -546,43 +760,102 @@ async function runManualInjection() {
             })
         });
         
+        const requestTime = ((Date.now() - startTime) / 1000).toFixed(1);
+        
+        // Step 3: Process response
+        updateProgressStep('request', 'completed', `Request sent (${requestTime}s)`);
+        updateProgressStep('process', 'active', 'Processing GPT-4 response...');
+        
         const result = await response.json();
         
         if (result.success) {
+            // Step 4: Success
+            updateProgressStep('process', 'completed', 'Response processed successfully');
+            updateProgressStep('finalize', 'completed', 'Injection completed');
+            
+            const injectionResult = result.injection_result;
+            const errorSteps = injectionResult.modified_solution?.steps?.filter(s => s.error) || [];
+            
+            updateProgressDetails('success', 
+                `✅ Success! Error injected in step ${injectionResult.error_analysis?.selected_error_step} ` +
+                `(${errorSteps.length} error steps created). ` +
+                `Error type: ${injectionResult.error_analysis?.error_type || 'Unknown'}`
+            );
+            
             document.getElementById('user-remarks-input').value = '';
             loadManualData(); // Refresh the manual data display
-            alert('Manual injection completed successfully!');
+            
+            // Hide progress after delay
+            setTimeout(() => {
+                hideInjectionProgress();
+            }, 3000);
+            
         } else {
-            alert('Error running manual injection: ' + result.error);
+            // Handle error
+            updateProgressStep('process', 'failed', 'Processing failed');
+            updateProgressStep('finalize', 'failed', 'Injection failed');
+            updateProgressDetails('error', `❌ Error: ${result.error}`);
+            
+            // Keep progress visible for longer on error
+            setTimeout(() => {
+                hideInjectionProgress();
+            }, 5000);
         }
+        
     } catch (error) {
-        alert('Error running manual injection: ' + error.message);
+        // Handle network/other errors
+        updateProgressStep('request', 'failed', 'Request failed');
+        updateProgressStep('process', 'failed', 'Process failed');
+        updateProgressStep('finalize', 'failed', 'Injection failed');
+        updateProgressDetails('error', `🚫 Network Error: ${error.message}`);
+        
+        setTimeout(() => {
+            hideInjectionProgress();
+        }, 5000);
+        
     } finally {
-        // Reset button state
-        btn.disabled = false;
-        btnText.textContent = 'Inject Error';
-        spinner.style.display = 'none';
+        // Clear injection state for this example
+        setInjectionInProgress(currentExampleId, false);
     }
 }
 
 async function setDecision(decision) {
-    if (!currentExampleId) return;
+    console.log('setDecision called with:', decision);
+    console.log('currentExampleId:', currentExampleId);
+    
+    if (!currentExampleId) {
+        alert('No example selected');
+        return;
+    }
     
     try {
-        const response = await fetch(`/api/set_decision/${currentExampleId}`, {
+        const url = `/api/set_decision/${currentExampleId}`;
+        const payload = { decision: decision };
+        
+        console.log('Making request to:', url);
+        console.log('Payload:', payload);
+        
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                decision: decision
-            })
+            body: JSON.stringify(payload)
         });
         
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const result = await response.json();
+        console.log('Response result:', result);
         
         if (result.success) {
             updateDecisionButtons(decision);
+            alert(`Decision "${decision}" saved successfully!`);
             
             // Auto-advance to next undecided problem if "no" was selected
             if (decision === 'no') {
@@ -597,7 +870,8 @@ async function setDecision(decision) {
             alert('Error setting decision: ' + result.error);
         }
     } catch (error) {
-        alert('Error setting decision: ' + error.message);
+        console.error('Error in setDecision:', error);
+        alert('Failed to fetch. Error: ' + error.message);
     }
 }
 
@@ -694,6 +968,87 @@ function selectExample(exampleId) {
     window.location.href = `/example/${exampleId}`;
 }
 
+// Progress management functions
+function showInjectionProgress() {
+    const progressPanel = document.getElementById('injection-progress');
+    const stepsContainer = document.getElementById('progress-steps');
+    
+    // Initialize progress steps
+    stepsContainer.innerHTML = `
+        <div class="progress-step pending" id="step-validate">
+            <div class="progress-step-icon">⏳</div>
+            <span>Validating prerequisites</span>
+        </div>
+        <div class="progress-step pending" id="step-request">
+            <div class="progress-step-icon">🌐</div>
+            <span>Sending request to GPT-4</span>
+        </div>
+        <div class="progress-step pending" id="step-process">
+            <div class="progress-step-icon">🧠</div>
+            <span>Processing AI response</span>
+        </div>
+        <div class="progress-step pending" id="step-finalize">
+            <div class="progress-step-icon">✨</div>
+            <span>Finalizing injection</span>
+        </div>
+    `;
+    
+    // Clear details
+    document.getElementById('progress-details').innerHTML = '';
+    document.getElementById('progress-details').className = 'progress-details';
+    
+    // Show the panel
+    progressPanel.style.display = 'block';
+}
+
+function hideInjectionProgress() {
+    const progressPanel = document.getElementById('injection-progress');
+    progressPanel.style.display = 'none';
+}
+
+function updateProgressStep(stepId, status, message) {
+    const step = document.getElementById(`step-${stepId}`);
+    if (!step) return;
+    
+    // Remove all status classes
+    step.classList.remove('pending', 'active', 'completed', 'failed');
+    
+    // Add new status
+    step.classList.add(status);
+    
+    // Update icon based on status
+    const icon = step.querySelector('.progress-step-icon');
+    switch(status) {
+        case 'active':
+            icon.innerHTML = '🔄';
+            break;
+        case 'completed':
+            icon.innerHTML = '✅';
+            break;
+        case 'failed':
+            icon.innerHTML = '❌';
+            break;
+        default:
+            icon.innerHTML = '⏳';
+    }
+    
+    // Update message if provided
+    if (message) {
+        const textSpan = step.querySelector('span');
+        textSpan.textContent = message;
+    }
+}
+
+function updateProgressDetails(type, message) {
+    const details = document.getElementById('progress-details');
+    details.className = `progress-details ${type}`;
+    details.innerHTML = message;
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // Trigger MathJax rendering after page load
 window.addEventListener('load', function() {
     if (typeof MathJax !== 'undefined') {
@@ -702,6 +1057,12 @@ window.addEventListener('load', function() {
     
     // Load manual injection data for current example
     loadManualData();
+    
+    // Initialize button states for current example
+    if (currentExampleId) {
+        updateInjectionButtonState(currentExampleId);
+        updateCriticButtonState(currentExampleId);
+    }
     
     // Apply default filter (hide "no" decisions)
     applyFilters();
@@ -732,7 +1093,8 @@ window.addEventListener('load', function() {
                 break;
             case 'i':
                 event.preventDefault();
-                if (!document.getElementById('manual-inject-btn').disabled) {
+                // Only allow injection if not in progress for current example
+                if (!isInjectionInProgress(currentExampleId)) {
                     runManualInjection();
                 }
                 break;

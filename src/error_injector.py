@@ -108,7 +108,6 @@ CORRECT ANSWER: {correct_answer}
 7. The final answer should be confidently presented as correct
 
 FORBIDDEN LANGUAGE - NEVER USE:
-- "seems", "appears", "might", "could", "possibly", "likely", "assume", "suppose"
 - Any qualifying or uncertain language
 - Any hints that something might be wrong
 - Apologetic or hesitant phrasing
@@ -489,9 +488,9 @@ Focus on creating educational examples that help students learn to identify {map
 "{custom_suggestion}"
 
 IMPLEMENTATION INSTRUCTIONS:
-- Incorporate this custom suggestion into your error injection approach
-- The suggestion should guide the TYPE of error you introduce, but adapt it to fit naturally within the mathematical context
-- If the suggestion is specific (e.g., "make an invalid assumption about domain"), implement that exact type of error
+- Analyze this custom suggestion and incorporate it into your error injection approach
+- The suggestion might guide the TYPE of error you introduce, and the STEP you should modify, but adapt it to fit naturally within the mathematical context
+- If the suggestion is specific (e.g., "make an invalid assumption that all pairs are equivalent"), implement that exact type of error
 - If the suggestion is general (e.g., "logical flaw"), choose the most appropriate logical error for this problem
 - The error must still appear in the last 33% of steps and maintain complete naturalness
 - Explain in your response how you incorporated the user's suggestion"""

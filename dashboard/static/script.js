@@ -102,7 +102,7 @@ function nextExample() {
 
 function jumpToExample(exampleId) {
     if (exampleId) {
-        selectExample(parseInt(exampleId));
+        selectExample(exampleId);
     }
 }
 
@@ -180,6 +180,45 @@ function exportExample() {
     document.body.removeChild(link);
     
     showNotification('Example exported', 'success');
+}
+
+// Dataset switching functions
+async function switchDataset() {
+    const selector = document.getElementById('dataset-selector');
+    if (!selector) return;
+    
+    const selectedValue = selector.value;
+    if (!selectedValue) return;
+    
+    const [datasetName, problemType] = selectedValue.split('|');
+    
+    try {
+        showNotification('Switching dataset...', 'info');
+        
+        const response = await fetch('/api/switch_dataset', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                dataset_name: datasetName,
+                problem_type: problemType
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Reload the page to show new dataset
+            showNotification(`Switched to ${datasetName} (${problemType})`, 'success');
+            window.location.reload();
+        } else {
+            showNotification(`Failed to switch dataset: ${data.error}`, 'error');
+        }
+        
+    } catch (error) {
+        showNotification(`Error switching dataset: ${error.message}`, 'error');
+    }
 }
 
 // Filtering functions

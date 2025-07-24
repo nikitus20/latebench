@@ -10,6 +10,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.critic import StepFormatter, CriticResult
+from src.dataset_manager import LateBenchDatasetManager
 
 
 class DashboardData:
@@ -20,11 +21,29 @@ class DashboardData:
         self.examples = []
         self.critic_results = {}
         self.manual_injection_data = {}  # Store manual injection data
+        self.dataset_manager = LateBenchDatasetManager()  # New dataset manager
+        self.current_dataset_name = None
+        self.current_problem_type = "all"
         self.load_data()
         self.load_manual_injection_data()
     
     def load_data(self):
-        """Load examples from file (supports both old experiment format and new LateBench format)."""
+        """Load examples using the new dataset manager or fallback to legacy loading."""
+        # Try to load using dataset manager first
+        available_datasets = self.dataset_manager.list_available_datasets()
+        
+        if available_datasets:
+            # Load the first available dataset by default
+            first_dataset = list(available_datasets.keys())[0]
+            first_type = available_datasets[first_dataset][0] if available_datasets[first_dataset] else "all"
+            
+            if self.dataset_manager.load_dataset(first_dataset, first_type):
+                self.current_dataset_name = first_dataset
+                self.current_problem_type = first_type
+                self._convert_latebench_to_dashboard_format()
+                return
+        
+        # Fallback to legacy loading
         if os.path.exists(self.results_file):
             with open(self.results_file, 'r') as f:
                 raw_data = json.load(f)
@@ -232,10 +251,28 @@ class DashboardData:
             return ' '.join(words) + "..."
     
     def get_example(self, example_id) -> Optional[Dict[str, Any]]:
-        """Get example by ID."""
+        """Get example by ID, with manual injection data and critic results integrated."""
         for example in self.examples:
             if example['id'] == example_id:
-                return example
+                # Create a copy to avoid modifying the original
+                example_copy = example.copy()
+                
+                # Check for manual injection data and integrate it
+                manual_data = self.get_manual_injection_data(example_id)
+                if manual_data.get('injection_attempts'):
+                    # Get the most recent successful injection
+                    for attempt in reversed(manual_data['injection_attempts']):
+                        injection_result = attempt.get('injection_result', {})
+                        if injection_result.get('success'):
+                            # Integrate the injection result into the example
+                            self._integrate_injection_result(example_copy, injection_result)
+                            break
+                
+                # Check for critic results and integrate them
+                if example_id in self.critic_results:
+                    example_copy['critic_result'] = self.critic_results[example_id]
+                
+                return example_copy
         return None
     
     def get_examples_by_error_type(self, error_type: str) -> List[Dict[str, Any]]:
@@ -254,14 +291,98 @@ class DashboardData:
                 error_types.add(example.get('source', 'unknown'))
         return sorted(list(error_types))
     
+    def _integrate_injection_result(self, example: Dict[str, Any], injection_result: Dict[str, Any]):
+        """Integrate manual injection result into example data."""
+        modified_solution = injection_result.get('modified_solution', {})
+        error_analysis = injection_result.get('error_analysis', {})
+        error_explanation = injection_result.get('error_explanation', {})
+        
+        if modified_solution.get('steps'):
+            # Store original step information for preservation
+            original_steps = example.get('modified_steps', [])
+            original_steps_dict = {step.get('step_number', step.get('number', i+1)): step 
+                                 for i, step in enumerate(original_steps)}
+            
+            # Convert injection result format to dashboard format
+            dashboard_steps = []
+            for step in modified_solution['steps']:
+                step_num = step.get('step_num', 0)
+                is_modified = step.get('modified', False)
+                is_error = step.get('error', False)
+                
+                # Get original step info if available
+                original_step = original_steps_dict.get(step_num, {})
+                original_reasoning_type = original_step.get('reasoning_type', 'unknown')
+                original_importance = original_step.get('importance', 'medium')
+                
+                # Preserve original reasoning type for unmodified steps, use 'injected' only for modified ones
+                reasoning_type = 'injected' if is_modified else original_reasoning_type
+                
+                # Determine importance: high for error steps, preserve original for unmodified, medium for other modified
+                if is_error:
+                    importance = 'high'
+                elif not is_modified:
+                    importance = original_importance
+                else:
+                    importance = 'medium'
+                
+                dashboard_steps.append({
+                    'step_number': step_num,
+                    'number': step_num,  # Alternative field name
+                    'content': StepFormatter.clean_latex_escaping(step.get('content', '')),
+                    'is_modified': is_modified,
+                    'is_error': is_error,
+                    'reasoning_type': reasoning_type,
+                    'importance': importance,
+                    # Add injection metadata without overriding original classification
+                    'was_injected': True,  # Mark that this step went through injection process
+                    'original_reasoning_type': original_reasoning_type,
+                    'injection_modified': is_modified  # Track if this specific step was modified during injection
+                })
+            
+            # Update the example's modified steps
+            example['modified_steps'] = dashboard_steps
+            example['modified_solution'] = {
+                'steps': dashboard_steps,
+                'answer': StepFormatter.clean_latex_escaping(modified_solution.get('final_answer', '')),
+                'num_steps': len(dashboard_steps)
+            }
+            
+            # Update error information with injection analysis
+            if error_analysis:
+                example['error_info'].update({
+                    'step': error_analysis.get('selected_error_step', 0),
+                    'type': error_analysis.get('error_type', 'injected'),
+                    'total_steps': error_analysis.get('total_steps', 0),
+                    'target_range': error_analysis.get('target_step_range', ''),
+                    'what_changed': StepFormatter.clean_latex_escaping(
+                        error_explanation.get('what_changed', '')
+                    ),
+                    'why_incorrect': StepFormatter.clean_latex_escaping(
+                        error_explanation.get('why_incorrect', '')
+                    )
+                })
+    
     def get_statistics(self) -> Dict[str, Any]:
-        """Get summary statistics."""
+        """Get summary statistics using dataset manager when possible."""
+        # Try to get enhanced stats from dataset manager
+        if hasattr(self, 'dataset_manager') and self.dataset_manager.current_examples:
+            stats = self.dataset_manager.get_dataset_stats()
+            # Add dashboard-specific statistics
+            stats.update({
+                'unique_error_types': len(stats.get('datasets', {})),
+                'current_dataset': self.get_current_dataset_info()
+            })
+            return stats
+        
+        # Fallback to legacy statistics
         if not self.examples:
             return {}
         
         error_type_counts = {}
         step_counts = []
         difficulty_counts = {}
+        problem_type_counts = {'complete_solutions': 0, 'error_labeled': 0}
         
         for example in self.examples:
             # Use unified approach with compatibility fields
@@ -291,6 +412,13 @@ class DashboardData:
                 else:
                     difficulty = 'Low'
             
+            # Problem type counting
+            has_errors = example.get('metadata', {}).get('has_errors', False)
+            if has_errors:
+                problem_type_counts['error_labeled'] += 1
+            else:
+                problem_type_counts['complete_solutions'] += 1
+            
             error_type_counts[error_type] = error_type_counts.get(error_type, 0) + 1
             step_counts.append(step_count)
             difficulty_counts[difficulty] = difficulty_counts.get(difficulty, 0) + 1
@@ -301,7 +429,9 @@ class DashboardData:
             'avg_steps': sum(step_counts) / len(step_counts) if step_counts else 0,
             'step_range': [min(step_counts), max(step_counts)] if step_counts else [0, 0],
             'difficulty_distribution': difficulty_counts,
-            'unique_error_types': len(error_type_counts)
+            'unique_error_types': len(error_type_counts),
+            'error_status': problem_type_counts,
+            'current_dataset': self.get_current_dataset_info()
         }
     
     def add_critic_result(self, example_id: int, critic_result: CriticResult):
@@ -333,8 +463,8 @@ class DashboardData:
             
             # Apply to examples
             for example_id_str, result in self.critic_results.items():
-                example_id = int(example_id_str)
-                example = self.get_example(example_id)
+                # Use the string ID directly (no conversion to int needed)
+                example = self.get_example(example_id_str)
                 if example:
                     example['critic_result'] = result
             
@@ -452,6 +582,74 @@ class DashboardData:
             filtered_examples.append(example)
         
         return filtered_examples
+    
+    def get_available_datasets(self) -> Dict[str, List[str]]:
+        """Get available datasets from the dataset manager."""
+        return self.dataset_manager.list_available_datasets()
+    
+    def switch_dataset(self, dataset_name: str, problem_type: str = "all") -> bool:
+        """Switch to a different dataset and problem type."""
+        if self.dataset_manager.switch_dataset(dataset_name, problem_type):
+            self.current_dataset_name = dataset_name
+            self.current_problem_type = problem_type
+            self._convert_latebench_to_dashboard_format()
+            return True
+        return False
+    
+    def get_current_dataset_info(self) -> Dict[str, str]:
+        """Get current dataset information."""
+        return {
+            "name": self.current_dataset_name or "None",
+            "type": self.current_problem_type or "all"
+        }
+    
+    def _convert_latebench_to_dashboard_format(self):
+        """Convert LateBench examples to dashboard format."""
+        latebench_examples = self.dataset_manager.get_current_examples()
+        self.examples = []
+        
+        for i, lb_example in enumerate(latebench_examples):
+            # Convert LateBench format to dashboard format
+            example_dict = {
+                "id": lb_example.id,
+                "source": {
+                    "dataset": lb_example.source.dataset,
+                    "original_id": lb_example.source.original_id,
+                    "difficulty": lb_example.source.difficulty,
+                    "subject": lb_example.source.subject,
+                    "competition": lb_example.source.competition,
+                    "metadata": lb_example.source.metadata
+                },
+                "problem": {
+                    "statement": lb_example.problem.statement
+                },
+                "solution": {
+                    "steps": [{
+                        "step_number": step.step_number,
+                        "content": step.content,
+                        "importance": step.importance,
+                        "reasoning_type": step.reasoning_type,
+                        "is_error": step.is_error,
+                        "is_modified": step.is_modified
+                    } for step in lb_example.solution.steps],
+                    "final_answer": lb_example.solution.final_answer,
+                    "total_steps": lb_example.solution.total_steps,
+                    "solution_method": lb_example.solution.solution_method
+                },
+                "error_injection": {
+                    "has_errors": lb_example.error_injection.has_errors
+                },
+                "processing": {
+                    "added_to_latebench": lb_example.processing.added_to_latebench,
+                    "last_modified": lb_example.processing.last_modified,
+                    "status": lb_example.processing.status
+                }
+            }
+            
+            dashboard_example = self._process_latebench_example(example_dict, i)
+            self.examples.append(dashboard_example)
+        
+        print(f"Converted {len(self.examples)} LateBench examples to dashboard format")
 
 
 def analyze_critic_performance(example: Dict[str, Any]) -> Dict[str, Any]:
