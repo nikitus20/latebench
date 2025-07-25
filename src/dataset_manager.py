@@ -152,6 +152,67 @@ class LateBenchDatasetManager:
             print(f"Error saving dataset: {e}")
             return False
     
+    def add_bulk_dataset(self, examples_list: List[Union[Dict[str, Any], LateBenchExample]], 
+                        dataset_name: str, error_source: str = "natural") -> bool:
+        """Add multiple examples as a new dataset with proper error source marking"""
+        try:
+            # Convert to LateBenchExample objects if needed
+            latebench_examples = []
+            for example_data in examples_list:
+                if isinstance(example_data, dict):
+                    # Mark natural errors properly
+                    if error_source == "natural":
+                        self._mark_natural_error_source(example_data)
+                    example = LateBenchExample.from_dict(example_data)
+                elif isinstance(example_data, LateBenchExample):
+                    example = example_data
+                else:
+                    print(f"Warning: Invalid example format, skipping")
+                    continue
+                
+                latebench_examples.append(example)
+            
+            if not latebench_examples:
+                print("No valid examples to add")
+                return False
+            
+            # Save to file - use _raw suffix for consistency with load_dataset expectations
+            output_file = os.path.join(self.datasets_dir, f"latebench_{dataset_name}_raw.json")
+            data = [example.to_dict() for example in latebench_examples]
+            
+            with open(output_file, 'w') as f:
+                json.dump(data, f, indent=2)
+            
+            # Add to in-memory datasets
+            self.datasets[dataset_name] = latebench_examples
+            
+            print(f"✅ Added bulk dataset '{dataset_name}' with {len(latebench_examples)} examples")
+            return True
+            
+        except Exception as e:
+            print(f"Error adding bulk dataset: {e}")
+            return False
+
+    def _mark_natural_error_source(self, example_data: Dict[str, Any]):
+        """Mark an example as containing natural errors from source dataset"""
+        # Ensure source metadata exists
+        if 'source' not in example_data:
+            example_data['source'] = {}
+        if 'metadata' not in example_data['source']:
+            example_data['source']['metadata'] = {}
+        
+        # Mark as having natural errors
+        example_data['source']['metadata']['has_errors'] = True
+        example_data['source']['metadata']['error_source'] = 'natural'
+        example_data['source']['metadata']['error_origin'] = example_data.get('source', {}).get('dataset', 'unknown')
+        
+        # Ensure error_injection section reflects natural errors
+        if 'error_injection' not in example_data:
+            example_data['error_injection'] = {}
+        
+        example_data['error_injection']['has_errors'] = True
+        example_data['error_injection']['error_info'] = None  # No artificial injection
+
     def create_working_dataset(self, source_datasets: List[str], output_name: str = "working") -> bool:
         """Combine multiple datasets into a working dataset"""
         combined_examples = []
@@ -292,7 +353,12 @@ class LateBenchDatasetManager:
             "step_counts": [],
             "importance_distribution": {"high": 0, "medium": 0, "low": 0},
             "decision_status": {"yes": 0, "maybe": 0, "no": 0, "undecided": 0},
-            "error_status": {"complete_solutions": 0, "error_labeled": 0}
+            "error_status": {"complete_solutions": 0, "error_labeled": 0},
+            "error_source_breakdown": {
+                "natural_errors": 0,
+                "injected_errors": 0,
+                "no_errors": 0
+            }
         }
         
         for example in examples:
@@ -328,6 +394,17 @@ class LateBenchDatasetManager:
                 stats["error_status"]["error_labeled"] += 1
             else:
                 stats["error_status"]["complete_solutions"] += 1
+            
+            # Error source breakdown
+            error_source = example.source.metadata.get('error_source', '')
+            has_injection_info = example.error_injection.error_info is not None
+            
+            if error_source == 'natural' or (has_errors and not has_injection_info):
+                stats["error_source_breakdown"]["natural_errors"] += 1
+            elif has_injection_info:
+                stats["error_source_breakdown"]["injected_errors"] += 1
+            else:
+                stats["error_source_breakdown"]["no_errors"] += 1
         
         # Calculate averages
         if stats["step_counts"]:
@@ -343,7 +420,8 @@ class LateBenchDatasetManager:
                        min_steps: Optional[int] = None,
                        max_steps: Optional[int] = None,
                        decision_filter: Optional[str] = None,
-                       problem_type_filter: Optional[str] = None) -> List[LateBenchExample]:
+                       problem_type_filter: Optional[str] = None,
+                       error_source_filter: Optional[str] = None) -> List[LateBenchExample]:
         """Filter current examples based on criteria"""
         filtered = self.current_examples
         
@@ -376,6 +454,21 @@ class LateBenchDatasetManager:
             elif problem_type_filter == "errors":
                 filtered = [ex for ex in filtered if ex.source.metadata.get('has_errors', False)]
             # "all" doesn't filter anything
+        
+        if error_source_filter:
+            if error_source_filter == "natural":
+                filtered = [ex for ex in filtered if (
+                    ex.source.metadata.get('error_source') == 'natural' or 
+                    (ex.source.metadata.get('has_errors', False) and 
+                     ex.error_injection.error_info is None)
+                )]
+            elif error_source_filter == "injected":
+                filtered = [ex for ex in filtered if ex.error_injection.error_info is not None]
+            elif error_source_filter == "no_errors":
+                filtered = [ex for ex in filtered if (
+                    not ex.source.metadata.get('has_errors', False) and 
+                    ex.error_injection.error_info is None
+                )]
         
         return filtered
     

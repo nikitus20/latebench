@@ -33,9 +33,18 @@ class DashboardData:
         available_datasets = self.dataset_manager.list_available_datasets()
         
         if available_datasets:
-            # Load the first available dataset by default
-            first_dataset = list(available_datasets.keys())[0]
-            first_type = available_datasets[first_dataset][0] if available_datasets[first_dataset] else "all"
+            # Prioritize MATH Level 5 natural errors dataset if available
+            if 'math_level5_natural_errors' in available_datasets:
+                first_dataset = 'math_level5_natural_errors'
+                first_type = available_datasets[first_dataset][0] if available_datasets[first_dataset] else "all"
+            # Fallback to old Level 5 dataset if available
+            elif 'prm800k_level5_late' in available_datasets and 'errors' in available_datasets['prm800k_level5_late']:
+                first_dataset = 'prm800k_level5_late'
+                first_type = 'errors'
+            else:
+                # Load the first available dataset by default
+                first_dataset = list(available_datasets.keys())[0]
+                first_type = available_datasets[first_dataset][0] if available_datasets[first_dataset] else "all"
             
             if self.dataset_manager.load_dataset(first_dataset, first_type):
                 self.current_dataset_name = first_dataset

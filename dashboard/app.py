@@ -16,6 +16,7 @@ from typing import Dict, Any, Optional
 
 from dashboard.utils import DashboardData, analyze_critic_performance
 from src.critic import LLMCritic, evaluate_single_example
+from src.adapters.latebench_adapter import LateBenchAdapter, EvaluationPipeline
 
 # Configure logging (will be properly set up by run_dashboard.py)
 logger = logging.getLogger(__name__)
@@ -28,15 +29,18 @@ app.secret_key = 'latebench_dashboard_secret'
 
 # Global data manager
 dashboard_data = None
+latebench_adapter = None
 
 
 def initialize_data():
     """Initialize dashboard data."""
-    global dashboard_data
+    global dashboard_data, latebench_adapter
     
     # Try different possible paths for the results file
     possible_paths = [
-        # Core datasets only
+        # New MATH Level 5 natural errors dataset (highest priority)
+        "./data/datasets/latebench_math_level5_natural_errors.json",
+        # Core datasets
         "./data/datasets/latebench_prm800k_raw.json",
         "./data/datasets/latebench_numinamath_raw.json",
         # Fallback paths
@@ -58,6 +62,9 @@ def initialize_data():
     else:
         print("Warning: No results file found. Dashboard will start empty.")
         dashboard_data = DashboardData()
+    
+    # Initialize LateBench adapter for batch operations
+    latebench_adapter = LateBenchAdapter(enable_dashboard_integration=True)
 
 
 @app.route('/')
@@ -485,6 +492,198 @@ def api_switch_dataset():
                 'error': f'Failed to switch to dataset {dataset_name} ({problem_type})'
             }), 400
             
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+# Batch Evaluation API Endpoints
+
+@app.route('/api/batch_evaluate', methods=['POST'])
+def api_batch_evaluate():
+    """Start batch evaluation of current dataset."""
+    try:
+        data = request.get_json() or {}
+        
+        # Get current dataset info
+        current_dataset = dashboard_data.get_current_dataset_info()
+        dataset_name = current_dataset['name']
+        
+        if dataset_name == 'None':
+            return jsonify({
+                'success': False,
+                'error': 'No dataset currently loaded'
+            }), 400
+        
+        # Configuration from request
+        config = {
+            'model_version': data.get('model_version', 'gpt-4o-mini'),
+            'max_concurrent': data.get('max_concurrent', 10),
+            'use_caching': data.get('use_caching', True),
+            'compute_deltabench_metrics': data.get('compute_deltabench_metrics', True)
+        }
+        
+        # Create evaluation pipeline
+        pipeline = EvaluationPipeline(
+            dataset_name=dataset_name,
+            model_version=config['model_version'],
+            max_concurrent=config['max_concurrent'],
+            use_caching=config['use_caching'],
+            compute_deltabench_metrics=config['compute_deltabench_metrics'],
+            save_results=True
+        )
+        
+        # Start batch evaluation in background thread
+        def run_batch_evaluation():
+            try:
+                summary = latebench_adapter.evaluate_dataset(pipeline)
+                # Store evaluation ID for progress tracking
+                app.config['last_batch_summary'] = summary
+                logger.info(f"Batch evaluation completed: {summary.batch_id}")
+            except Exception as e:
+                logger.error(f"Batch evaluation failed: {e}")
+                app.config['batch_evaluation_error'] = str(e)
+        
+        import threading
+        eval_thread = threading.Thread(target=run_batch_evaluation)
+        eval_thread.daemon = True
+        eval_thread.start()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Batch evaluation started',
+            'dataset_name': dataset_name,
+            'config': config
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/batch_status')
+def api_batch_status():
+    """Get status of batch evaluation."""
+    try:
+        # Check if evaluation completed
+        if 'last_batch_summary' in app.config:
+            summary = app.config['last_batch_summary']
+            return jsonify({
+                'status': 'completed',
+                'batch_id': summary.batch_id,
+                'total_examples': summary.total_examples,
+                'successful_evaluations': summary.successful_evaluations,
+                'failed_evaluations': summary.failed_evaluations,
+                'evaluation_end': summary.evaluation_end,
+                'deltabench_metrics': summary.deltabench_metrics.to_dict() if summary.deltabench_metrics else None
+            })
+        
+        # Check for errors
+        if 'batch_evaluation_error' in app.config:
+            error = app.config['batch_evaluation_error']
+            del app.config['batch_evaluation_error']  # Clear error
+            return jsonify({
+                'status': 'error',
+                'error': error
+            })
+        
+        # Still running or not started
+        return jsonify({
+            'status': 'running',
+            'message': 'Batch evaluation in progress'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/evaluation_summary/<dataset_name>')
+def api_evaluation_summary(dataset_name):
+    """Get comprehensive evaluation summary for a dataset."""
+    try:
+        summary = latebench_adapter.get_evaluation_summary(dataset_name)
+        return jsonify(summary)
+        
+    except Exception as e:
+        return jsonify({
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/batch_history')
+def api_batch_history():
+    """Get history of batch evaluations."""
+    try:
+        # Get current dataset name
+        current_dataset = dashboard_data.get_current_dataset_info()
+        dataset_name = current_dataset['name']
+        
+        if dataset_name == 'None':
+            return jsonify([])
+        
+        # Get batch summaries from adapter
+        summaries = latebench_adapter.critic_store.get_batch_summaries(dataset_name, limit=20)
+        
+        # Convert to JSON-serializable format
+        history = []
+        for summary in summaries:
+            history.append({
+                'batch_id': summary.batch_id,
+                'dataset_name': summary.dataset_name,
+                'model_version': summary.model_version,
+                'total_examples': summary.total_examples,
+                'successful_evaluations': summary.successful_evaluations,
+                'failed_evaluations': summary.failed_evaluations,
+                'evaluation_start': summary.evaluation_start,
+                'evaluation_end': summary.evaluation_end,
+                'deltabench_metrics': summary.deltabench_metrics.to_dict() if summary.deltabench_metrics else None
+            })
+        
+        return jsonify(history)
+        
+    except Exception as e:
+        return jsonify({
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/refresh_critic_results', methods=['POST'])
+def api_refresh_critic_results():
+    """Refresh critic results from storage for current dataset."""
+    try:
+        # Get current dataset info
+        current_dataset = dashboard_data.get_current_dataset_info()
+        dataset_name = current_dataset['name']
+        
+        if dataset_name == 'None':
+            return jsonify({
+                'success': False,
+                'error': 'No dataset currently loaded'
+            }), 400
+        
+        # Get stored results
+        stored_results = latebench_adapter.get_existing_results(dataset_name)
+        
+        # Update dashboard data with stored results
+        updated_count = 0
+        for example_id, stored_result in stored_results.items():
+            if stored_result.critic_result:
+                dashboard_data.add_critic_result(example_id, stored_result.critic_result)
+                updated_count += 1
+        
+        return jsonify({
+            'success': True,
+            'updated_count': updated_count,
+            'total_stored_results': len(stored_results)
+        })
+        
     except Exception as e:
         return jsonify({
             'success': False,
