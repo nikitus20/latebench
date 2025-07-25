@@ -67,6 +67,9 @@ data/*.png
 data/*.html
 data/dashboard_critic_results.json
 data/manual_injection_data.json
+data/critic_store/
+data/cache/
+data/test_critic_store/
 
 # Jupyter
 .ipynb_checkpoints/
