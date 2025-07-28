@@ -1,0 +1,70 @@
+{
+  "dataset_info": {
+    "total_examples": 1000,
+    "sample_size_analyzed": 10
+  },
+  "field_structure": {
+    "id": "str",
+    "generator": "str",
+    "problem": "str",
+    "steps": "list",
+    "final_answer_correct": "bool",
+    "label": "int"
+  },
+  "label_distribution": {
+    "2": 4,
+    "3": 3,
+    "7": 1,
+    "4": 1,
+    "1": 1
+  },
+  "correctness_distribution": {
+    "false": 10
+  },
+  "sample_examples": [
+    {
+      "id": "olympiadbench-0",
+      "generator": "Llama-3.1-70B-Instruct",
+      "problem": "Find the smallest number $n$ such that there exist polynomials $f_{1}, f_{2}, \\ldots, f_{n}$ with rational coefficients satisfying\n\n$$\nx^{2}+7=f_{1}(x)^{2}+f_{2}(x)^{2}+\\cdots+f_{n}(x)^{2} .\n$$",
+      "steps": [
+        "To find the smallest number \\( n \\), we start by considering the given equation: \\( x^2 + 7 = f_1(x)^2 + f_2(x)^2 + \\cdots + f_n(x)^2 \\). Notice that \\( x^2 + 7 \\) is always greater than or equal to 7 for any real value of \\( x \\). We also observe that the right-hand side of the equation is a sum of squares of polynomials with rational coefficients. This means each term on the right-hand side must be non-negative.",
+        "Now consider the case when \\( x = 0 \\). Plugging in \\( x = 0 \\) into the equation, we get: \\( 0^2 + 7 = f_1(0)^2 + f_2(0)^2 + \\cdots + f_n(0)^2 \\). This simplifies to \\( 7 = f_1(0)^2 + f_2(0)^2 + \\cdots + f_n(0)^2 \\). Since 7 is a prime number, the only way to express it as a sum of squares of integers is \\( 1^2 + 2^2 \\) (since 7 cannot be expressed as a single square). However, we are looking for polynomials with rational coefficients. In this case, we can express 7 as a sum of squares of two rational numbers: \\( (\\sqrt{7})^2 = (\\sqrt{7})^2 + 0^2 \\), but this does not satisfy our requirement of having rational coefficients for the polynomials. We need at least two non-zero terms.",
+        "After trying different combinations, we find that 7 can be expressed as a sum of squares of three rational numbers: \\( (2)^2 + (1)^2 + (\\sqrt{2})^2 \\neq 7 \\), however, \\( (2)^2 + (1)^2 + (1)^2 + (1)^2 = 7 \\). However, we used integer coefficients here. Now we try with a simple expression like \\( x^2 \\) and constants. We see: \\( x^2 + 7 = (x^2 + 2)^2 + (-1)^2 + (-1)^2 + (-1)^2 \\). Comparing both sides, we see we have satisfied our initial condition. So \\( n = 4 \\) satisfies the equation.",
+        "Therefore, the smallest number \\( n \\) is \\(\\boxed{4}\\)."
+      ],
+      "final_answer_correct": false,
+      "label": 2
+    },
+    {
+      "id": "olympiadbench-1",
+      "generator": "Qwen2.5-Math-72B-Instruct",
+      "problem": "Let $T=$ 4. Pyramid $L E O J S$ is a right square pyramid with base $E O J S$, whose area is $T$. Given that $L E=5 \\sqrt{2}$, compute $[L E O]$.",
+      "steps": [
+        "To find the area of triangle \\( [LEO] \\), we start by analyzing the given information about the right square pyramid \\(LEOJS\\). The base \\(EOJS\\) is a square with area \\(T = 4\\). Let the side length of the square be \\(s\\). Since the area of a square is given by the square of its side length, we have:\n\\[ s^2 = 4 \\implies s = 2 \\]",
+        "The vertex \\(L\\) of the pyramid is directly above the center of the base \\(EOJS\\). The distance from the center of the base to any vertex of the base (for example, \\(E\\)) is half the length of the diagonal of the square. The diagonal of the square can be calculated as:\n\\[ \\text{Diagonal} = s\\sqrt{2} = 2\\sqrt{2} \\]\nSo, the distance from the center of the base to vertex \\(E\\) is:\n\\[ \\frac{2\\sqrt{2}}{2} = \\sqrt{2} \\]",
+        "Given that \\(LE = 5\\sqrt{2}\\), we can use the Pythagorean theorem to find the height \\(h\\) of the pyramid. The height \\(h\\) forms a right triangle with the distance from the center of the base to \\(E\\) and the slant height \\(LE\\). Therefore, we have:\n\\[ LE^2 = h^2 + (\\sqrt{2})^2 \\implies (5\\sqrt{2})^2 = h^2 + 2 \\implies 50 = h^2 + 2 \\implies h^2 = 48 \\implies h = 4\\sqrt{3} \\]",
+        "Now, we need to find the area of triangle \\(LEO\\). Triangle \\(LEO\\) is a right triangle with \\(LE\\) as one leg and the height \\(h\\) as the other leg. The area of a right triangle is given by:\n\\[ \\text{Area} = \\frac{1}{2} \\times \\text{base} \\times \\text{height} \\]\nHere, the base is the distance from the center of the base to \\(E\\) and the height is \\(h\\). However, we can also consider the base as one side of the square \\(EO\\) and the height as the perpendicular distance from \\(L\\) to \\(EO\\), which is the same as the height of the pyramid \\(h\\). Therefore, the area of triangle \\(LEO\\) is:\n\\[ \\text{Area} = \\frac{1}{2} \\times s \\times h = \\frac{1}{2} \\times 2 \\times 4\\sqrt{3} = 4\\sqrt{3} \\]",
+        "Thus, the area of triangle \\( [LEO] \\) is:\n\\[ \\boxed{4\\sqrt{3}} \\]"
+      ],
+      "final_answer_correct": false,
+      "label": 3
+    },
+    {
+      "id": "olympiadbench-2",
+      "generator": "Qwen2.5-72B-Instruct",
+      "problem": "Find the largest possible integer $k$, such that the following statement is true:\n\nLet 2009 arbitrary non-degenerated triangles be given. In every triangle the three sides are colored, such that one is blue, one is red and one is white. Now, for every color separately, let us sort the lengths of the sides. We obtain\n\n$$\n\\begin{aligned}\nb_{1} \\leq b_{2} \\leq \\ldots \\leq b_{2009} & \\text { the lengths of the blue sides } \\\\\nr_{1} \\leq r_{2} \\leq \\ldots \\leq r_{2009} & \\text { the lengths of the red sides, } \\\\\n\\text { and } \\quad & w_{1} \\leq w_{2} \\leq \\ldots \\leq w_{2009} \\quad \\text { the lengths of the white sides. }\n\\end{aligned}\n$$\n\nThen there exist $k$ indices $j$ such that we can form a non-degenerated triangle with side lengths $b_{j}, r_{j}, w_{j}$.",
+      "steps": [
+        "To solve this problem, we need to determine the largest possible integer \\( k \\) such that there exist \\( k \\) indices \\( j \\) for which the side lengths \\( b_j, r_j, w_j \\) can form a non-degenerate triangle. A non-degenerate triangle must satisfy the triangle inequality conditions: First, \\( b_j + r_j > w_j \\); Second, \\( b_j + w_j > r_j \\); Third, \\( r_j + w_j > b_j \\). We will use a combinatorial argument to find the maximum \\( k \\).",
+        "There are 2009 triangles, each with sides colored blue, red, and white. The side lengths are sorted as:\n\\[ b_1 \\leq b_2 \\leq \\ldots \\leq b_{2009} \\]\n\\[ r_1 \\leq r_2 \\leq \\ldots \\leq r_{2009} \\]\n\\[ w_1 \\leq w_2 \\leq \\ldots \\leq w_{2009} \\]",
+        "We need to check how many indices \\( j \\) satisfy the triangle inequalities. Consider the worst-case scenario where the side lengths are as spread out as possible.",
+        "Suppose the side lengths are such that the differences between consecutive terms are maximized. For example, consider the following extreme case:\n- \\( b_i = i \\)\n- \\( r_i = i + 1000 \\)\n- \\( w_i = i + 2000 \\)",
+        "In this case, the inequalities become:\n\\[ b_i + r_i > w_i \\implies i + (i + 1000) > i + 2000 \\implies 2i + 1000 > i + 2000 \\implies i > 1000 \\]\n\\[ b_i + w_i > r_i \\implies i + (i + 2000) > i + 1000 \\implies 2i + 2000 > i + 1000 \\implies i > -1000 \\quad (\\text{always true}) \\]\n\\[ r_i + w_i > b_i \\implies (i + 1000) + (i + 2000) > i \\implies 2i + 3000 > i \\implies i > -3000 \\quad (\\text{always true}) \\]",
+        "From the first inequality, we see that \\( i > 1000 \\). Therefore, for \\( i \\leq 1000 \\), the triangle inequality \\( b_i + r_i > w_i \\) is not satisfied.",
+        "Since \\( i > 1000 \\) must hold for the triangle to be non-degenerate, the valid indices range from 1001 to 2009. This gives us:\n\\[ 2009 - 1000 = 1009 \\]",
+        "Thus, the largest possible integer \\( k \\) such that there exist \\( k \\) indices \\( j \\) for which \\( b_j, r_j, w_j \\) form a non-degenerate triangle is:\n\\[ \\boxed{1005} \\]"
+      ],
+      "final_answer_correct": false,
+      "label": 7
+    }
+  ]
+}

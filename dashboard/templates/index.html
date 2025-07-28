@@ -273,14 +273,27 @@
                 <h3>Manual Error Injection</h3>
                 <div class="panel-content" id="manual-injection-content">
                     
+                    <!-- Injection Mode Selection -->
+                    <div class="injection-section">
+                        <h4>Injection Mode</h4>
+                        <div class="injection-mode-indicator" id="injection-mode-indicator">
+                            <div class="mode-status" id="mode-status">
+                                <span id="mode-icon">🎲</span>
+                                <span id="mode-text">General Injection</span>
+                                <small id="mode-description">Automatic error type selection</small>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Custom Error Suggestion Section -->
                     <div class="injection-section">
-                        <h4>Error Suggestion</h4>
+                        <h4>Custom Error Suggestion <small>(Optional)</small></h4>
                         <div class="suggestion-input-group">
                             <textarea 
                                 id="error-suggestion-input" 
-                                placeholder="Describe the type of error you want to inject (e.g., 'Invalid domain assumption', 'Circular reasoning', 'Missing case analysis')..."
+                                placeholder="Enter specific error guidance to switch to custom injection mode (e.g., 'Invalid domain assumption', 'Circular reasoning', 'Missing case analysis')..."
                                 rows="3"
+                                oninput="updateInjectionMode()"
                             ></textarea>
                             <button 
                                 onclick="saveSuggestion()" 
@@ -776,8 +789,10 @@ async function runManualInjection() {
             const injectionResult = result.injection_result;
             const errorSteps = injectionResult.modified_solution?.steps?.filter(s => s.error) || [];
             
+            const injectionType = injectionResult.injection_type || 'unknown';
             updateProgressDetails('success', 
-                `✅ Success! Error injected in step ${injectionResult.error_analysis?.selected_error_step} ` +
+                `✅ Success! ${injectionType.charAt(0).toUpperCase() + injectionType.slice(1)} injection completed. ` +
+                `Error injected in step ${injectionResult.error_analysis?.selected_error_step} ` +
                 `(${errorSteps.length} error steps created). ` +
                 `Error type: ${injectionResult.error_analysis?.error_type || 'Unknown'}`
             );
@@ -1115,6 +1130,36 @@ window.addEventListener('load', function() {
                 break;
         }
     });
+});
+
+// Update injection mode indicator based on suggestion input
+function updateInjectionMode() {
+    const suggestionInput = document.getElementById('error-suggestion-input');
+    const modeIcon = document.getElementById('mode-icon');
+    const modeText = document.getElementById('mode-text');
+    const modeDescription = document.getElementById('mode-description');
+    const modeIndicator = document.getElementById('injection-mode-indicator');
+    
+    if (suggestionInput.value.trim()) {
+        // Custom injection mode
+        modeIcon.textContent = '🎯';
+        modeText.textContent = 'Custom Injection';
+        modeDescription.textContent = 'Using your error guidance';
+        modeIndicator.classList.add('custom-mode');
+        modeIndicator.classList.remove('general-mode');
+    } else {
+        // General injection mode
+        modeIcon.textContent = '🎲';
+        modeText.textContent = 'General Injection';
+        modeDescription.textContent = 'Automatic error type selection';
+        modeIndicator.classList.add('general-mode');
+        modeIndicator.classList.remove('custom-mode');
+    }
+}
+
+// Initialize injection mode on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateInjectionMode();
 });
 </script>
 {% endblock %}

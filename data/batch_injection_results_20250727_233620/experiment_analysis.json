@@ -1,0 +1,18 @@
+{
+  "experiment_config": {
+    "timestamp": "20250727_233620",
+    "total_examples": 10,
+    "approach": "general_injection_only"
+  },
+  "general_approach": {
+    "total": 10,
+    "successful": 10,
+    "success_rate": 1.0
+  },
+  "manual_approach": {
+    "total": 0,
+    "successful": 0,
+    "success_rate": 0,
+    "note": "Skipped - no custom suggestions available"
+  }
+}

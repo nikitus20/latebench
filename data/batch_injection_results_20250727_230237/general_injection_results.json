@@ -1,0 +1,905 @@
+[
+  {
+    "example_id": "lb_numinamath_feeb55ac",
+    "original_example": {
+      "id": "lb_numinamath_feeb55ac",
+      "source": {
+        "dataset": "numinamath",
+        "original_id": "numinamath_71283",
+        "difficulty": 3.0,
+        "subject": "calculus",
+        "competition": "olympiads",
+        "year": null,
+        "metadata": {
+          "dataset_index": 71283,
+          "original_source": "olympiads",
+          "estimated_steps": 26,
+          "complexity_score": 5.1,
+          "selected_for_error_injection": true
+        }
+      },
+      "problem": {
+        "statement": "Let \\( B \\) be a Borel set on the real line with Lebesgue measure \\( \\lambda \\). The density of the set \\( B \\) is defined as the limit\n\n\\[ D(B)=\\lim _{n \\rightarrow \\infty} \\frac{\\lambda(B \\cap[-n, n])}{2 n} \\]\n\n(assuming this limit exists).\n\n(a) Give an example of a set \\( B \\) for which the density \\( D(B) \\) is not defined (i.e., the limit in the formula does not exist).\n\n(b) Show that if Borel sets \\( A \\) and \\( B \\) are disjoint and have densities, then\n\n\\[ D(A+B)=D(A)+D(B) \\]\n\n(c) Construct a sequence of disjoint Borel sets \\( B_{1}, B_{2}, \\ldots \\) that have densities and such that\n\n\\[ D\\left(B_{1}+B_{2}+\\ldots\\right) \\neq D\\left(B_{1}\\right)+D\\left(B_{2}\\right)+\\ldots \\]",
+        "constraints": null,
+        "context": null,
+        "figures": []
+      },
+      "solution": {
+        "steps": [
+          {
+            "step_number": 1,
+            "content": "#### Part (a):",
+            "importance": "medium",
+            "reasoning_type": "unknown",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 2,
+            "content": "1. Consider a Borel set \\( B \\) defined as: $$ B = \\bigcup_{n=0}^{\\infty} \\left[2^{2n}, 2^{2n+1}\\right]. $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 3,
+            "content": "2. To check if the density \\( D(B) \\) is undefined, compute: $$ \\lim_{n \\to \\infty} \\frac{\\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right)}{2^{2n+1}} $$ and $$ \\lim_{n \\to \\infty} \\frac{\\lambda \\left( B \\cap [-2^{2n+1}, 2^{2n+1}] \\right)}{2^{2n+2}}. $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 4,
+            "content": "3. First, compute: $$ B \\cap [-2^{2n}, 2^{2n}] = \\left\\{ \\bigcup_{k=0}^{n-1} \\left[2^{2k}, 2^{2k+1}\\right] \\right\\} \\cup \\left[2^{2n}, 2^{2n}\\right]. $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 5,
+            "content": "4. Hence, $$ \\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right) = \\sum_{k=0}^{n-1} \\left(2^{2k+1} - 2^{2k}\\right) + (2^{2n} - 2^{2n}). $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 6,
+            "content": "5. Simplifying, $$ \\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right) = \\sum_{k=0}^{n-1} 2^{2k} = 2^{2(n-1)} + 2^{2(n-2)} + \\cdots + 1. $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 7,
+            "content": "6. The sum is approximately: $$ 2^{2n} - 1. $$",
+            "importance": "medium",
+            "reasoning_type": "unknown",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 8,
+            "content": "7. Therefore: $$ \\frac{\\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right)}{2^{2n+1}} = \\frac{2^{2n} - 1}{2^{2n+1}} = \\frac{1}{2} - \\frac{1}{2^{2n+1}} \\approx \\frac{1}{2}. $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 9,
+            "content": "8. Now, compute for: $$ B \\cap [-2^{2n+1}, 2^{2n+1}] = \\left\\{ \\bigcup_{k=0}^{n} \\left[2^{2k}, 2^{2k+1}\\right] \\right\\} \\cup \\left[2^{2n+1}, 2^{2n+1}\\right]. $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 10,
+            "content": "9. Therefore, $$ \\lambda \\left( B \\cap [-2^{2n+1}, 2^{2n+1}] \\right) = \\sum_{k=0}^{n} 2^{2k}. $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 11,
+            "content": "10. The sum is approximately: $$ 2^{2(n+1)} - 1. $$",
+            "importance": "medium",
+            "reasoning_type": "unknown",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 12,
+            "content": "11. Therefore: $$ \\frac{\\lambda \\left( B \\cap [-2^{2n+1}, 2^{2n+1}] \\right)}{2^{2n+2}} = \\frac{2^{2(n+1)} - 1}{2^{2(n+1)}} = 1 - \\frac{1}{2^{2(n+1)}} \\approx 1. $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 13,
+            "content": "12. Hence: $$ \\frac{1}{4} < \\frac{\\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right)}{2^{2n+1}} = \\frac{1}{2} \\quad \\text{and} \\quad \\frac{1}{2} < \\frac{\\lambda \\left( B \\cap [-2^{2n+1}, 2^{2n+1}] \\right)}{2^{2(n+1)}} = 1. $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 14,
+            "content": "13. Since the limits are different, the density \\( D(B) \\) does not exist. ### Conclusion for part (a): $$\\boxed{\\text{The density } D(B) \\text{ is not defined.}}$$ #### Part (b):",
+            "importance": "medium",
+            "reasoning_type": "logical",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 15,
+            "content": "1. Given Borel sets \\( A \\) and \\( B \\) do not intersect and have densities \\( D(A) \\) and \\( D(B) \\) respectively.",
+            "importance": "medium",
+            "reasoning_type": "unknown",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 16,
+            "content": "2. Denote \\( C = A \\cup B \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 17,
+            "content": "3. Utilize the property of the Lebesgue measure: $$ \\lambda(C \\cap [-n, n]) = \\lambda(A \\cap [-n, n]) + \\lambda(B \\cap [-n, n]) \\text{ as } A \\cap B = \\emptyset. $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 18,
+            "content": "4. Therefore: $$ \\lim_{n \\to \\infty} \\frac{\\lambda(C \\cap [-n, n])}{2n} = \\lim_{n \\to \\infty} \\frac{\\lambda(A \\cap [-n, n]) + \\lambda(B \\cap [-n, n])}{2n}. $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 19,
+            "content": "5. By the linearity property of limits: $$ = \\lim_{n \\to \\infty} \\frac{\\lambda(A \\cap [-n, n])}{2n} + \\lim_{n \\to \\infty} \\frac{\\lambda(B \\cap [-n, n])}{2n}. $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 20,
+            "content": "6. So: $$ = D(A) + D(B). $$ ### Conclusion for part (b): $$\\boxed{D(A + B) = D(A) + D(B).}$$ #### Part (c):",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 21,
+            "content": "1. Define \\( B_n = (n-1, n) \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 22,
+            "content": "2. It represents disjoint intervals on the real line.",
+            "importance": "medium",
+            "reasoning_type": "unknown",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 23,
+            "content": "3. Each set \\( B_n \\) has density \\( D(B_n) = 0 \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 24,
+            "content": "4. However, the union \\( \\bigcup_{n=1}^{\\infty} B_n = (0, \\infty) \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 25,
+            "content": "5. Calculate the density of this union: $$ \\lim_{n \\to \\infty} \\frac{\\lambda \\left( \\bigcup_{k=1}^{n} (k-1, k) \\cap [-n, n] \\right)}{2n} = \\lim_{n \\to \\infty} \\frac{n}{2n} = \\frac{1}{2}. $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 26,
+            "content": "6. Therefore: $$ D \\left( \\bigcup_{n=1}^{\\infty} B_n \\right) = \\frac{1}{2}. $$ ### Conclusion for part (c): $$\\boxed{D(B_1 + B_2 + \\ldots) \\neq D(B_1) + D(B_2) + \\ldots.}$$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          }
+        ],
+        "final_answer": "See solution",
+        "total_steps": 26,
+        "solution_method": "analytical"
+      },
+      "error_injection": {
+        "has_errors": false,
+        "error_info": null,
+        "manual_attempts": [],
+        "final_decision": null,
+        "decision_timestamp": null,
+        "custom_suggestions": []
+      },
+      "processing": {
+        "added_to_latebench": "2025-07-28T05:28:00.496911Z",
+        "last_modified": "2025-07-28T05:28:00.496914Z",
+        "status": "processed",
+        "processor_version": "1.0"
+      }
+    },
+    "raw_example": {
+      "problem": {
+        "statement": "Let \\( B \\) be a Borel set on the real line with Lebesgue measure \\( \\lambda \\). The density of the set \\( B \\) is defined as the limit\n\n\\[ D(B)=\\lim _{n \\rightarrow \\infty} \\frac{\\lambda(B \\cap[-n, n])}{2 n} \\]\n\n(assuming this limit exists).\n\n(a) Give an example of a set \\( B \\) for which the density \\( D(B) \\) is not defined (i.e., the limit in the formula does not exist).\n\n(b) Show that if Borel sets \\( A \\) and \\( B \\) are disjoint and have densities, then\n\n\\[ D(A+B)=D(A)+D(B) \\]\n\n(c) Construct a sequence of disjoint Borel sets \\( B_{1}, B_{2}, \\ldots \\) that have densities and such that\n\n\\[ D\\left(B_{1}+B_{2}+\\ldots\\right) \\neq D\\left(B_{1}\\right)+D\\left(B_{2}\\right)+\\ldots \\]",
+        "constraints": null,
+        "context": null,
+        "figures": []
+      },
+      "solution": "#### Part (a):\\n1. Consider a Borel set \\( B \\) defined as: $$ B = \\bigcup_{n=0}^{\\infty} \\left[2^{2n}, 2^{2n+1}\\right]. $$\\n2. To check if the density \\( D(B) \\) is undefined, compute: $$ \\lim_{n \\to \\infty} \\frac{\\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right)}{2^{2n+1}} $$ and $$ \\lim_{n \\to \\infty} \\frac{\\lambda \\left( B \\cap [-2^{2n+1}, 2^{2n+1}] \\right)}{2^{2n+2}}. $$\\n3. First, compute: $$ B \\cap [-2^{2n}, 2^{2n}] = \\left\\{ \\bigcup_{k=0}^{n-1} \\left[2^{2k}, 2^{2k+1}\\right] \\right\\} \\cup \\left[2^{2n}, 2^{2n}\\right]. $$\\n4. Hence, $$ \\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right) = \\sum_{k=0}^{n-1} \\left(2^{2k+1} - 2^{2k}\\right) + (2^{2n} - 2^{2n}). $$\\n5. Simplifying, $$ \\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right) = \\sum_{k=0}^{n-1} 2^{2k} = 2^{2(n-1)} + 2^{2(n-2)} + \\cdots + 1. $$\\n6. The sum is approximately: $$ 2^{2n} - 1. $$\\n7. Therefore: $$ \\frac{\\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right)}{2^{2n+1}} = \\frac{2^{2n} - 1}{2^{2n+1}} = \\frac{1}{2} - \\frac{1}{2^{2n+1}} \\approx \\frac{1}{2}. $$\\n8. Now, compute for: $$ B \\cap [-2^{2n+1}, 2^{2n+1}] = \\left\\{ \\bigcup_{k=0}^{n} \\left[2^{2k}, 2^{2k+1}\\right] \\right\\} \\cup \\left[2^{2n+1}, 2^{2n+1}\\right]. $$\\n9. Therefore, $$ \\lambda \\left( B \\cap [-2^{2n+1}, 2^{2n+1}] \\right) = \\sum_{k=0}^{n} 2^{2k}. $$\\n10. The sum is approximately: $$ 2^{2(n+1)} - 1. $$\\n11. Therefore: $$ \\frac{\\lambda \\left( B \\cap [-2^{2n+1}, 2^{2n+1}] \\right)}{2^{2n+2}} = \\frac{2^{2(n+1)} - 1}{2^{2(n+1)}} = 1 - \\frac{1}{2^{2(n+1)}} \\approx 1. $$\\n12. Hence: $$ \\frac{1}{4} < \\frac{\\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right)}{2^{2n+1}} = \\frac{1}{2} \\quad \\text{and} \\quad \\frac{1}{2} < \\frac{\\lambda \\left( B \\cap [-2^{2n+1}, 2^{2n+1}] \\right)}{2^{2(n+1)}} = 1. $$\\n13. Since the limits are different, the density \\( D(B) \\) does not exist. ### Conclusion for part (a): $$\\boxed{\\text{The density } D(B) \\text{ is not defined.}}$$ #### Part (b):\\n1. Given Borel sets \\( A \\) and \\( B \\) do not intersect and have densities \\( D(A) \\) and \\( D(B) \\) respectively.\\n2. Denote \\( C = A \\cup B \\).\\n3. Utilize the property of the Lebesgue measure: $$ \\lambda(C \\cap [-n, n]) = \\lambda(A \\cap [-n, n]) + \\lambda(B \\cap [-n, n]) \\text{ as } A \\cap B = \\emptyset. $$\\n4. Therefore: $$ \\lim_{n \\to \\infty} \\frac{\\lambda(C \\cap [-n, n])}{2n} = \\lim_{n \\to \\infty} \\frac{\\lambda(A \\cap [-n, n]) + \\lambda(B \\cap [-n, n])}{2n}. $$\\n5. By the linearity property of limits: $$ = \\lim_{n \\to \\infty} \\frac{\\lambda(A \\cap [-n, n])}{2n} + \\lim_{n \\to \\infty} \\frac{\\lambda(B \\cap [-n, n])}{2n}. $$\\n6. So: $$ = D(A) + D(B). $$ ### Conclusion for part (b): $$\\boxed{D(A + B) = D(A) + D(B).}$$ #### Part (c):\\n1. Define \\( B_n = (n-1, n) \\).\\n2. It represents disjoint intervals on the real line.\\n3. Each set \\( B_n \\) has density \\( D(B_n) = 0 \\).\\n4. However, the union \\( \\bigcup_{n=1}^{\\infty} B_n = (0, \\infty) \\).\\n5. Calculate the density of this union: $$ \\lim_{n \\to \\infty} \\frac{\\lambda \\left( \\bigcup_{k=1}^{n} (k-1, k) \\cap [-n, n] \\right)}{2n} = \\lim_{n \\to \\infty} \\frac{n}{2n} = \\frac{1}{2}. $$\\n6. Therefore: $$ D \\left( \\bigcup_{n=1}^{\\infty} B_n \\right) = \\frac{1}{2}. $$ ### Conclusion for part (c): $$\\boxed{D(B_1 + B_2 + \\ldots) \\neq D(B_1) + D(B_2) + \\ldots.}$$",
+      "answer": "See solution",
+      "latebench_id": "lb_numinamath_feeb55ac",
+      "source_metadata": {
+        "dataset": "numinamath",
+        "original_id": "numinamath_71283",
+        "difficulty": 3.0,
+        "subject": "calculus",
+        "competition": "olympiads",
+        "year": null,
+        "metadata": {
+          "dataset_index": 71283,
+          "original_source": "olympiads",
+          "estimated_steps": 26,
+          "complexity_score": 5.1,
+          "selected_for_error_injection": true
+        }
+      }
+    },
+    "injection_approach": "general",
+    "injection_result": {
+      "success": true,
+      "original_problem": {
+        "problem": {
+          "statement": "Let \\( B \\) be a Borel set on the real line with Lebesgue measure \\( \\lambda \\). The density of the set \\( B \\) is defined as the limit\n\n\\[ D(B)=\\lim _{n \\rightarrow \\infty} \\frac{\\lambda(B \\cap[-n, n])}{2 n} \\]\n\n(assuming this limit exists).\n\n(a) Give an example of a set \\( B \\) for which the density \\( D(B) \\) is not defined (i.e., the limit in the formula does not exist).\n\n(b) Show that if Borel sets \\( A \\) and \\( B \\) are disjoint and have densities, then\n\n\\[ D(A+B)=D(A)+D(B) \\]\n\n(c) Construct a sequence of disjoint Borel sets \\( B_{1}, B_{2}, \\ldots \\) that have densities and such that\n\n\\[ D\\left(B_{1}+B_{2}+\\ldots\\right) \\neq D\\left(B_{1}\\right)+D\\left(B_{2}\\right)+\\ldots \\]",
+          "constraints": null,
+          "context": null,
+          "figures": []
+        },
+        "solution": "#### Part (a):\\n1. Consider a Borel set \\( B \\) defined as: $$ B = \\bigcup_{n=0}^{\\infty} \\left[2^{2n}, 2^{2n+1}\\right]. $$\\n2. To check if the density \\( D(B) \\) is undefined, compute: $$ \\lim_{n \\to \\infty} \\frac{\\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right)}{2^{2n+1}} $$ and $$ \\lim_{n \\to \\infty} \\frac{\\lambda \\left( B \\cap [-2^{2n+1}, 2^{2n+1}] \\right)}{2^{2n+2}}. $$\\n3. First, compute: $$ B \\cap [-2^{2n}, 2^{2n}] = \\left\\{ \\bigcup_{k=0}^{n-1} \\left[2^{2k}, 2^{2k+1}\\right] \\right\\} \\cup \\left[2^{2n}, 2^{2n}\\right]. $$\\n4. Hence, $$ \\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right) = \\sum_{k=0}^{n-1} \\left(2^{2k+1} - 2^{2k}\\right) + (2^{2n} - 2^{2n}). $$\\n5. Simplifying, $$ \\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right) = \\sum_{k=0}^{n-1} 2^{2k} = 2^{2(n-1)} + 2^{2(n-2)} + \\cdots + 1. $$\\n6. The sum is approximately: $$ 2^{2n} - 1. $$\\n7. Therefore: $$ \\frac{\\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right)}{2^{2n+1}} = \\frac{2^{2n} - 1}{2^{2n+1}} = \\frac{1}{2} - \\frac{1}{2^{2n+1}} \\approx \\frac{1}{2}. $$\\n8. Now, compute for: $$ B \\cap [-2^{2n+1}, 2^{2n+1}] = \\left\\{ \\bigcup_{k=0}^{n} \\left[2^{2k}, 2^{2k+1}\\right] \\right\\} \\cup \\left[2^{2n+1}, 2^{2n+1}\\right]. $$\\n9. Therefore, $$ \\lambda \\left( B \\cap [-2^{2n+1}, 2^{2n+1}] \\right) = \\sum_{k=0}^{n} 2^{2k}. $$\\n10. The sum is approximately: $$ 2^{2(n+1)} - 1. $$\\n11. Therefore: $$ \\frac{\\lambda \\left( B \\cap [-2^{2n+1}, 2^{2n+1}] \\right)}{2^{2n+2}} = \\frac{2^{2(n+1)} - 1}{2^{2(n+1)}} = 1 - \\frac{1}{2^{2(n+1)}} \\approx 1. $$\\n12. Hence: $$ \\frac{1}{4} < \\frac{\\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right)}{2^{2n+1}} = \\frac{1}{2} \\quad \\text{and} \\quad \\frac{1}{2} < \\frac{\\lambda \\left( B \\cap [-2^{2n+1}, 2^{2n+1}] \\right)}{2^{2(n+1)}} = 1. $$\\n13. Since the limits are different, the density \\( D(B) \\) does not exist. ### Conclusion for part (a): $$\\boxed{\\text{The density } D(B) \\text{ is not defined.}}$$ #### Part (b):\\n1. Given Borel sets \\( A \\) and \\( B \\) do not intersect and have densities \\( D(A) \\) and \\( D(B) \\) respectively.\\n2. Denote \\( C = A \\cup B \\).\\n3. Utilize the property of the Lebesgue measure: $$ \\lambda(C \\cap [-n, n]) = \\lambda(A \\cap [-n, n]) + \\lambda(B \\cap [-n, n]) \\text{ as } A \\cap B = \\emptyset. $$\\n4. Therefore: $$ \\lim_{n \\to \\infty} \\frac{\\lambda(C \\cap [-n, n])}{2n} = \\lim_{n \\to \\infty} \\frac{\\lambda(A \\cap [-n, n]) + \\lambda(B \\cap [-n, n])}{2n}. $$\\n5. By the linearity property of limits: $$ = \\lim_{n \\to \\infty} \\frac{\\lambda(A \\cap [-n, n])}{2n} + \\lim_{n \\to \\infty} \\frac{\\lambda(B \\cap [-n, n])}{2n}. $$\\n6. So: $$ = D(A) + D(B). $$ ### Conclusion for part (b): $$\\boxed{D(A + B) = D(A) + D(B).}$$ #### Part (c):\\n1. Define \\( B_n = (n-1, n) \\).\\n2. It represents disjoint intervals on the real line.\\n3. Each set \\( B_n \\) has density \\( D(B_n) = 0 \\).\\n4. However, the union \\( \\bigcup_{n=1}^{\\infty} B_n = (0, \\infty) \\).\\n5. Calculate the density of this union: $$ \\lim_{n \\to \\infty} \\frac{\\lambda \\left( \\bigcup_{k=1}^{n} (k-1, k) \\cap [-n, n] \\right)}{2n} = \\lim_{n \\to \\infty} \\frac{n}{2n} = \\frac{1}{2}. $$\\n6. Therefore: $$ D \\left( \\bigcup_{n=1}^{\\infty} B_n \\right) = \\frac{1}{2}. $$ ### Conclusion for part (c): $$\\boxed{D(B_1 + B_2 + \\ldots) \\neq D(B_1) + D(B_2) + \\ldots.}$$",
+        "answer": "See solution",
+        "latebench_id": "lb_numinamath_feeb55ac",
+        "source_metadata": {
+          "dataset": "numinamath",
+          "original_id": "numinamath_71283",
+          "difficulty": 3.0,
+          "subject": "calculus",
+          "competition": "olympiads",
+          "year": null,
+          "metadata": {
+            "dataset_index": 71283,
+            "original_source": "olympiads",
+            "estimated_steps": 26,
+            "complexity_score": 5.1,
+            "selected_for_error_injection": true
+          }
+        }
+      },
+      "modified_solution": {
+        "steps": [
+          {
+            "step_num": 1,
+            "content": "Part (a):",
+            "modified": false
+          },
+          {
+            "step_num": 2,
+            "content": "Consider a Borel set \\( B \\) defined as: $$ B = \\bigcup_{n=0}^{\\infty} \\left[2^{2n}, 2^{2n+1}\\right]",
+            "modified": false
+          },
+          {
+            "step_num": 3,
+            "content": "To check if the density \\( D(B) \\) is undefined, compute: $$ \\lim_{n \\to \\infty} \\frac{\\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right)}{2^{2n+1}} $$ and $$ \\lim_{n \\to \\infty} \\frac{\\lambda \\left( B \\cap [-2^{2n+1}, 2^{2n+1}] \\right)}{2^{2n+2}}",
+            "modified": false
+          },
+          {
+            "step_num": 4,
+            "content": "First, compute: $$ B \\cap [-2^{2n}, 2^{2n}] = \\left\\{ \\bigcup_{k=0}^{n-1} \\left[2^{2k}, 2^{2k+1}\\right] \\right\\} \\cup \\left[2^{2n}, 2^{2n}\\right]",
+            "modified": false
+          },
+          {
+            "step_num": 5,
+            "content": "Hence, $$ \\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right) = \\sum_{k=0}^{n-1} \\left(2^{2k+1} - 2^{2k}\\right) + (2^{2n} - 2^{2n})",
+            "modified": false
+          },
+          {
+            "step_num": 6,
+            "content": "Simplifying, $$ \\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right) = \\sum_{k=0}^{n-1} 2^{2k} = 2^{2(n-1)} + 2^{2(n-2)} + \\cdots + 1",
+            "modified": false
+          },
+          {
+            "step_num": 7,
+            "content": "The sum is approximately: $$ 2^{2n} - 1",
+            "modified": false
+          },
+          {
+            "step_num": 8,
+            "content": "Therefore: $$ \\frac{\\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right)}{2^{2n+1}} = \\frac{2^{2n} - 1}{2^{2n+1}} = \\frac{1}{2} - \\frac{1}{2^{2n+1}} \\approx \\frac{1}{2}",
+            "modified": false
+          },
+          {
+            "step_num": 9,
+            "content": "Now, compute for: $$ B \\cap [-2^{2n+1}, 2^{2n+1}] = \\left\\{ \\bigcup_{k=0}^{n} \\left[2^{2k}, 2^{2k+1}\\right] \\right\\} \\cup \\left[2^{2n+1}, 2^{2n+1}\\right]",
+            "modified": false
+          },
+          {
+            "step_num": 10,
+            "content": "Therefore, $$ \\lambda \\left( B \\cap [-2^{2n+1}, 2^{2n+1}] \\right) = \\sum_{k=0}^{n} 2^{2k}",
+            "modified": false
+          },
+          {
+            "step_num": 11,
+            "content": "The sum is approximately: $$ 2^{2(n+1)} - 1",
+            "modified": false
+          },
+          {
+            "step_num": 12,
+            "content": "Therefore: $$ \\frac{\\lambda \\left( B \\cap [-2^{2n+1}, 2^{2n+1}] \\right)}{2^{2n+2}} = \\frac{2^{2(n+1)} - 1}{2^{2(n+1)}} = 1 - \\frac{1}{2^{2(n+1)}} \\approx 1",
+            "modified": false
+          },
+          {
+            "step_num": 13,
+            "content": "Hence: $$ \\frac{1}{4} < \\frac{\\lambda \\left( B \\cap [-2^{2n}, 2^{2n}] \\right)}{2^{2n+1}} = \\frac{1}{2} \\quad \\text{and} \\quad \\frac{1}{2} < \\frac{\\lambda \\left( B \\cap [-2^{2n+1}, 2^{2n+1}] \\right)}{2^{2(n+1)}} = 1",
+            "modified": false
+          },
+          {
+            "step_num": 14,
+            "content": "Since the limits are different, the density \\( D(B) \\) does not exist",
+            "modified": false
+          },
+          {
+            "step_num": 15,
+            "content": "### Conclusion for part (a): $$\\boxed{\\text{The density } D(B) \\text{ is not defined}",
+            "modified": false
+          },
+          {
+            "step_num": 16,
+            "content": "#### Part (b):",
+            "modified": false
+          },
+          {
+            "step_num": 17,
+            "content": "Given Borel sets \\( A \\) and \\( B \\) do not intersect and have densities \\( D(A) \\) and \\( D(B) \\) respectively",
+            "modified": false
+          },
+          {
+            "step_num": 18,
+            "content": "Denote \\( C = A \\cup B \\)",
+            "modified": false
+          },
+          {
+            "step_num": 19,
+            "content": "Utilize the property of the Lebesgue measure: $$ \\lambda(C \\cap [-n, n]) = \\lambda(A \\cap [-n, n]) + \\lambda(B \\cap [-n, n]) \\text{ as } A \\cap B = \\emptyset",
+            "modified": false
+          },
+          {
+            "step_num": 20,
+            "content": "Therefore: $$ \\lim_{n \\to \\infty} \\frac{\\lambda(C \\cap [-n, n])}{2n} = \\lim_{n \\to \\infty} \\frac{\\lambda(A \\cap [-n, n]) + \\lambda(B \\cap [-n, n])}{2n}",
+            "modified": false
+          },
+          {
+            "step_num": 21,
+            "content": "By the linearity property of limits: $$ = \\lim_{n \\to \\infty} \\frac{\\lambda(A \\cap [-n, n])}{2n} + \\lim_{n \\to \\infty} \\frac{\\lambda(B \\cap [-n, n])}{2n}",
+            "modified": false
+          },
+          {
+            "step_num": 22,
+            "content": "So: $$ = D(A) + D(B)",
+            "modified": false
+          },
+          {
+            "step_num": 23,
+            "content": "### Conclusion for part (b): $$\\boxed{D(A + B) = D(A) + D(B)}",
+            "modified": false
+          },
+          {
+            "step_num": 24,
+            "content": "#### Part (c):",
+            "modified": false
+          },
+          {
+            "step_num": 25,
+            "content": "Define \\( B_n = (n-1, n) \\)",
+            "modified": false
+          },
+          {
+            "step_num": 26,
+            "content": "It represents disjoint intervals on the real line",
+            "modified": false
+          },
+          {
+            "step_num": 27,
+            "content": "Each set \\( B_n \\) has density \\( D(B_n) = 0 \\)",
+            "modified": false
+          },
+          {
+            "step_num": 28,
+            "content": "However, the union \\( \\bigcup_{n=1}^{\\infty} B_n = (0, \\infty) \\)",
+            "modified": true,
+            "error": true
+          },
+          {
+            "step_num": 29,
+            "content": "Calculate the density of this union: $$ \\lim_{n \\to \\infty} \\frac{\\lambda \\left( \\bigcup_{k=1}^{n} (k-1, k) \\cap [-n, n] \\right)}{2n} = \\lim_{n \\to \\infty} \\frac{n-1}{2n} = \\frac{1}{2} - \\frac{1}{2n} \\approx \\frac{1}{2}$$",
+            "modified": true
+          },
+          {
+            "step_num": 30,
+            "content": "Therefore: $$ D \\left( \\bigcup_{n=1}^{\\infty} B_n \\right) = \\frac{1}{2}$$",
+            "modified": true
+          },
+          {
+            "step_num": 31,
+            "content": "### Conclusion for part (c): $$\\boxed{D(B_1 + B_2 + \\ldots) \\neq D(B_1) + D(B_2) + \\ldots}",
+            "modified": true
+          }
+        ],
+        "final_answer": "D(B_1 + B_2 + ...) != D(B_1) + D(B_2) + ..."
+      },
+      "error_analysis": {
+        "total_steps": 31,
+        "target_step_range": "23-31",
+        "selected_error_step": 29,
+        "error_type": "logical_error",
+        "error_rationale": "The chosen step involves a subtle logical error in the calculation of the density of the union of intervals, which is a critical point for understanding the density concept in measure theory. This step misinterprets the application of the density formula to an infinite union of sets.",
+        "pedagogical_benefit": "Students will learn the importance of carefully applying definitions and theorems to infinite cases and the nuances involved in dealing with limits and infinite sums in measure theory."
+      },
+      "error_explanation": {
+        "what_changed": "The logical flaw was introduced when calculating the limit for the density of the union of intervals, mistakenly subtracting 1 in the numerator of the fraction.",
+        "why_incorrect": "The incorrect step overlooks the fact that for large n, the effect of subtracting 1 becomes negligible, and the correct calculation should not subtract 1 from n when calculating the density of an infinite union of intervals.",
+        "teaching_value": "This example highlights the need for precise handling of limits and careful consideration of the definitions when applying them to infinite cases in measure theory.",
+        "detection_hints": "Students should be vigilant about the details of limit calculations, especially in the context of infinite sums or unions, and verify each step's adherence to the formal definitions."
+      },
+      "metadata": {
+        "num_original_steps": 31,
+        "last_third_range": "20-31",
+        "model_used": "gpt-4-turbo-preview",
+        "attempt": 1,
+        "error_type_preference": null
+      },
+      "error_message": null
+    },
+    "processing_time": 56.044313192367554,
+    "timestamp": "2025-07-27T23:03:33.713698",
+    "success": true
+  },
+  {
+    "example_id": "lb_numinamath_a28e786a",
+    "original_example": {
+      "id": "lb_numinamath_a28e786a",
+      "source": {
+        "dataset": "numinamath",
+        "original_id": "numinamath_843850",
+        "difficulty": 3.0,
+        "subject": "mathematics",
+        "competition": "olympiads",
+        "year": null,
+        "metadata": {
+          "dataset_index": 843850,
+          "original_source": "olympiads",
+          "estimated_steps": 25,
+          "complexity_score": 4.0,
+          "selected_for_error_injection": true
+        }
+      },
+      "problem": {
+        "statement": "Calculate the approximate value of the following:\n1) $\\sqrt[4]{17}$ \n2) $\\operatorname{arc}\\operatorname{tg}(0.98)$ \n3) $\\sin 29^{\\circ}$",
+        "constraints": null,
+        "context": null,
+        "figures": []
+      },
+      "solution": {
+        "steps": [
+          {
+            "step_number": 1,
+            "content": "We are asked to find approximate values for three quantities. We will use the method of linear approximation to solve each part. The general formula for linear approximation is given by: $$ f(x_1) \\approx f(x_0) + f'(x_0) \\Delta x $$ where $\\Delta x = x_1 - x_0$. Let's go through each part step-by-step. #### 1. $\\sqrt[4]{17}$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 2,
+            "content": "1.1. Define the function $f(x) = x^{1/4}$. We need to find $f(17)$.",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 3,
+            "content": "1.2. Choose a value close to $17$ for which we can easily calculate the function and its derivative. Let $x_0 = 16$.",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 4,
+            "content": "1.3. Calculate $f(x_0)$: $$ f(16) = 16^{1/4} = 2 $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 5,
+            "content": "1.4. Calculate the derivative $f'(x)$: $$ f'(x) = \\frac{1}{4} x^{-3/4} $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 6,
+            "content": "1.5. Evaluate the derivative at $x_0 = 16$: $$ f'(16) = \\frac{1}{4} \\cdot 16^{-3/4} = \\frac{1}{4} \\cdot \\left(\\frac{1}{2^3}\\right) = \\frac{1}{32} $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 7,
+            "content": "1.6. Calculate the difference $\\Delta x$: $$ \\Delta x = 17 - 16 = 1 $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 8,
+            "content": "1.7. Apply the linear approximation formula: $$ \\sqrt[4]{17} \\approx f(16) + f'(16) \\cdot 1 = 2 + \\frac{1}{32} = \\frac{64}{32} + \\frac{1}{32} = \\frac{65}{32} \\approx 2.03125 $$ #### 2. $\\operatorname{arctg}(0.98)$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 9,
+            "content": "2.1. Define the function $y(x) = \\operatorname{arctg}(x)$. We need to find $y(0.98)$.",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 10,
+            "content": "2.2. Choose a value close to $0.98$ for which we can easily calculate the function and its derivative. Let $x_0 = 1$.",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 11,
+            "content": "2.3. Calculate $y(x_0)$: $$ y(1) = \\operatorname{arctg}(1) = \\frac{\\pi}{4} $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 12,
+            "content": "2.4. Calculate the derivative $y'(x)$: $$ y'(x) = \\frac{1}{1 + x^2} $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 13,
+            "content": "2.5. Evaluate the derivative at $x_0 = 1$: $$ y'(1) = \\frac{1}{1 + 1} = \\frac{1}{2} $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 14,
+            "content": "2.6. Calculate the difference $\\Delta x$: $$ \\Delta x = 0.98 - 1 = -0.02 $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 15,
+            "content": "2.7. Apply the linear approximation formula: $$ \\operatorname{arctg}(0.98) \\approx \\frac{\\pi}{4} + \\frac{1}{2} \\cdot (-0.02) = \\frac{\\pi}{4} - 0.01 \\approx 0.7854 - 0.01 = 0.7754 $$ #### 3. $\\sin(29^\\circ)$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 16,
+            "content": "3.1. Define the function $y(x) = \\sin(x)$. We need to find $y(29^\\circ)$. First, convert degrees to radians as $x = \\frac{\\pi}{180} \\cdot 29$.",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 17,
+            "content": "3.2. Choose a value close to $29^\\circ$ (in radians) for which we can easily calculate the function and its derivative. Let $x_0 = \\frac{\\pi}{6} = 30^\\circ$.",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 18,
+            "content": "3.3. Calculate $y(x_0)$: $$ y\\left( \\frac{\\pi}{6} \\right) = \\sin\\left( \\frac{\\pi}{6} \\right) = \\frac{1}{2} $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 19,
+            "content": "3.4. Calculate the derivative $y'(x)$: $$ y'(x) = \\cos(x) $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 20,
+            "content": "3.5. Evaluate the derivative at $x_0 = \\frac{\\pi}{6}$: $$ y'\\left( \\frac{\\pi}{6} \\right) = \\cos\\left( \\frac{\\pi}{6} \\right) = \\frac{\\sqrt{3}}{2} $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 21,
+            "content": "3.6. Calculate the difference $\\Delta x$: $$ \\Delta x = \\frac{29 \\pi}{180} - \\frac{\\pi}{6} = \\frac{29 \\pi}{180} - \\frac{30 \\pi}{180} = -\\frac{\\pi}{180} $$",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 22,
+            "content": "3.7. Apply the linear approximation formula: $$ \\sin(29^\\circ) \\approx \\frac{1}{2} + \\frac{\\sqrt{3}}{2} \\cdot \\left( -\\frac{\\pi}{180} \\right) = \\frac{1}{2} - \\frac{\\sqrt{3} \\pi}{360} \\approx 0.5 - 0.0152 = 0.4848 $$ ### Conclusion",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 23,
+            "content": "1. $\\sqrt[4]{17} \\approx 2.03125$",
+            "importance": "medium",
+            "reasoning_type": "unknown",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 24,
+            "content": "2. $\\operatorname{arctg}(0.98) \\approx 0.7754$",
+            "importance": "medium",
+            "reasoning_type": "unknown",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 25,
+            "content": "3. $\\sin(29^\\circ) \\approx 0.4848$ $\\boxed{}$",
+            "importance": "medium",
+            "reasoning_type": "unknown",
+            "is_modified": false,
+            "is_error": false
+          }
+        ],
+        "final_answer": "See solution",
+        "total_steps": 25,
+        "solution_method": "analytical"
+      },
+      "error_injection": {
+        "has_errors": false,
+        "error_info": null,
+        "manual_attempts": [],
+        "final_decision": null,
+        "decision_timestamp": null,
+        "custom_suggestions": []
+      },
+      "processing": {
+        "added_to_latebench": "2025-07-28T05:28:00.504031Z",
+        "last_modified": "2025-07-28T05:28:00.504032Z",
+        "status": "processed",
+        "processor_version": "1.0"
+      }
+    },
+    "raw_example": {
+      "problem": {
+        "statement": "Calculate the approximate value of the following:\n1) $\\sqrt[4]{17}$ \n2) $\\operatorname{arc}\\operatorname{tg}(0.98)$ \n3) $\\sin 29^{\\circ}$",
+        "constraints": null,
+        "context": null,
+        "figures": []
+      },
+      "solution": "We are asked to find approximate values for three quantities. We will use the method of linear approximation to solve each part. The general formula for linear approximation is given by: $$ f(x_1) \\approx f(x_0) + f'(x_0) \\Delta x $$ where $\\Delta x = x_1 - x_0$. Let's go through each part step-by-step. #### 1. $\\sqrt[4]{17}$\\n1.1. Define the function $f(x) = x^{1/4}$. We need to find $f(17)$.\\n1.2. Choose a value close to $17$ for which we can easily calculate the function and its derivative. Let $x_0 = 16$.\\n1.3. Calculate $f(x_0)$: $$ f(16) = 16^{1/4} = 2 $$\\n1.4. Calculate the derivative $f'(x)$: $$ f'(x) = \\frac{1}{4} x^{-3/4} $$\\n1.5. Evaluate the derivative at $x_0 = 16$: $$ f'(16) = \\frac{1}{4} \\cdot 16^{-3/4} = \\frac{1}{4} \\cdot \\left(\\frac{1}{2^3}\\right) = \\frac{1}{32} $$\\n1.6. Calculate the difference $\\Delta x$: $$ \\Delta x = 17 - 16 = 1 $$\\n1.7. Apply the linear approximation formula: $$ \\sqrt[4]{17} \\approx f(16) + f'(16) \\cdot 1 = 2 + \\frac{1}{32} = \\frac{64}{32} + \\frac{1}{32} = \\frac{65}{32} \\approx 2.03125 $$ #### 2. $\\operatorname{arctg}(0.98)$\\n2.1. Define the function $y(x) = \\operatorname{arctg}(x)$. We need to find $y(0.98)$.\\n2.2. Choose a value close to $0.98$ for which we can easily calculate the function and its derivative. Let $x_0 = 1$.\\n2.3. Calculate $y(x_0)$: $$ y(1) = \\operatorname{arctg}(1) = \\frac{\\pi}{4} $$\\n2.4. Calculate the derivative $y'(x)$: $$ y'(x) = \\frac{1}{1 + x^2} $$\\n2.5. Evaluate the derivative at $x_0 = 1$: $$ y'(1) = \\frac{1}{1 + 1} = \\frac{1}{2} $$\\n2.6. Calculate the difference $\\Delta x$: $$ \\Delta x = 0.98 - 1 = -0.02 $$\\n2.7. Apply the linear approximation formula: $$ \\operatorname{arctg}(0.98) \\approx \\frac{\\pi}{4} + \\frac{1}{2} \\cdot (-0.02) = \\frac{\\pi}{4} - 0.01 \\approx 0.7854 - 0.01 = 0.7754 $$ #### 3. $\\sin(29^\\circ)$\\n3.1. Define the function $y(x) = \\sin(x)$. We need to find $y(29^\\circ)$. First, convert degrees to radians as $x = \\frac{\\pi}{180} \\cdot 29$.\\n3.2. Choose a value close to $29^\\circ$ (in radians) for which we can easily calculate the function and its derivative. Let $x_0 = \\frac{\\pi}{6} = 30^\\circ$.\\n3.3. Calculate $y(x_0)$: $$ y\\left( \\frac{\\pi}{6} \\right) = \\sin\\left( \\frac{\\pi}{6} \\right) = \\frac{1}{2} $$\\n3.4. Calculate the derivative $y'(x)$: $$ y'(x) = \\cos(x) $$\\n3.5. Evaluate the derivative at $x_0 = \\frac{\\pi}{6}$: $$ y'\\left( \\frac{\\pi}{6} \\right) = \\cos\\left( \\frac{\\pi}{6} \\right) = \\frac{\\sqrt{3}}{2} $$\\n3.6. Calculate the difference $\\Delta x$: $$ \\Delta x = \\frac{29 \\pi}{180} - \\frac{\\pi}{6} = \\frac{29 \\pi}{180} - \\frac{30 \\pi}{180} = -\\frac{\\pi}{180} $$\\n3.7. Apply the linear approximation formula: $$ \\sin(29^\\circ) \\approx \\frac{1}{2} + \\frac{\\sqrt{3}}{2} \\cdot \\left( -\\frac{\\pi}{180} \\right) = \\frac{1}{2} - \\frac{\\sqrt{3} \\pi}{360} \\approx 0.5 - 0.0152 = 0.4848 $$ ### Conclusion\\n1. $\\sqrt[4]{17} \\approx 2.03125$\\n2. $\\operatorname{arctg}(0.98) \\approx 0.7754$\\n3. $\\sin(29^\\circ) \\approx 0.4848$ $\\boxed{}$",
+      "answer": "See solution",
+      "latebench_id": "lb_numinamath_a28e786a",
+      "source_metadata": {
+        "dataset": "numinamath",
+        "original_id": "numinamath_843850",
+        "difficulty": 3.0,
+        "subject": "mathematics",
+        "competition": "olympiads",
+        "year": null,
+        "metadata": {
+          "dataset_index": 843850,
+          "original_source": "olympiads",
+          "estimated_steps": 25,
+          "complexity_score": 4.0,
+          "selected_for_error_injection": true
+        }
+      }
+    },
+    "injection_approach": "general",
+    "injection_result": {
+      "success": true,
+      "original_problem": {
+        "problem": {
+          "statement": "Calculate the approximate value of the following:\n1) $\\sqrt[4]{17}$ \n2) $\\operatorname{arc}\\operatorname{tg}(0.98)$ \n3) $\\sin 29^{\\circ}$",
+          "constraints": null,
+          "context": null,
+          "figures": []
+        },
+        "solution": "We are asked to find approximate values for three quantities. We will use the method of linear approximation to solve each part. The general formula for linear approximation is given by: $$ f(x_1) \\approx f(x_0) + f'(x_0) \\Delta x $$ where $\\Delta x = x_1 - x_0$. Let's go through each part step-by-step. #### 1. $\\sqrt[4]{17}$\\n1.1. Define the function $f(x) = x^{1/4}$. We need to find $f(17)$.\\n1.2. Choose a value close to $17$ for which we can easily calculate the function and its derivative. Let $x_0 = 16$.\\n1.3. Calculate $f(x_0)$: $$ f(16) = 16^{1/4} = 2 $$\\n1.4. Calculate the derivative $f'(x)$: $$ f'(x) = \\frac{1}{4} x^{-3/4} $$\\n1.5. Evaluate the derivative at $x_0 = 16$: $$ f'(16) = \\frac{1}{4} \\cdot 16^{-3/4} = \\frac{1}{4} \\cdot \\left(\\frac{1}{2^3}\\right) = \\frac{1}{32} $$\\n1.6. Calculate the difference $\\Delta x$: $$ \\Delta x = 17 - 16 = 1 $$\\n1.7. Apply the linear approximation formula: $$ \\sqrt[4]{17} \\approx f(16) + f'(16) \\cdot 1 = 2 + \\frac{1}{32} = \\frac{64}{32} + \\frac{1}{32} = \\frac{65}{32} \\approx 2.03125 $$ #### 2. $\\operatorname{arctg}(0.98)$\\n2.1. Define the function $y(x) = \\operatorname{arctg}(x)$. We need to find $y(0.98)$.\\n2.2. Choose a value close to $0.98$ for which we can easily calculate the function and its derivative. Let $x_0 = 1$.\\n2.3. Calculate $y(x_0)$: $$ y(1) = \\operatorname{arctg}(1) = \\frac{\\pi}{4} $$\\n2.4. Calculate the derivative $y'(x)$: $$ y'(x) = \\frac{1}{1 + x^2} $$\\n2.5. Evaluate the derivative at $x_0 = 1$: $$ y'(1) = \\frac{1}{1 + 1} = \\frac{1}{2} $$\\n2.6. Calculate the difference $\\Delta x$: $$ \\Delta x = 0.98 - 1 = -0.02 $$\\n2.7. Apply the linear approximation formula: $$ \\operatorname{arctg}(0.98) \\approx \\frac{\\pi}{4} + \\frac{1}{2} \\cdot (-0.02) = \\frac{\\pi}{4} - 0.01 \\approx 0.7854 - 0.01 = 0.7754 $$ #### 3. $\\sin(29^\\circ)$\\n3.1. Define the function $y(x) = \\sin(x)$. We need to find $y(29^\\circ)$. First, convert degrees to radians as $x = \\frac{\\pi}{180} \\cdot 29$.\\n3.2. Choose a value close to $29^\\circ$ (in radians) for which we can easily calculate the function and its derivative. Let $x_0 = \\frac{\\pi}{6} = 30^\\circ$.\\n3.3. Calculate $y(x_0)$: $$ y\\left( \\frac{\\pi}{6} \\right) = \\sin\\left( \\frac{\\pi}{6} \\right) = \\frac{1}{2} $$\\n3.4. Calculate the derivative $y'(x)$: $$ y'(x) = \\cos(x) $$\\n3.5. Evaluate the derivative at $x_0 = \\frac{\\pi}{6}$: $$ y'\\left( \\frac{\\pi}{6} \\right) = \\cos\\left( \\frac{\\pi}{6} \\right) = \\frac{\\sqrt{3}}{2} $$\\n3.6. Calculate the difference $\\Delta x$: $$ \\Delta x = \\frac{29 \\pi}{180} - \\frac{\\pi}{6} = \\frac{29 \\pi}{180} - \\frac{30 \\pi}{180} = -\\frac{\\pi}{180} $$\\n3.7. Apply the linear approximation formula: $$ \\sin(29^\\circ) \\approx \\frac{1}{2} + \\frac{\\sqrt{3}}{2} \\cdot \\left( -\\frac{\\pi}{180} \\right) = \\frac{1}{2} - \\frac{\\sqrt{3} \\pi}{360} \\approx 0.5 - 0.0152 = 0.4848 $$ ### Conclusion\\n1. $\\sqrt[4]{17} \\approx 2.03125$\\n2. $\\operatorname{arctg}(0.98) \\approx 0.7754$\\n3. $\\sin(29^\\circ) \\approx 0.4848$ $\\boxed{}$",
+        "answer": "See solution",
+        "latebench_id": "lb_numinamath_a28e786a",
+        "source_metadata": {
+          "dataset": "numinamath",
+          "original_id": "numinamath_843850",
+          "difficulty": 3.0,
+          "subject": "mathematics",
+          "competition": "olympiads",
+          "year": null,
+          "metadata": {
+            "dataset_index": 843850,
+            "original_source": "olympiads",
+            "estimated_steps": 25,
+            "complexity_score": 4.0,
+            "selected_for_error_injection": true
+          }
+        }
+      },
+      "modified_solution": {
+        "steps": [
+          {
+            "step_num": 1,
+            "content": "We are asked to find approximate values for three quantities",
+            "modified": false
+          },
+          {
+            "step_num": 2,
+            "content": "We will use the method of linear approximation to solve each part",
+            "modified": false
+          },
+          {
+            "step_num": 32,
+            "content": "$\\sin(29^\\circ)$",
+            "modified": false
+          },
+          {
+            "step_num": 33,
+            "content": "Define the function $y(x) = \\sin(x)$",
+            "modified": false
+          },
+          {
+            "step_num": 34,
+            "content": "We need to find $y(29^\\circ)$",
+            "modified": false
+          },
+          {
+            "step_num": 35,
+            "content": "First, convert degrees to radians as $x = \\frac{\\pi}{180} \\cdot 29$",
+            "modified": false
+          },
+          {
+            "step_num": 36,
+            "content": "Choose a value close to $29^\\circ$ (in radians) for which we can easily calculate the function and its derivative",
+            "modified": false
+          },
+          {
+            "step_num": 37,
+            "content": "Let $x_0 = \\frac{\\pi}{6} = 30^\\circ$",
+            "modified": false
+          },
+          {
+            "step_num": 38,
+            "content": "Calculate $y(x_0)$: $$ y\\left( \\frac{\\pi}{6} \\right) = \\sin\\left( \\frac{\\pi}{6} \\right) = \\frac{1}{2} $$",
+            "modified": false
+          },
+          {
+            "step_num": 39,
+            "content": "Calculate the derivative $y'(x)$: $$ y'(x) = \\cos(x) $$",
+            "modified": false
+          },
+          {
+            "step_num": 40,
+            "content": "Evaluate the derivative at $x_0 = \\frac{\\pi}{6}$: $$ y'\\left( \\frac{\\pi}{6} \\right) = \\cos\\left( \\frac{\\pi}{6} \\right) = \\frac{\\sqrt{3}}{2} $$",
+            "modified": false
+          },
+          {
+            "step_num": 41,
+            "content": "Calculate the difference $\\Delta x$: $$ \\Delta x = \\frac{29 \\pi}{180} - \\frac{\\pi}{6} = \\frac{29 \\pi}{180} - \\frac{30 \\pi}{180} = \\frac{\\pi}{180} $$",
+            "modified": true,
+            "error": true
+          },
+          {
+            "step_num": 42,
+            "content": "Apply the linear approximation formula: $$ \\sin(29^\\circ) \\approx \\frac{1}{2} + \\frac{\\sqrt{3}}{2} \\cdot \\left( \\frac{\\pi}{180} \\right) = \\frac{1}{2} + \\frac{\\sqrt{3} \\pi}{360} \\approx 0.5083 $$",
+            "modified": true
+          },
+          {
+            "step_num": 43,
+            "content": "Therefore, $\\sqrt[4]{17} \\approx 2.03125$, $\\operatorname{arctg}(0.98) \\approx 0.7754$, and $\\sin(29^\\circ) \\approx 0.5083$",
+            "modified": true
+          }
+        ],
+        "final_answer": "$\\sqrt[4]{17} \\approx 2.03125$, $\\operatorname{arctg}(0.98) \\approx 0.7754$, $\\sin(29^\\circ) \\approx 0.5083$"
+      },
+      "error_analysis": {
+        "total_steps": 48,
+        "target_step_range": "36-48",
+        "selected_error_step": 41,
+        "error_type": "incorrect_rules_properties",
+        "error_rationale": "The selected error step involves calculating the difference in radians between two angles, which is a common task in trigonometry. The error introduced misapplies the properties of radian measure in a subtraction operation, which can be a subtle but impactful mistake. This step and error type were chosen because they highlight the importance of careful unit handling and the properties of angles in trigonometry, areas where students commonly make mistakes.",
+        "pedagogical_benefit": "Students will learn the importance of accurate calculation and unit consistency when working with radians and angles, reinforcing the need for vigilance in applying mathematical rules and properties correctly."
+      },
+      "error_explanation": {
+        "what_changed": "The error introduced occurs in the calculation of the difference in radians, mistakenly adding instead of subtracting, which incorrectly suggests that the angle increased when it should have decreased.",
+        "why_incorrect": "The mathematical reasoning is invalid because it misapplies the subtraction of angles in radians. The correct operation should acknowledge that $29^\\circ$ is less than $30^\\circ$, resulting in a negative difference, not a positive one. This error fundamentally changes the direction of approximation.",
+        "teaching_value": "This example teaches the importance of careful operation with radians and angles, highlighting how a small misstep in arithmetic can lead to significant errors in trigonometric approximations. It also emphasizes the need to properly understand and apply mathematical properties and operations.",
+        "detection_hints": "Students should look for consistency in the application of mathematical operations, especially in the context of unit conversions and the subtraction or addition of values. Verifying that the direction of change (increase or decrease) matches the physical or geometric intuition can be a key clue."
+      },
+      "metadata": {
+        "num_original_steps": 48,
+        "last_third_range": "32-48",
+        "model_used": "gpt-4-turbo-preview",
+        "attempt": 1,
+        "error_type_preference": null
+      },
+      "error_message": null
+    },
+    "processing_time": 27.680072784423828,
+    "timestamp": "2025-07-27T23:04:01.393875",
+    "success": true
+  }
+]

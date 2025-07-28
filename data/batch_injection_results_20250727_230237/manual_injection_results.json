@@ -1,0 +1,996 @@
+[
+  {
+    "example_id": "lb_numinamath_1a4b2d91",
+    "original_example": {
+      "id": "lb_numinamath_1a4b2d91",
+      "source": {
+        "dataset": "numinamath",
+        "original_id": "numinamath_369505",
+        "difficulty": 3.0,
+        "subject": "number_theory",
+        "competition": "olympiads",
+        "year": null,
+        "metadata": {
+          "dataset_index": 369505,
+          "original_source": "olympiads",
+          "estimated_steps": 25,
+          "complexity_score": 4.1,
+          "selected_for_error_injection": true
+        }
+      },
+      "problem": {
+        "statement": "Let $a_{1}, a_{2}, \\cdots, a_{k}, \\cdots$ be pairwise distinct positive integers. Prove that for any positive integer $n$, the inequality $\\sum_{k=1}^{n} \\frac{a_{k}}{k^{2}} \\geqslant \\sum_{k=1}^{n} \\frac{1}{k}$ holds.",
+        "constraints": null,
+        "context": null,
+        "figures": []
+      },
+      "solution": {
+        "steps": [
+          {
+            "step_number": 1,
+            "content": "**Proof Method 1: Using Rearrangement Inequality**",
+            "importance": "medium",
+            "reasoning_type": "unknown",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 2,
+            "content": "1. Let \\( b_1, b_2, \\ldots, b_n \\) be a permutation of \\( a_1, a_2, \\ldots, a_n \\) such that \\( b_1 < b_2 < \\cdots < b_n \\).",
+            "importance": "medium",
+            "reasoning_type": "unknown",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 3,
+            "content": "2. Because \\( b_i \\in \\mathbb{N} \\) (natural numbers) and they are all distinct, we have \\( b_i \\geq i \\) for all \\( i = 1, 2, \\ldots, n \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 4,
+            "content": "3. Note that \\( 1 > \\frac{1}{2^2} > \\frac{1}{3^2} > \\cdots > \\frac{1}{n^2} \\).",
+            "importance": "medium",
+            "reasoning_type": "unknown",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 5,
+            "content": "4. Therefore, the sum in an arbitrary order is: \\[ \\sum_{i=1}^{n} \\frac{a_i}{i^2} = a_1 + \\frac{a_2}{2^2} + \\cdots + \\frac{a_n}{n^2} \\]",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 6,
+            "content": "5. Rearranging, we have: \\[ \\sum_{i=1}^{n} \\frac{a_i}{i^2} \\geq b_1 + \\frac{b_2}{2^2} + \\cdots + \\frac{b_n}{n^2} \\]",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 7,
+            "content": "6. Since \\( b_i \\geq i \\), we further get: \\[ b_1 + \\frac{b_2}{2^2} + \\cdots + \\frac{b_n}{n^2} \\geq 1 + \\frac{1}{2} + \\cdots + \\frac{1}{n} = \\sum_{k=1}^{n} \\frac{1}{k} \\]",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 8,
+            "content": "7. Thus: \\[ \\sum_{i=1}^{n} \\frac{a_i}{i^2} \\geq \\sum_{k=1}^{n} \\frac{1}{k} \\] **Proof Method 2: Using Cauchy-Schwarz Inequality**",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 9,
+            "content": "1. From Cauchy-Schwarz inequality: \\[ \\left( \\sum_{k=1}^{n} \\frac{1}{k} \\right)^2 = \\left( \\sum_{k=1}^{n} \\frac{\\sqrt{a_k}}{k} \\cdot \\frac{1}{\\sqrt{a_k}} \\right)^2 \\]",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 10,
+            "content": "2. By applying the inequality, we get: \\[ \\left( \\sum_{k=1}^{n} \\frac{1}{k} \\right)^2 \\leq \\left( \\sum_{k=1}^{n} \\frac{a_k}{k^2} \\right) \\left( \\sum_{k=1}^{n} \\frac{1}{a_k} \\right) \\]",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 11,
+            "content": "3. Since \\( a_1, a_2, \\ldots, a_n \\) are distinct, we have: \\[ \\sum_{k=1}^{n} \\frac{1}{a_k} \\leq 1 + \\frac{1}{2} + \\cdots + \\frac{1}{n} = \\sum_{k=1}^{n} \\frac{1}{k} \\]",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 12,
+            "content": "4. Combining the inequalities, we obtain: \\[ \\sum_{k=1}^{n} \\frac{1}{k} \\leq \\sum_{k=1}^{n} \\frac{a_k}{k^2} \\] **Proof Method 3: Using Basic Inequality**",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 13,
+            "content": "1. Note that: \\[ \\frac{a_k}{k^2} + \\frac{1}{a_k} \\geq 2 \\sqrt{\\frac{a_k}{k^2} \\cdot \\frac{1}{a_k}} = \\frac{2}{k} \\]",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 14,
+            "content": "2. Therefore: \\[ \\sum_{k=1}^{n} \\frac{a_k}{k^2} + \\sum_{k=1}^{n} \\frac{1}{a_k} \\geq 2 \\sum_{k=1}^{n} \\frac{1}{k} \\]",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 15,
+            "content": "3. Knowing that: \\[ \\sum_{k=1}^{n} \\frac{1}{a_k} \\leq \\sum_{k=1}^{n} \\frac{1}{k} \\]",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 16,
+            "content": "4. We have: \\[ \\sum_{k=1}^{n} \\frac{a_k}{k^2} \\geq 2 \\sum_{k=1}^{n} \\frac{1}{k} - \\sum_{k=1}^{n} \\frac{1}{a_k} \\geq \\sum_{k=1}^{n} \\frac{1}{k} \\] **Proof Method 4: Using Abel Summation**",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 17,
+            "content": "1. Using Abel Summation Formula: \\[ \\sum_{i=1}^{n} a_i b_i = \\sum_{k=1}^{n-1} \\left( \\sum_{i=1}^{k} a_i \\right) (b_k - b_{k+1}) + \\left( \\sum_{i=1}^{n} a_i \\right) b_n \\]",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 18,
+            "content": "2. From the problem's context, we clearly have \\( \\sum_{i=1}^{k} a_i \\geq \\sum_{i=1}^{k} i \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 19,
+            "content": "3. Also, note that: \\[ \\frac{1}{k^2} - \\frac{1}{(k+1)^2} > 0 \\quad \\text{for } k=1,2,\\ldots,n \\]",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 20,
+            "content": "4. By applying Abel Summation twice, we deduce: \\[ \\sum_{k=1}^{n} \\frac{a_k}{k^2} = \\sum_{k=1}^{n-1} \\left( \\sum_{i=1}^{k} a_i \\right) \\left( \\frac{1}{k^2} - \\frac{1}{(k+1)^2} \\right) + \\left( \\sum_{i=1}^{n} a_i \\right) \\cdot \\frac{1}{n^2} \\] \\[ \\geq \\sum_{k=1}^{n-1} \\left( \\sum_{i=1}^{k} i \\right) \\left( \\frac{1}{k^2} - \\frac{1}{(k+1)^2} \\right) + \\left( \\sum_{i=1}^{n} i \\right) \\cdot \\frac{1}{n^2} \\]",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 21,
+            "content": "5. Which simplifies to: \\[ = \\sum_{k=1}^{n} k \\cdot \\frac{1}{k^2} = \\sum_{k=1}^{n} \\frac{1}{k} \\] **Proof Method 5: Using Comparison Method**",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 22,
+            "content": "1. It is required to prove: \\[ \\sum_{k=1}^{n} \\frac{a_k}{k^2} - \\sum_{k=1}^{n} \\frac{1}{k} = \\sum_{k=1}^{n} \\frac{a_k - k}{k^2} \\geq 0 \\]",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 23,
+            "content": "2. Given \\( a_1, a_2, \\ldots, a_n \\) are distinct positive integers: \\[ \\sum_{k=1}^{m} a_k \\geq \\sum_{k=1}^{m} k \\quad \\text{for } m=1,2,\\ldots,n \\]",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 24,
+            "content": "3. Therefore: \\[ \\sum_{k=1}^{m} a_k - \\sum_{k=1}^{m} k \\geq 0 \\text{for } m=1,2,\\ldots,n \\]",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 25,
+            "content": "4. Thus, summing either series, we get: \\[ \\sum_{k=1}^{n} \\frac{a_k - k}{k^2} \\geq \\frac{\\sum_{k=1}^{n} (a_k - k)}{n^2} \\geq 0 \\] Hence, we have shown that: \\[ \\boxed{\\sum_{k=1}^{n} \\frac{a_k}{k^2} \\geq \\sum_{k=1}^{n} \\frac{1}{k}} \\]",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          }
+        ],
+        "final_answer": "See solution",
+        "total_steps": 25,
+        "solution_method": "analytical"
+      },
+      "error_injection": {
+        "has_errors": false,
+        "error_info": null,
+        "manual_attempts": [],
+        "final_decision": null,
+        "decision_timestamp": null,
+        "custom_suggestions": []
+      },
+      "processing": {
+        "added_to_latebench": "2025-07-28T05:28:00.502306Z",
+        "last_modified": "2025-07-28T05:28:00.502307Z",
+        "status": "processed",
+        "processor_version": "1.0"
+      }
+    },
+    "raw_example": {
+      "problem": {
+        "statement": "Let $a_{1}, a_{2}, \\cdots, a_{k}, \\cdots$ be pairwise distinct positive integers. Prove that for any positive integer $n$, the inequality $\\sum_{k=1}^{n} \\frac{a_{k}}{k^{2}} \\geqslant \\sum_{k=1}^{n} \\frac{1}{k}$ holds.",
+        "constraints": null,
+        "context": null,
+        "figures": []
+      },
+      "solution": "**Proof Method 1: Using Rearrangement Inequality**\\n1. Let \\( b_1, b_2, \\ldots, b_n \\) be a permutation of \\( a_1, a_2, \\ldots, a_n \\) such that \\( b_1 < b_2 < \\cdots < b_n \\).\\n2. Because \\( b_i \\in \\mathbb{N} \\) (natural numbers) and they are all distinct, we have \\( b_i \\geq i \\) for all \\( i = 1, 2, \\ldots, n \\).\\n3. Note that \\( 1 > \\frac{1}{2^2} > \\frac{1}{3^2} > \\cdots > \\frac{1}{n^2} \\).\\n4. Therefore, the sum in an arbitrary order is: \\[ \\sum_{i=1}^{n} \\frac{a_i}{i^2} = a_1 + \\frac{a_2}{2^2} + \\cdots + \\frac{a_n}{n^2} \\]\\n5. Rearranging, we have: \\[ \\sum_{i=1}^{n} \\frac{a_i}{i^2} \\geq b_1 + \\frac{b_2}{2^2} + \\cdots + \\frac{b_n}{n^2} \\]\\n6. Since \\( b_i \\geq i \\), we further get: \\[ b_1 + \\frac{b_2}{2^2} + \\cdots + \\frac{b_n}{n^2} \\geq 1 + \\frac{1}{2} + \\cdots + \\frac{1}{n} = \\sum_{k=1}^{n} \\frac{1}{k} \\]\\n7. Thus: \\[ \\sum_{i=1}^{n} \\frac{a_i}{i^2} \\geq \\sum_{k=1}^{n} \\frac{1}{k} \\] **Proof Method 2: Using Cauchy-Schwarz Inequality**\\n1. From Cauchy-Schwarz inequality: \\[ \\left( \\sum_{k=1}^{n} \\frac{1}{k} \\right)^2 = \\left( \\sum_{k=1}^{n} \\frac{\\sqrt{a_k}}{k} \\cdot \\frac{1}{\\sqrt{a_k}} \\right)^2 \\]\\n2. By applying the inequality, we get: \\[ \\left( \\sum_{k=1}^{n} \\frac{1}{k} \\right)^2 \\leq \\left( \\sum_{k=1}^{n} \\frac{a_k}{k^2} \\right) \\left( \\sum_{k=1}^{n} \\frac{1}{a_k} \\right) \\]\\n3. Since \\( a_1, a_2, \\ldots, a_n \\) are distinct, we have: \\[ \\sum_{k=1}^{n} \\frac{1}{a_k} \\leq 1 + \\frac{1}{2} + \\cdots + \\frac{1}{n} = \\sum_{k=1}^{n} \\frac{1}{k} \\]\\n4. Combining the inequalities, we obtain: \\[ \\sum_{k=1}^{n} \\frac{1}{k} \\leq \\sum_{k=1}^{n} \\frac{a_k}{k^2} \\] **Proof Method 3: Using Basic Inequality**\\n1. Note that: \\[ \\frac{a_k}{k^2} + \\frac{1}{a_k} \\geq 2 \\sqrt{\\frac{a_k}{k^2} \\cdot \\frac{1}{a_k}} = \\frac{2}{k} \\]\\n2. Therefore: \\[ \\sum_{k=1}^{n} \\frac{a_k}{k^2} + \\sum_{k=1}^{n} \\frac{1}{a_k} \\geq 2 \\sum_{k=1}^{n} \\frac{1}{k} \\]\\n3. Knowing that: \\[ \\sum_{k=1}^{n} \\frac{1}{a_k} \\leq \\sum_{k=1}^{n} \\frac{1}{k} \\]\\n4. We have: \\[ \\sum_{k=1}^{n} \\frac{a_k}{k^2} \\geq 2 \\sum_{k=1}^{n} \\frac{1}{k} - \\sum_{k=1}^{n} \\frac{1}{a_k} \\geq \\sum_{k=1}^{n} \\frac{1}{k} \\] **Proof Method 4: Using Abel Summation**\\n1. Using Abel Summation Formula: \\[ \\sum_{i=1}^{n} a_i b_i = \\sum_{k=1}^{n-1} \\left( \\sum_{i=1}^{k} a_i \\right) (b_k - b_{k+1}) + \\left( \\sum_{i=1}^{n} a_i \\right) b_n \\]\\n2. From the problem's context, we clearly have \\( \\sum_{i=1}^{k} a_i \\geq \\sum_{i=1}^{k} i \\).\\n3. Also, note that: \\[ \\frac{1}{k^2} - \\frac{1}{(k+1)^2} > 0 \\quad \\text{for } k=1,2,\\ldots,n \\]\\n4. By applying Abel Summation twice, we deduce: \\[ \\sum_{k=1}^{n} \\frac{a_k}{k^2} = \\sum_{k=1}^{n-1} \\left( \\sum_{i=1}^{k} a_i \\right) \\left( \\frac{1}{k^2} - \\frac{1}{(k+1)^2} \\right) + \\left( \\sum_{i=1}^{n} a_i \\right) \\cdot \\frac{1}{n^2} \\] \\[ \\geq \\sum_{k=1}^{n-1} \\left( \\sum_{i=1}^{k} i \\right) \\left( \\frac{1}{k^2} - \\frac{1}{(k+1)^2} \\right) + \\left( \\sum_{i=1}^{n} i \\right) \\cdot \\frac{1}{n^2} \\]\\n5. Which simplifies to: \\[ = \\sum_{k=1}^{n} k \\cdot \\frac{1}{k^2} = \\sum_{k=1}^{n} \\frac{1}{k} \\] **Proof Method 5: Using Comparison Method**\\n1. It is required to prove: \\[ \\sum_{k=1}^{n} \\frac{a_k}{k^2} - \\sum_{k=1}^{n} \\frac{1}{k} = \\sum_{k=1}^{n} \\frac{a_k - k}{k^2} \\geq 0 \\]\\n2. Given \\( a_1, a_2, \\ldots, a_n \\) are distinct positive integers: \\[ \\sum_{k=1}^{m} a_k \\geq \\sum_{k=1}^{m} k \\quad \\text{for } m=1,2,\\ldots,n \\]\\n3. Therefore: \\[ \\sum_{k=1}^{m} a_k - \\sum_{k=1}^{m} k \\geq 0 \\text{for } m=1,2,\\ldots,n \\]\\n4. Thus, summing either series, we get: \\[ \\sum_{k=1}^{n} \\frac{a_k - k}{k^2} \\geq \\frac{\\sum_{k=1}^{n} (a_k - k)}{n^2} \\geq 0 \\] Hence, we have shown that: \\[ \\boxed{\\sum_{k=1}^{n} \\frac{a_k}{k^2} \\geq \\sum_{k=1}^{n} \\frac{1}{k}} \\]",
+      "answer": "See solution",
+      "latebench_id": "lb_numinamath_1a4b2d91",
+      "source_metadata": {
+        "dataset": "numinamath",
+        "original_id": "numinamath_369505",
+        "difficulty": 3.0,
+        "subject": "number_theory",
+        "competition": "olympiads",
+        "year": null,
+        "metadata": {
+          "dataset_index": 369505,
+          "original_source": "olympiads",
+          "estimated_steps": 25,
+          "complexity_score": 4.1,
+          "selected_for_error_injection": true
+        }
+      }
+    },
+    "injection_approach": "manual",
+    "custom_suggestion": "Make an unjustified generalization - extend a specific case without proper justification",
+    "injection_result": {
+      "success": true,
+      "original_problem": {
+        "problem": {
+          "statement": "Let $a_{1}, a_{2}, \\cdots, a_{k}, \\cdots$ be pairwise distinct positive integers. Prove that for any positive integer $n$, the inequality $\\sum_{k=1}^{n} \\frac{a_{k}}{k^{2}} \\geqslant \\sum_{k=1}^{n} \\frac{1}{k}$ holds.",
+          "constraints": null,
+          "context": null,
+          "figures": []
+        },
+        "solution": "**Proof Method 1: Using Rearrangement Inequality**\\n1. Let \\( b_1, b_2, \\ldots, b_n \\) be a permutation of \\( a_1, a_2, \\ldots, a_n \\) such that \\( b_1 < b_2 < \\cdots < b_n \\).\\n2. Because \\( b_i \\in \\mathbb{N} \\) (natural numbers) and they are all distinct, we have \\( b_i \\geq i \\) for all \\( i = 1, 2, \\ldots, n \\).\\n3. Note that \\( 1 > \\frac{1}{2^2} > \\frac{1}{3^2} > \\cdots > \\frac{1}{n^2} \\).\\n4. Therefore, the sum in an arbitrary order is: \\[ \\sum_{i=1}^{n} \\frac{a_i}{i^2} = a_1 + \\frac{a_2}{2^2} + \\cdots + \\frac{a_n}{n^2} \\]\\n5. Rearranging, we have: \\[ \\sum_{i=1}^{n} \\frac{a_i}{i^2} \\geq b_1 + \\frac{b_2}{2^2} + \\cdots + \\frac{b_n}{n^2} \\]\\n6. Since \\( b_i \\geq i \\), we further get: \\[ b_1 + \\frac{b_2}{2^2} + \\cdots + \\frac{b_n}{n^2} \\geq 1 + \\frac{1}{2} + \\cdots + \\frac{1}{n} = \\sum_{k=1}^{n} \\frac{1}{k} \\]\\n7. Thus: \\[ \\sum_{i=1}^{n} \\frac{a_i}{i^2} \\geq \\sum_{k=1}^{n} \\frac{1}{k} \\] **Proof Method 2: Using Cauchy-Schwarz Inequality**\\n1. From Cauchy-Schwarz inequality: \\[ \\left( \\sum_{k=1}^{n} \\frac{1}{k} \\right)^2 = \\left( \\sum_{k=1}^{n} \\frac{\\sqrt{a_k}}{k} \\cdot \\frac{1}{\\sqrt{a_k}} \\right)^2 \\]\\n2. By applying the inequality, we get: \\[ \\left( \\sum_{k=1}^{n} \\frac{1}{k} \\right)^2 \\leq \\left( \\sum_{k=1}^{n} \\frac{a_k}{k^2} \\right) \\left( \\sum_{k=1}^{n} \\frac{1}{a_k} \\right) \\]\\n3. Since \\( a_1, a_2, \\ldots, a_n \\) are distinct, we have: \\[ \\sum_{k=1}^{n} \\frac{1}{a_k} \\leq 1 + \\frac{1}{2} + \\cdots + \\frac{1}{n} = \\sum_{k=1}^{n} \\frac{1}{k} \\]\\n4. Combining the inequalities, we obtain: \\[ \\sum_{k=1}^{n} \\frac{1}{k} \\leq \\sum_{k=1}^{n} \\frac{a_k}{k^2} \\] **Proof Method 3: Using Basic Inequality**\\n1. Note that: \\[ \\frac{a_k}{k^2} + \\frac{1}{a_k} \\geq 2 \\sqrt{\\frac{a_k}{k^2} \\cdot \\frac{1}{a_k}} = \\frac{2}{k} \\]\\n2. Therefore: \\[ \\sum_{k=1}^{n} \\frac{a_k}{k^2} + \\sum_{k=1}^{n} \\frac{1}{a_k} \\geq 2 \\sum_{k=1}^{n} \\frac{1}{k} \\]\\n3. Knowing that: \\[ \\sum_{k=1}^{n} \\frac{1}{a_k} \\leq \\sum_{k=1}^{n} \\frac{1}{k} \\]\\n4. We have: \\[ \\sum_{k=1}^{n} \\frac{a_k}{k^2} \\geq 2 \\sum_{k=1}^{n} \\frac{1}{k} - \\sum_{k=1}^{n} \\frac{1}{a_k} \\geq \\sum_{k=1}^{n} \\frac{1}{k} \\] **Proof Method 4: Using Abel Summation**\\n1. Using Abel Summation Formula: \\[ \\sum_{i=1}^{n} a_i b_i = \\sum_{k=1}^{n-1} \\left( \\sum_{i=1}^{k} a_i \\right) (b_k - b_{k+1}) + \\left( \\sum_{i=1}^{n} a_i \\right) b_n \\]\\n2. From the problem's context, we clearly have \\( \\sum_{i=1}^{k} a_i \\geq \\sum_{i=1}^{k} i \\).\\n3. Also, note that: \\[ \\frac{1}{k^2} - \\frac{1}{(k+1)^2} > 0 \\quad \\text{for } k=1,2,\\ldots,n \\]\\n4. By applying Abel Summation twice, we deduce: \\[ \\sum_{k=1}^{n} \\frac{a_k}{k^2} = \\sum_{k=1}^{n-1} \\left( \\sum_{i=1}^{k} a_i \\right) \\left( \\frac{1}{k^2} - \\frac{1}{(k+1)^2} \\right) + \\left( \\sum_{i=1}^{n} a_i \\right) \\cdot \\frac{1}{n^2} \\] \\[ \\geq \\sum_{k=1}^{n-1} \\left( \\sum_{i=1}^{k} i \\right) \\left( \\frac{1}{k^2} - \\frac{1}{(k+1)^2} \\right) + \\left( \\sum_{i=1}^{n} i \\right) \\cdot \\frac{1}{n^2} \\]\\n5. Which simplifies to: \\[ = \\sum_{k=1}^{n} k \\cdot \\frac{1}{k^2} = \\sum_{k=1}^{n} \\frac{1}{k} \\] **Proof Method 5: Using Comparison Method**\\n1. It is required to prove: \\[ \\sum_{k=1}^{n} \\frac{a_k}{k^2} - \\sum_{k=1}^{n} \\frac{1}{k} = \\sum_{k=1}^{n} \\frac{a_k - k}{k^2} \\geq 0 \\]\\n2. Given \\( a_1, a_2, \\ldots, a_n \\) are distinct positive integers: \\[ \\sum_{k=1}^{m} a_k \\geq \\sum_{k=1}^{m} k \\quad \\text{for } m=1,2,\\ldots,n \\]\\n3. Therefore: \\[ \\sum_{k=1}^{m} a_k - \\sum_{k=1}^{m} k \\geq 0 \\text{for } m=1,2,\\ldots,n \\]\\n4. Thus, summing either series, we get: \\[ \\sum_{k=1}^{n} \\frac{a_k - k}{k^2} \\geq \\frac{\\sum_{k=1}^{n} (a_k - k)}{n^2} \\geq 0 \\] Hence, we have shown that: \\[ \\boxed{\\sum_{k=1}^{n} \\frac{a_k}{k^2} \\geq \\sum_{k=1}^{n} \\frac{1}{k}} \\]",
+        "answer": "See solution",
+        "latebench_id": "lb_numinamath_1a4b2d91",
+        "source_metadata": {
+          "dataset": "numinamath",
+          "original_id": "numinamath_369505",
+          "difficulty": 3.0,
+          "subject": "number_theory",
+          "competition": "olympiads",
+          "year": null,
+          "metadata": {
+            "dataset_index": 369505,
+            "original_source": "olympiads",
+            "estimated_steps": 25,
+            "complexity_score": 4.1,
+            "selected_for_error_injection": true
+          }
+        }
+      },
+      "modified_solution": {
+        "steps": [
+          {
+            "step_num": 1,
+            "content": "Proof Method 1: Using Rearrangement Inequality",
+            "modified": false
+          },
+          {
+            "step_num": 2,
+            "content": "Let $b_1, b_2, \\ldots, b_n$ be a permutation of $a_1, a_2, \\ldots, a_n$ such that $b_1 < b_2 < \\cdots < b_n$",
+            "modified": false
+          },
+          {
+            "step_num": 3,
+            "content": "Because $b_i \\in \\mathbb{N}$ (natural numbers) and they are all distinct, we have $b_i \\geq i$ for all $i = 1, 2, \\ldots, n$",
+            "modified": false
+          },
+          {
+            "step_num": 4,
+            "content": "Note that $1 > \\frac{1}{2^2} > \\frac{1}{3^2} > \\cdots > \\frac{1}{n^2}$",
+            "modified": false
+          },
+          {
+            "step_num": 5,
+            "content": "Therefore, the sum in an arbitrary order is: $\\sum_{i=1}^{n} \\frac{a_i}{i^2} = a_1 + \\frac{a_2}{2^2} + \\cdots + \\frac{a_n}{n^2}$",
+            "modified": false
+          },
+          {
+            "step_num": 6,
+            "content": "Rearranging, we have: $\\sum_{i=1}^{n} \\frac{a_i}{i^2} \\geq b_1 + \\frac{b_2}{2^2} + \\cdots + \\frac{b_n}{n^2}$",
+            "modified": false
+          },
+          {
+            "step_num": 7,
+            "content": "Since $b_i \\geq i$, we further get: $b_1 + \\frac{b_2}{2^2} + \\cdots + \\frac{b_n}{n^2} \\geq 1 + \\frac{1}{2} + \\cdots + \\frac{1}{n} = \\sum_{k=1}^{n} \\frac{1}{k}$",
+            "modified": false
+          },
+          {
+            "step_num": 8,
+            "content": "Thus: $\\sum_{i=1}^{n} \\frac{a_i}{i^2} \\geq \\sum_{k=1}^{n} \\frac{1}{k}$",
+            "modified": false
+          },
+          {
+            "step_num": 9,
+            "content": "Proof Method 2: Using Cauchy-Schwarz Inequality",
+            "modified": false
+          },
+          {
+            "step_num": 10,
+            "content": "From Cauchy-Schwarz inequality: $(\\sum_{k=1}^{n} \\frac{1}{k})^2 = (\\sum_{k=1}^{n} \\frac{\\sqrt{a_k}}{k} \\cdot \\frac{1}{\\sqrt{a_k}})^2$",
+            "modified": false
+          },
+          {
+            "step_num": 11,
+            "content": "By applying the inequality, we get: $(\\sum_{k=1}^{n} \\frac{1}{k})^2 \\leq (\\sum_{k=1}^{n} \\frac{a_k}{k^2}) (\\sum_{k=1}^{n} \\frac{1}{a_k})$",
+            "modified": false
+          },
+          {
+            "step_num": 12,
+            "content": "Since $a_1, a_2, \\ldots, a_n$ are distinct, we have: $\\sum_{k=1}^{n} \\frac{1}{a_k} \\leq 1 + \\frac{1}{2} + \\cdots + \\frac{1}{n} = \\sum_{k=1}^{n} \\frac{1}{k}$",
+            "modified": false
+          },
+          {
+            "step_num": 13,
+            "content": "Proof Method 3: Using Basic Inequality",
+            "modified": false
+          },
+          {
+            "step_num": 14,
+            "content": "Note that: $\\frac{a_k}{k^2} + \\frac{1}{a_k} \\geq 2 \\sqrt{\\frac{a_k}{k^2} \\cdot \\frac{1}{a_k}} = \\frac{2}{k}$",
+            "modified": false
+          },
+          {
+            "step_num": 15,
+            "content": "Therefore: $\\sum_{k=1}^{n} \\frac{a_k}{k^2} + \\sum_{k=1}^{n} \\frac{1}{a_k} \\geq 2 \\sum_{k=1}^{n} \\frac{1}{k}$",
+            "modified": false
+          },
+          {
+            "step_num": 16,
+            "content": "Knowing that: $\\sum_{k=1}^{n} \\frac{1}{a_k} \\leq \\sum_{k=1}^{n} \\frac{1}{k}$",
+            "modified": false
+          },
+          {
+            "step_num": 17,
+            "content": "Proof Method 4: Using Abel Summation",
+            "modified": false
+          },
+          {
+            "step_num": 18,
+            "content": "Using Abel Summation Formula: $\\sum_{i=1}^{n} a_i b_i = \\sum_{k=1}^{n-1} (\\sum_{i=1}^{k} a_i) (b_k - b_{k+1}) + (\\sum_{i=1}^{n} a_i) b_n$",
+            "modified": false
+          },
+          {
+            "step_num": 19,
+            "content": "From the problem's context, we clearly have $\\sum_{i=1}^{k} a_i \\geq \\sum_{i=1}^{k} i$",
+            "modified": false
+          },
+          {
+            "step_num": 20,
+            "content": "Also, note that: $\\frac{1}{k^2} - \\frac{1}{(k+1)^2} > 0 \\text{for } k=1,2,\\ldots,n$",
+            "modified": false
+          },
+          {
+            "step_num": 21,
+            "content": "By applying Abel Summation twice, we deduce: $\\sum_{k=1}^{n} \\frac{a_k}{k^2} = \\sum_{k=1}^{n-1} (\\sum_{i=1}^{k} i) \\left( \\frac{1}{k^2} - \\frac{1}{(k+1)^2} \\right) + (\\sum_{i=1}^{n} i) \\cdot \\frac{1}{n^2}$ $\\geq \\sum_{k=1}^{n} \\frac{1}{k}$",
+            "modified": true,
+            "error": true
+          },
+          {
+            "step_num": 22,
+            "content": "Proof Method 5: Using Comparison Method",
+            "modified": false
+          },
+          {
+            "step_num": 23,
+            "content": "It is required to prove: $\\sum_{k=1}^{n} \\frac{a_k}{k^2} - \\sum_{k=1}^{n} \\frac{1}{k} = \\sum_{k=1}^{n} \\frac{a_k - k}{k^2} \\geq 0$",
+            "modified": false
+          },
+          {
+            "step_num": 24,
+            "content": "Given $a_1, a_2, \\ldots, a_n$ are distinct positive integers: $\\sum_{k=1}^{m} a_k \\geq \\sum_{k=1}^{m} k \\quad \\text{for } m=1,2,\\ldots,n$",
+            "modified": false
+          },
+          {
+            "step_num": 25,
+            "content": "Therefore: $\\sum_{k=1}^{m} a_k - \\sum_{k=1}^{m} k \\geq 0 \\text{for } m=1,2,\\ldots,n$",
+            "modified": false
+          }
+        ],
+        "final_answer": "$\\boxed{\\sum_{k=1}^{n} \\frac{a_k}{k^2} \\geq \\sum_{k=1}^{n} \\frac{1}{k}}$"
+      },
+      "error_analysis": {
+        "total_steps": 25,
+        "target_step_range": "17-25",
+        "selected_error_step": 21,
+        "error_type": "invalid_generalization",
+        "error_rationale": "By altering the interpretation of the Abel Summation in step 21, we transition from a correct application to an invalid generalization that subtly misrepresents how the formula should be applied. This misstep is not immediately apparent, making it a valuable educational tool.",
+        "pedagogical_benefit": "Students will learn to critically evaluate the application of mathematical formulas and the importance of not overgeneralizing from specific cases. This will enhance their ability to scrutinize the validity of each step in a proof."
+      },
+      "error_explanation": {
+        "what_changed": "An unjustified generalization was made in the application of the Abel Summation formula, incorrectly assuming that the summation terms could be simplified directly to compare with the harmonic series.",
+        "why_incorrect": "The error lies in improperly generalizing the outcome of the Abel Summation to conclude that it directly equals the harmonic series sum without proper justification. In reality, the application of Abel's Summation formula requires careful consideration of the differences between consecutive terms and cannot be assumed to directly simplify to another known sum without explicit proof.",
+        "teaching_value": "This teaches the importance of rigorously applying mathematical formulas and the dangers of overgeneralization. It emphasizes the need for precise reasoning in each step of a proof.",
+        "detection_hints": "Students should look for steps where a formula or theorem is applied broadly without explicit justification or where the result of an operation is assumed to match a known pattern without detailed proof."
+      },
+      "metadata": {
+        "num_original_steps": 25,
+        "last_third_range": "16-25",
+        "model_used": "gpt-4-turbo-preview",
+        "attempt": 1,
+        "custom_suggestion": "Make an unjustified generalization - extend a specific case without proper justification",
+        "injection_type": "manual_custom"
+      },
+      "error_message": null
+    },
+    "processing_time": 103.09736704826355,
+    "timestamp": "2025-07-27T23:05:44.517552",
+    "success": true
+  },
+  {
+    "example_id": "lb_numinamath_66ee8f03",
+    "original_example": {
+      "id": "lb_numinamath_66ee8f03",
+      "source": {
+        "dataset": "numinamath",
+        "original_id": "numinamath_533402",
+        "difficulty": 3.0,
+        "subject": "mathematics",
+        "competition": "aops",
+        "year": null,
+        "metadata": {
+          "dataset_index": 533402,
+          "original_source": "aops_forum",
+          "estimated_steps": 25,
+          "complexity_score": 2.3,
+          "selected_for_error_injection": true
+        }
+      },
+      "problem": {
+        "statement": "Let  $ A $  be a ring that is not a division ring, and such that any non-unit of it is idempotent. Show that:**a)**  $ \\left( U(A) +A\\setminus\\left( U(A)\\cup \\{ 0\\} \\right) \\right)\\cap U(A) =\\emptyset . $  **b)** Every element of  $ A $  is idempotent.",
+        "constraints": null,
+        "context": null,
+        "figures": []
+      },
+      "solution": {
+        "steps": [
+          {
+            "step_number": 1,
+            "content": "**Part (a)**",
+            "importance": "medium",
+            "reasoning_type": "unknown",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 2,
+            "content": "1. Let \\( A \\) be a ring that is not a division ring, and such that any non-unit of it is idempotent.",
+            "importance": "medium",
+            "reasoning_type": "unknown",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 3,
+            "content": "2. We need to show that \\( \\left( U(A) + A \\setminus \\left( U(A) \\cup \\{ 0 \\} \\right) \\right) \\cap U(A) = \\emptyset \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 4,
+            "content": "3. Assume for contradiction that there exists an element \\( u \\in U(A) \\) and \\( x \\in A \\setminus \\left( U(A) \\cup \\{ 0 \\} \\right) \\) such that \\( u + x \\in U(A) \\).",
+            "importance": "medium",
+            "reasoning_type": "unknown",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 5,
+            "content": "4. Since \\( x \\) is a non-unit and idempotent, we have \\( x^2 = x \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 6,
+            "content": "5. Consider \\( u + x \\). Since \\( u + x \\in U(A) \\), there exists \\( v \\in A \\) such that \\( (u + x)v = 1 \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 7,
+            "content": "6. Expanding, we get \\( uv + xv = 1 \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 8,
+            "content": "7. Since \\( u \\in U(A) \\), \\( u \\) has an inverse \\( u^{-1} \\). Multiply both sides by \\( u^{-1} \\) to get \\( v + u^{-1}xv = u^{-1} \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 9,
+            "content": "8. Rearrange to get \\( v = u^{-1} - u^{-1}xv \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 10,
+            "content": "9. Substitute \\( v \\) back into the equation \\( uv + xv = 1 \\): \\[ u\\left( u^{-1} - u^{-1}xv \\right) + xv = 1 \\] \\[ 1 - x v + xv = 1 \\] \\[ 1 = 1 \\]",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 11,
+            "content": "10. This is a contradiction because it does not provide any new information about \\( x \\) or \\( u \\). Therefore, our assumption that \\( u + x \\in U(A) \\) must be false.",
+            "importance": "medium",
+            "reasoning_type": "logical",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 12,
+            "content": "11. Hence, \\( \\left( U(A) + A \\setminus \\left( U(A) \\cup \\{ 0 \\} \\right) \\right) \\cap U(A) = \\emptyset \\). **Part (b)**",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 13,
+            "content": "1. Let \\( x \\) be a non-unit in \\( A \\). By the problem's condition, \\( x \\) is idempotent, so \\( x^2 = x \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 14,
+            "content": "2. Consider \\( -x \\). Since \\( x \\) is a non-unit, \\( -x \\) is also a non-unit and hence idempotent. Thus, \\( (-x)^2 = -x \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 15,
+            "content": "3. This implies \\( x = -x \\), so \\( 2x = 0 \\). Therefore, \\( A \\) must have characteristic 2.",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 16,
+            "content": "4. Let \\( p \\) be a unit in \\( A \\). For any non-unit \\( x \\), \\( p - x \\) is a non-unit and hence idempotent. Thus, \\( (p - x)^2 = p - x \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 17,
+            "content": "5. Expanding, we get \\( p^2 - px - xp + x^2 = p - x \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 18,
+            "content": "6. Since \\( x \\) is idempotent, \\( x^2 = x \\). Thus, \\( p^2 - px - xp + x = p - x \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 19,
+            "content": "7. Rearrange to get \\( p^2 - px - xp = p - 2x \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 20,
+            "content": "8. Since \\( A \\) has characteristic 2, \\( 2x = 0 \\), so \\( p^2 - px - xp = p \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 21,
+            "content": "9. Rearrange to get \\( p^2 - p = px + xp \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 22,
+            "content": "10. Since \\( x \\) is idempotent and \\( x = -x \\), we have \\( px = xp \\). Thus, \\( p^2 - p = 2px \\).",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 23,
+            "content": "11. Since \\( A \\) has characteristic 2, \\( 2px = 0 \\), so \\( p^2 = p \\). Hence, \\( p \\) is idempotent.",
+            "importance": "medium",
+            "reasoning_type": "calculation",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 24,
+            "content": "12. Therefore, every unit in \\( A \\) is idempotent.",
+            "importance": "medium",
+            "reasoning_type": "logical",
+            "is_modified": false,
+            "is_error": false
+          },
+          {
+            "step_number": 25,
+            "content": "13. Since every element in \\( A \\) is either a unit or a non-unit, and both are idempotent, every element in \\( A \\) is idempotent. \\(\\blacksquare\\)",
+            "importance": "medium",
+            "reasoning_type": "geometric",
+            "is_modified": false,
+            "is_error": false
+          }
+        ],
+        "final_answer": "See solution",
+        "total_steps": 25,
+        "solution_method": "analytical"
+      },
+      "error_injection": {
+        "has_errors": false,
+        "error_info": null,
+        "manual_attempts": [],
+        "final_decision": null,
+        "decision_timestamp": null,
+        "custom_suggestions": []
+      },
+      "processing": {
+        "added_to_latebench": "2025-07-28T05:28:00.511932Z",
+        "last_modified": "2025-07-28T05:28:00.511933Z",
+        "status": "processed",
+        "processor_version": "1.0"
+      }
+    },
+    "raw_example": {
+      "problem": {
+        "statement": "Let  $ A $  be a ring that is not a division ring, and such that any non-unit of it is idempotent. Show that:**a)**  $ \\left( U(A) +A\\setminus\\left( U(A)\\cup \\{ 0\\} \\right) \\right)\\cap U(A) =\\emptyset . $  **b)** Every element of  $ A $  is idempotent.",
+        "constraints": null,
+        "context": null,
+        "figures": []
+      },
+      "solution": "**Part (a)**\\n1. Let \\( A \\) be a ring that is not a division ring, and such that any non-unit of it is idempotent.\\n2. We need to show that \\( \\left( U(A) + A \\setminus \\left( U(A) \\cup \\{ 0 \\} \\right) \\right) \\cap U(A) = \\emptyset \\).\\n3. Assume for contradiction that there exists an element \\( u \\in U(A) \\) and \\( x \\in A \\setminus \\left( U(A) \\cup \\{ 0 \\} \\right) \\) such that \\( u + x \\in U(A) \\).\\n4. Since \\( x \\) is a non-unit and idempotent, we have \\( x^2 = x \\).\\n5. Consider \\( u + x \\). Since \\( u + x \\in U(A) \\), there exists \\( v \\in A \\) such that \\( (u + x)v = 1 \\).\\n6. Expanding, we get \\( uv + xv = 1 \\).\\n7. Since \\( u \\in U(A) \\), \\( u \\) has an inverse \\( u^{-1} \\). Multiply both sides by \\( u^{-1} \\) to get \\( v + u^{-1}xv = u^{-1} \\).\\n8. Rearrange to get \\( v = u^{-1} - u^{-1}xv \\).\\n9. Substitute \\( v \\) back into the equation \\( uv + xv = 1 \\): \\[ u\\left( u^{-1} - u^{-1}xv \\right) + xv = 1 \\] \\[ 1 - x v + xv = 1 \\] \\[ 1 = 1 \\]\\n10. This is a contradiction because it does not provide any new information about \\( x \\) or \\( u \\). Therefore, our assumption that \\( u + x \\in U(A) \\) must be false.\\n11. Hence, \\( \\left( U(A) + A \\setminus \\left( U(A) \\cup \\{ 0 \\} \\right) \\right) \\cap U(A) = \\emptyset \\). **Part (b)**\\n1. Let \\( x \\) be a non-unit in \\( A \\). By the problem's condition, \\( x \\) is idempotent, so \\( x^2 = x \\).\\n2. Consider \\( -x \\). Since \\( x \\) is a non-unit, \\( -x \\) is also a non-unit and hence idempotent. Thus, \\( (-x)^2 = -x \\).\\n3. This implies \\( x = -x \\), so \\( 2x = 0 \\). Therefore, \\( A \\) must have characteristic 2.\\n4. Let \\( p \\) be a unit in \\( A \\). For any non-unit \\( x \\), \\( p - x \\) is a non-unit and hence idempotent. Thus, \\( (p - x)^2 = p - x \\).\\n5. Expanding, we get \\( p^2 - px - xp + x^2 = p - x \\).\\n6. Since \\( x \\) is idempotent, \\( x^2 = x \\). Thus, \\( p^2 - px - xp + x = p - x \\).\\n7. Rearrange to get \\( p^2 - px - xp = p - 2x \\).\\n8. Since \\( A \\) has characteristic 2, \\( 2x = 0 \\), so \\( p^2 - px - xp = p \\).\\n9. Rearrange to get \\( p^2 - p = px + xp \\).\\n10. Since \\( x \\) is idempotent and \\( x = -x \\), we have \\( px = xp \\). Thus, \\( p^2 - p = 2px \\).\\n11. Since \\( A \\) has characteristic 2, \\( 2px = 0 \\), so \\( p^2 = p \\). Hence, \\( p \\) is idempotent.\\n12. Therefore, every unit in \\( A \\) is idempotent.\\n13. Since every element in \\( A \\) is either a unit or a non-unit, and both are idempotent, every element in \\( A \\) is idempotent. \\(\\blacksquare\\)",
+      "answer": "See solution",
+      "latebench_id": "lb_numinamath_66ee8f03",
+      "source_metadata": {
+        "dataset": "numinamath",
+        "original_id": "numinamath_533402",
+        "difficulty": 3.0,
+        "subject": "mathematics",
+        "competition": "aops",
+        "year": null,
+        "metadata": {
+          "dataset_index": 533402,
+          "original_source": "aops_forum",
+          "estimated_steps": 25,
+          "complexity_score": 2.3,
+          "selected_for_error_injection": true
+        }
+      }
+    },
+    "injection_approach": "manual",
+    "custom_suggestion": "Make an unjustified generalization - extend a specific case without proper justification",
+    "injection_result": {
+      "success": true,
+      "original_problem": {
+        "problem": {
+          "statement": "Let  $ A $  be a ring that is not a division ring, and such that any non-unit of it is idempotent. Show that:**a)**  $ \\left( U(A) +A\\setminus\\left( U(A)\\cup \\{ 0\\} \\right) \\right)\\cap U(A) =\\emptyset . $  **b)** Every element of  $ A $  is idempotent.",
+          "constraints": null,
+          "context": null,
+          "figures": []
+        },
+        "solution": "**Part (a)**\\n1. Let \\( A \\) be a ring that is not a division ring, and such that any non-unit of it is idempotent.\\n2. We need to show that \\( \\left( U(A) + A \\setminus \\left( U(A) \\cup \\{ 0 \\} \\right) \\right) \\cap U(A) = \\emptyset \\).\\n3. Assume for contradiction that there exists an element \\( u \\in U(A) \\) and \\( x \\in A \\setminus \\left( U(A) \\cup \\{ 0 \\} \\right) \\) such that \\( u + x \\in U(A) \\).\\n4. Since \\( x \\) is a non-unit and idempotent, we have \\( x^2 = x \\).\\n5. Consider \\( u + x \\). Since \\( u + x \\in U(A) \\), there exists \\( v \\in A \\) such that \\( (u + x)v = 1 \\).\\n6. Expanding, we get \\( uv + xv = 1 \\).\\n7. Since \\( u \\in U(A) \\), \\( u \\) has an inverse \\( u^{-1} \\). Multiply both sides by \\( u^{-1} \\) to get \\( v + u^{-1}xv = u^{-1} \\).\\n8. Rearrange to get \\( v = u^{-1} - u^{-1}xv \\).\\n9. Substitute \\( v \\) back into the equation \\( uv + xv = 1 \\): \\[ u\\left( u^{-1} - u^{-1}xv \\right) + xv = 1 \\] \\[ 1 - x v + xv = 1 \\] \\[ 1 = 1 \\]\\n10. This is a contradiction because it does not provide any new information about \\( x \\) or \\( u \\). Therefore, our assumption that \\( u + x \\in U(A) \\) must be false.\\n11. Hence, \\( \\left( U(A) + A \\setminus \\left( U(A) \\cup \\{ 0 \\} \\right) \\right) \\cap U(A) = \\emptyset \\). **Part (b)**\\n1. Let \\( x \\) be a non-unit in \\( A \\). By the problem's condition, \\( x \\) is idempotent, so \\( x^2 = x \\).\\n2. Consider \\( -x \\). Since \\( x \\) is a non-unit, \\( -x \\) is also a non-unit and hence idempotent. Thus, \\( (-x)^2 = -x \\).\\n3. This implies \\( x = -x \\), so \\( 2x = 0 \\). Therefore, \\( A \\) must have characteristic 2.\\n4. Let \\( p \\) be a unit in \\( A \\). For any non-unit \\( x \\), \\( p - x \\) is a non-unit and hence idempotent. Thus, \\( (p - x)^2 = p - x \\).\\n5. Expanding, we get \\( p^2 - px - xp + x^2 = p - x \\).\\n6. Since \\( x \\) is idempotent, \\( x^2 = x \\). Thus, \\( p^2 - px - xp + x = p - x \\).\\n7. Rearrange to get \\( p^2 - px - xp = p - 2x \\).\\n8. Since \\( A \\) has characteristic 2, \\( 2x = 0 \\), so \\( p^2 - px - xp = p \\).\\n9. Rearrange to get \\( p^2 - p = px + xp \\).\\n10. Since \\( x \\) is idempotent and \\( x = -x \\), we have \\( px = xp \\). Thus, \\( p^2 - p = 2px \\).\\n11. Since \\( A \\) has characteristic 2, \\( 2px = 0 \\), so \\( p^2 = p \\). Hence, \\( p \\) is idempotent.\\n12. Therefore, every unit in \\( A \\) is idempotent.\\n13. Since every element in \\( A \\) is either a unit or a non-unit, and both are idempotent, every element in \\( A \\) is idempotent. \\(\\blacksquare\\)",
+        "answer": "See solution",
+        "latebench_id": "lb_numinamath_66ee8f03",
+        "source_metadata": {
+          "dataset": "numinamath",
+          "original_id": "numinamath_533402",
+          "difficulty": 3.0,
+          "subject": "mathematics",
+          "competition": "aops",
+          "year": null,
+          "metadata": {
+            "dataset_index": 533402,
+            "original_source": "aops_forum",
+            "estimated_steps": 25,
+            "complexity_score": 2.3,
+            "selected_for_error_injection": true
+          }
+        }
+      },
+      "modified_solution": {
+        "steps": [
+          {
+            "step_num": 1,
+            "content": "Part (a)",
+            "modified": false
+          },
+          {
+            "step_num": 2,
+            "content": "Let  $ A $  be a ring that is not a division ring, and such that any non-unit of it is idempotent",
+            "modified": false
+          },
+          {
+            "step_num": 3,
+            "content": "We need to show that  $ \\left( U(A) +A\\setminus\\left( U(A)\\cup \\{ 0\\} \\right) \\right)\\cap U(A) =\\emptyset . $",
+            "modified": false
+          },
+          {
+            "step_num": 4,
+            "content": "Assume for contradiction that there exists an element  $ u \\in U(A) $  and  $ x \\in A \\setminus \\left( U(A) \\cup \\{ 0 \\} \\right) $  such that  $ u + x \\in U(A) $",
+            "modified": false
+          },
+          {
+            "step_num": 5,
+            "content": "Since  $ x $  is a non-unit and idempotent, we have  $ x^2 = x $",
+            "modified": false
+          },
+          {
+            "step_num": 6,
+            "content": "Consider  $ u + x $",
+            "modified": false
+          },
+          {
+            "step_num": 7,
+            "content": "Since  $ u + x \\in U(A) $, there exists  $ v \\in A $  such that  $ (u + x)v = 1 $",
+            "modified": false
+          },
+          {
+            "step_num": 8,
+            "content": "Expanding, we get  $ uv + xv = 1 $",
+            "modified": false
+          },
+          {
+            "step_num": 9,
+            "content": "Since  $ u \\in U(A) $,  $ u $  has an inverse  $ u^{-1} $",
+            "modified": false
+          },
+          {
+            "step_num": 10,
+            "content": "Multiply both sides by  $ u^{-1} $  to get  $ v + u^{-1}xv = u^{-1} $",
+            "modified": false
+          },
+          {
+            "step_num": 11,
+            "content": "Rearrange to get  $ v = u^{-1} - u^{-1}xv $",
+            "modified": false
+          },
+          {
+            "step_num": 12,
+            "content": "Substitute  $ v $  back into the equation  $ uv + xv = 1 $:  $ u\\left( u^{-1} - u^{-1}xv \\right) + xv = 1 $  $ 1 - x v + xv = 1 $  $ 1 = 1 $",
+            "modified": false
+          },
+          {
+            "step_num": 13,
+            "content": "This is a contradiction because it does not provide any new information about  $ x $  or  $ u $",
+            "modified": false
+          },
+          {
+            "step_num": 14,
+            "content": "Therefore, our assumption that  $ u + x \\in U(A) $  must be false",
+            "modified": false
+          },
+          {
+            "step_num": 15,
+            "content": "Hence,  $ \\left( U(A) + A \\setminus \\left( U(A) \\cup \\{ 0 \\} \\right) \\right) \\cap U(A) = \\emptyset $",
+            "modified": false
+          },
+          {
+            "step_num": 16,
+            "content": "Part (b)",
+            "modified": false
+          },
+          {
+            "step_num": 17,
+            "content": "Let  $ x $  be a non-unit in  $ A $",
+            "modified": false
+          },
+          {
+            "step_num": 18,
+            "content": "By the problem's condition,  $ x $  is idempotent, so  $ x^2 = x $",
+            "modified": false
+          },
+          {
+            "step_num": 19,
+            "content": "Consider  $ -x $",
+            "modified": false
+          },
+          {
+            "step_num": 20,
+            "content": "Since  $ x $  is a non-unit,  $ -x $  is also a non-unit and hence idempotent",
+            "modified": false
+          },
+          {
+            "step_num": 21,
+            "content": "Thus,  $ (-x)^2 = -x $",
+            "modified": false
+          },
+          {
+            "step_num": 22,
+            "content": "This implies  $ x = -x $, so  $ 2x = 0 $",
+            "modified": false
+          },
+          {
+            "step_num": 23,
+            "content": "Therefore,  $ A $  must have characteristic 2",
+            "modified": false
+          },
+          {
+            "step_num": 24,
+            "content": "Let  $ p $  be a unit in  $ A $",
+            "modified": false
+          },
+          {
+            "step_num": 25,
+            "content": "For any non-unit  $ x $,  $ p - x $  is a non-unit and hence idempotent",
+            "modified": false
+          },
+          {
+            "step_num": 26,
+            "content": "Thus,  $ (p - x)^2 = p - x $",
+            "modified": false
+          },
+          {
+            "step_num": 27,
+            "content": "Expanding, we get  $ p^2 - px - xp + x^2 = p - x $",
+            "modified": false
+          },
+          {
+            "step_num": 28,
+            "content": "Since  $ x $  is idempotent,  $ x^2 = x $",
+            "modified": false
+          },
+          {
+            "step_num": 29,
+            "content": "Thus,  $ p^2 - px - xp + x = p - x $",
+            "modified": false
+          },
+          {
+            "step_num": 30,
+            "content": "Rearrange to get  $ p^2 - px - xp = p - 2x $",
+            "modified": false
+          },
+          {
+            "step_num": 31,
+            "content": "Since  $ A $  has characteristic 2,  $ 2x = 0 $, so  $ p^2 - px - xp = p $",
+            "modified": false
+          },
+          {
+            "step_num": 32,
+            "content": "Rearrange to get  $ p^2 - p = px + xp $",
+            "modified": false
+          },
+          {
+            "step_num": 33,
+            "content": "Since  $ x $  is idempotent and  $ x = -x $, we have  $ px = xp $",
+            "modified": false
+          },
+          {
+            "step_num": 34,
+            "content": "Thus,  $ p^2 - p = 2px $",
+            "modified": true,
+            "error": true
+          },
+          {
+            "step_num": 35,
+            "content": "Since  $ A $  has characteristic 2,  $ p^2 - p = 0 $, so  $ p^2 = p $",
+            "modified": true
+          },
+          {
+            "step_num": 36,
+            "content": "Hence,  $ p $  is idempotent",
+            "modified": true
+          },
+          {
+            "step_num": 37,
+            "content": "Therefore, every unit in  $ A $  is idempotent",
+            "modified": true
+          },
+          {
+            "step_num": 38,
+            "content": "Since every element in  $ A $  is either a unit or a non-unit, and both are idempotent, every element in  $ A $  is idempotent",
+            "modified": true
+          },
+          {
+            "step_num": 39,
+            "content": "$\\blacksquare$",
+            "modified": false
+          }
+        ],
+        "final_answer": "Therefore, every element in $ A $ is idempotent."
+      },
+      "error_analysis": {
+        "total_steps": 39,
+        "target_step_range": "26-39",
+        "selected_error_step": 34,
+        "error_type": "invalid_generalization",
+        "error_rationale": "Step 34 makes an unjustified generalization by assuming that the idempotence of elements and the characteristic of the ring allow for the simplification of all elements in a similar manner, without proper justification for this specific operation.",
+        "pedagogical_benefit": "Students will learn the importance of not making unwarranted generalizations in mathematical proofs, especially when dealing with properties of algebraic structures like rings."
+      },
+      "error_explanation": {
+        "what_changed": "The logical flaw introduced is an unjustified generalization in step 34, where it's incorrectly concluded that $ p^2 - p = 2px $ without proper justification for this operation in the context of ring theory.",
+        "why_incorrect": "The mathematical reasoning is invalid because the transition from $ p^2 - p = px + xp $ to $ p^2 - p = 2px $ assumes a simplification that doesn't necessarily hold for all elements in a ring, especially without consideration of the ring's specific characteristics or the properties of the elements involved.",
+        "teaching_value": "This example teaches the critical lesson that each step in a mathematical proof must be justified, especially when making generalizations. Students learn to critically evaluate each step for logical consistency and adherence to mathematical principles.",
+        "detection_hints": "To detect this type of error, students should look for steps where generalizations are made without clear justification or where properties are applied broadly without checking for necessary conditions."
+      },
+      "metadata": {
+        "num_original_steps": 39,
+        "last_third_range": "26-39",
+        "model_used": "gpt-4-turbo-preview",
+        "attempt": 1,
+        "custom_suggestion": "Make an unjustified generalization - extend a specific case without proper justification",
+        "injection_type": "manual_custom"
+      },
+      "error_message": null
+    },
+    "processing_time": 46.37001609802246,
+    "timestamp": "2025-07-27T23:06:30.888001",
+    "success": true
+  }
+]

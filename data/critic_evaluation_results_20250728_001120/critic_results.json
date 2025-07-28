@@ -1,0 +1,802 @@
+[
+  {
+    "example_id": "lb_numinamath_05a1d0a5",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:34.605355"
+  },
+  {
+    "example_id": "lb_numinamath_05fd310c",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:35.719669"
+  },
+  {
+    "example_id": "lb_numinamath_078d40ae",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:36.790091"
+  },
+  {
+    "example_id": "lb_numinamath_0eee17ae",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:34.989149"
+  },
+  {
+    "example_id": "lb_numinamath_0f338f8b",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:36.373666"
+  },
+  {
+    "example_id": "lb_numinamath_0f7f07f8",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:35.052511"
+  },
+  {
+    "example_id": "lb_numinamath_114b0e1a",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:35.165704"
+  },
+  {
+    "example_id": "lb_numinamath_11752ddf",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:47.015474"
+  },
+  {
+    "example_id": "lb_numinamath_155f8223",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:48.382588"
+  },
+  {
+    "example_id": "lb_numinamath_165a5505",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:40.925679"
+  },
+  {
+    "example_id": "lb_numinamath_184c1b25",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:38.297313"
+  },
+  {
+    "example_id": "lb_numinamath_19631a7f",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:47.852704"
+  },
+  {
+    "example_id": "lb_numinamath_1a4b2d91",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:53.228702"
+  },
+  {
+    "example_id": "lb_numinamath_1b7b618d",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:53.485532"
+  },
+  {
+    "example_id": "lb_numinamath_1f89a04a",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:49.972293"
+  },
+  {
+    "example_id": "lb_numinamath_209027d4",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:39.796276"
+  },
+  {
+    "example_id": "lb_numinamath_23d558d8",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:48.268322"
+  },
+  {
+    "example_id": "lb_numinamath_2779224f",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:45.042575"
+  },
+  {
+    "example_id": "lb_numinamath_27f7f48e",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:47.918273"
+  },
+  {
+    "example_id": "lb_numinamath_2b9ac6e5",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:52.789741"
+  },
+  {
+    "example_id": "lb_numinamath_2de75f58",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:02.335139"
+  },
+  {
+    "example_id": "lb_numinamath_2e9e3fc2",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:49.252226"
+  },
+  {
+    "example_id": "lb_numinamath_3192a523",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:56.282337"
+  },
+  {
+    "example_id": "lb_numinamath_31cc44c5",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:03.591383"
+  },
+  {
+    "example_id": "lb_numinamath_33715850",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:53.695721"
+  },
+  {
+    "example_id": "lb_numinamath_358513d9",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:00.306823"
+  },
+  {
+    "example_id": "lb_numinamath_3603490d",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:08.594914"
+  },
+  {
+    "example_id": "lb_numinamath_398dcd50",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:57.090426"
+  },
+  {
+    "example_id": "lb_numinamath_3a83efb9",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:55.809502"
+  },
+  {
+    "example_id": "lb_numinamath_3e67c602",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:57.085821"
+  },
+  {
+    "example_id": "lb_numinamath_452467d8",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:00.206882"
+  },
+  {
+    "example_id": "lb_numinamath_46492dc7",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:09:59.705232"
+  },
+  {
+    "example_id": "lb_numinamath_46dc5af7",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:08.623501"
+  },
+  {
+    "example_id": "lb_numinamath_4f38a93e",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:06.555045"
+  },
+  {
+    "example_id": "lb_numinamath_501c16e7",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:11.799282"
+  },
+  {
+    "example_id": "lb_numinamath_51caef7a",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:03.750029"
+  },
+  {
+    "example_id": "lb_numinamath_52850f50",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:18.408823"
+  },
+  {
+    "example_id": "lb_numinamath_528f40f2",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:11:20.894947"
+  },
+  {
+    "example_id": "lb_numinamath_54a10abf",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:07.156326"
+  },
+  {
+    "example_id": "lb_numinamath_56c2b10c",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:06.932619"
+  },
+  {
+    "example_id": "lb_numinamath_5c70910e",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:11.634590"
+  },
+  {
+    "example_id": "lb_numinamath_66ee8f03",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:11.105988"
+  },
+  {
+    "example_id": "lb_numinamath_69cfc3ff",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:17.519546"
+  },
+  {
+    "example_id": "lb_numinamath_6d48bdca",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:11.821909"
+  },
+  {
+    "example_id": "lb_numinamath_6ea026b7",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:15.103203"
+  },
+  {
+    "example_id": "lb_numinamath_6ef697c4",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:14.612129"
+  },
+  {
+    "example_id": "lb_numinamath_700853b0",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:16.099146"
+  },
+  {
+    "example_id": "lb_numinamath_71938de3",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:24.177392"
+  },
+  {
+    "example_id": "lb_numinamath_72fcc6af",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:15.060870"
+  },
+  {
+    "example_id": "lb_numinamath_743d3647",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:19.888517"
+  },
+  {
+    "example_id": "lb_numinamath_796b4f55",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:31.587572"
+  },
+  {
+    "example_id": "lb_numinamath_7a4b85b5",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:29.451016"
+  },
+  {
+    "example_id": "lb_numinamath_7b7cf633",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:20.991551"
+  },
+  {
+    "example_id": "lb_numinamath_7c7b99cf",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:21.058835"
+  },
+  {
+    "example_id": "lb_numinamath_81038f91",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:24.687237"
+  },
+  {
+    "example_id": "lb_numinamath_85e25cf3",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:25.210273"
+  },
+  {
+    "example_id": "lb_numinamath_8b11e3c1",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:25.509237"
+  },
+  {
+    "example_id": "lb_numinamath_8d222ce7",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:26.276197"
+  },
+  {
+    "example_id": "lb_numinamath_8fd2bef4",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:28.001126"
+  },
+  {
+    "example_id": "lb_numinamath_923bca62",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:28.379464"
+  },
+  {
+    "example_id": "lb_numinamath_93262e29",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:38.619804"
+  },
+  {
+    "example_id": "lb_numinamath_9626588d",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:36.315560"
+  },
+  {
+    "example_id": "lb_numinamath_96a1bdec",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:36.163443"
+  },
+  {
+    "example_id": "lb_numinamath_9fb56045",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:34.383898"
+  },
+  {
+    "example_id": "lb_numinamath_a059e534",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:34.738343"
+  },
+  {
+    "example_id": "lb_numinamath_a1ec334e",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:32.594516"
+  },
+  {
+    "example_id": "lb_numinamath_a28e786a",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:35.114712"
+  },
+  {
+    "example_id": "lb_numinamath_ae2ff13b",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:35.575407"
+  },
+  {
+    "example_id": "lb_numinamath_b01127c5",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:40.351322"
+  },
+  {
+    "example_id": "lb_numinamath_b56a4a92",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:38.694714"
+  },
+  {
+    "example_id": "lb_numinamath_b5fce19c",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:41.419991"
+  },
+  {
+    "example_id": "lb_numinamath_b902d650",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:40.541227"
+  },
+  {
+    "example_id": "lb_numinamath_b92ee037",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:40.378434"
+  },
+  {
+    "example_id": "lb_numinamath_b9f2c153",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:40.909376"
+  },
+  {
+    "example_id": "lb_numinamath_ba8ba275",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:47.631546"
+  },
+  {
+    "example_id": "lb_numinamath_bd28a263",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:48.257147"
+  },
+  {
+    "example_id": "lb_numinamath_bd7975b2",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:44.434497"
+  },
+  {
+    "example_id": "lb_numinamath_c1e03616",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:49.337264"
+  },
+  {
+    "example_id": "lb_numinamath_c31b5ce1",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:46.845750"
+  },
+  {
+    "example_id": "lb_numinamath_c566aeb1",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:47.276583"
+  },
+  {
+    "example_id": "lb_numinamath_c8090edb",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:48.938618"
+  },
+  {
+    "example_id": "lb_numinamath_c956b496",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:49.999076"
+  },
+  {
+    "example_id": "lb_numinamath_cd7eefa8",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:51.543917"
+  },
+  {
+    "example_id": "lb_numinamath_d24f0601",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:52.289705"
+  },
+  {
+    "example_id": "lb_numinamath_d6f0e15a",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:52.240721"
+  },
+  {
+    "example_id": "lb_numinamath_da62fb1f",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:54.299602"
+  },
+  {
+    "example_id": "lb_numinamath_dbe333cc",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:11:00.394924"
+  },
+  {
+    "example_id": "lb_numinamath_dc224b33",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:53.316321"
+  },
+  {
+    "example_id": "lb_numinamath_dcc4bf02",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:54.246760"
+  },
+  {
+    "example_id": "lb_numinamath_ec1a8e93",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:59.042210"
+  },
+  {
+    "example_id": "lb_numinamath_ee15a909",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:58.965782"
+  },
+  {
+    "example_id": "lb_numinamath_f0c09902",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:58.537088"
+  },
+  {
+    "example_id": "lb_numinamath_f2bfcdd0",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:59.966973"
+  },
+  {
+    "example_id": "lb_numinamath_f40434a6",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:10:58.537641"
+  },
+  {
+    "example_id": "lb_numinamath_f9ef02b1",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:11:07.649277"
+  },
+  {
+    "example_id": "lb_numinamath_fc25d745",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:11:08.620427"
+  },
+  {
+    "example_id": "lb_numinamath_fc988336",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:11:05.521382"
+  },
+  {
+    "example_id": "lb_numinamath_fe57ad84",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:11:03.085649"
+  },
+  {
+    "example_id": "lb_numinamath_feeb55ac",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:11:11.045768"
+  },
+  {
+    "example_id": "lb_numinamath_ff10d399",
+    "critic_result": null,
+    "processing_time": 0,
+    "success": false,
+    "error_message": "'CriticResult' object has no attribute 'success'",
+    "timestamp": "2025-07-28T00:11:05.229866"
+  }
+]

@@ -38,7 +38,9 @@ def initialize_data():
     
     # Try different possible paths for the results file
     possible_paths = [
-        # New MATH Level 5 natural errors dataset (highest priority)
+        # NuminaMath complete dataset (highest priority for current testing)
+        "./data/datasets/latebench_numinamath_complete.json",
+        # New MATH Level 5 natural errors dataset
         "./data/datasets/latebench_math_level5_natural_errors.json",
         # Core datasets
         "./data/datasets/latebench_prm800k_raw.json",
@@ -287,11 +289,8 @@ def api_manual_injection(example_id):
         user_remarks = data.get('user_remarks', '').strip()
         custom_suggestions = dashboard_data.get_manual_injection_data(example_id)['custom_suggestions']
         
-        if not custom_suggestions:
-            return jsonify({
-                'success': False,
-                'error': 'No custom error suggestions available. Please add a suggestion first.'
-            }), 400
+        # If no custom suggestions, use general injection approach
+        use_general_injection = not custom_suggestions
         
         # Import error injector
         from src.error_injector import AdversarialErrorInjector
@@ -312,20 +311,31 @@ def api_manual_injection(example_id):
             'answer': example.get('modified_solution', {}).get('final_answer', 'No answer provided')
         }
         
-        # Use the most recent custom suggestion as error type preference
-        custom_suggestion = custom_suggestions[-1] if custom_suggestions else None
-        
-        # Run error injection with custom suggestion
-        injection_result = injector.inject_error_with_custom_suggestion(
-            raw_example,
-            custom_suggestion=custom_suggestion,
-            max_retries=3
-        )
+        # Run either general or custom error injection
+        if use_general_injection:
+            # Run general error injection (no custom suggestion)
+            injection_result = injector.inject_error(
+                raw_example,
+                error_type_preference=None,  # Let the system choose automatically
+                max_retries=3
+            )
+            custom_suggestion = None
+        else:
+            # Use the most recent custom suggestion as error type preference
+            custom_suggestion = custom_suggestions[-1] if custom_suggestions else None
+            
+            # Run error injection with custom suggestion
+            injection_result = injector.inject_error_with_custom_suggestion(
+                raw_example,
+                custom_suggestion=custom_suggestion,
+                max_retries=3
+            )
         
         # Store the attempt
         attempt_data = {
             'user_remarks': user_remarks,
             'injection_result': injection_result.__dict__ if injection_result else {},
+            'injection_type': 'general' if use_general_injection else 'custom',
             'custom_suggestion': custom_suggestion
         }
         
@@ -339,13 +349,86 @@ def api_manual_injection(example_id):
                     'modified_solution': injection_result.modified_solution,
                     'error_analysis': injection_result.error_analysis,
                     'error_explanation': injection_result.error_explanation,
-                    'attempt_number': len(dashboard_data.get_manual_injection_data(example_id)['injection_attempts'])
+                    'attempt_number': len(dashboard_data.get_manual_injection_data(example_id)['injection_attempts']),
+                    'injection_type': 'general' if use_general_injection else 'custom'
                 }
             })
         else:
             return jsonify({
                 'success': False,
                 'error': injection_result.error_message if injection_result else 'Injection failed'
+            })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/general_injection/<example_id>', methods=['POST'])
+def api_general_injection(example_id):
+    """Run general error injection without custom suggestions."""
+    example = dashboard_data.get_example(example_id)
+    
+    if not example:
+        return jsonify({'error': 'Example not found'}), 404
+    
+    try:
+        data = request.get_json() or {}
+        user_remarks = data.get('user_remarks', '').strip()
+        
+        # Import error injector
+        from src.error_injector import AdversarialErrorInjector
+        
+        # Create injector instance
+        injector = AdversarialErrorInjector()
+        
+        # Prepare the original problem data for injection
+        steps = example.get('modified_solution', {}).get('steps', [])
+        if not steps:
+            # Fallback to original_steps if available
+            steps = example.get('original_steps', [])
+        
+        raw_example = {
+            'problem': example['problem'],
+            'solution': '\n'.join([step['content'] for step in steps]),
+            'answer': example.get('modified_solution', {}).get('final_answer', 'No answer provided')
+        }
+        
+        # Run general error injection (no custom suggestion)
+        injection_result = injector.inject_error(
+            raw_example,
+            error_type_preference=None,  # Let the system choose automatically
+            max_retries=3
+        )
+        
+        # Store the attempt
+        attempt_data = {
+            'user_remarks': user_remarks,
+            'injection_result': injection_result.__dict__ if injection_result else {},
+            'injection_type': 'general',
+            'custom_suggestion': None
+        }
+        
+        dashboard_data.add_injection_attempt(example_id, attempt_data)
+        dashboard_data.save_manual_injection_data()
+        
+        if injection_result and injection_result.success:
+            return jsonify({
+                'success': True,
+                'injection_result': {
+                    'modified_solution': injection_result.modified_solution,
+                    'error_analysis': injection_result.error_analysis,
+                    'error_explanation': injection_result.error_explanation,
+                    'attempt_number': len(dashboard_data.get_manual_injection_data(example_id)['injection_attempts']),
+                    'injection_type': 'general'
+                }
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': injection_result.error_message if injection_result else 'General injection failed'
             })
         
     except Exception as e:

@@ -1372,3 +1372,52 @@ body {
         box-shadow: 0 0 0 0 rgba(111, 66, 193, 0);
     }
 }
+
+/* Injection Mode Indicator */
+.injection-mode-indicator {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.injection-mode-indicator.general-mode {
+    border-color: #28a745;
+    background: #f8fff9;
+}
+
+.injection-mode-indicator.custom-mode {
+    border-color: #fd7e14;
+    background: #fff8f0;
+}
+
+.mode-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#mode-icon {
+    font-size: 1.2rem;
+}
+
+#mode-text {
+    font-weight: 600;
+    color: #495057;
+}
+
+#mode-description {
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-left: auto;
+}
+
+.injection-mode-indicator.general-mode #mode-text {
+    color: #28a745;
+}
+
+.injection-mode-indicator.custom-mode #mode-text {
+    color: #fd7e14;
+}
