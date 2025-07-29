@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LateBench Minimal Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .header { text-align: center; margin-bottom: 20px; padding: 20px; background: #2c3e50; color: white; border-radius: 8px; }
+        .content { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+        .sidebar { background: #f8f9fa; padding: 20px; border-radius: 8px; }
+        .main-content { background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #ddd; }
+        .section { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .btn { background: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin: 2px; transition: all 0.3s; }
+        .btn:hover { background: #2980b9; }
+        .btn:disabled { background: #bdc3c7; cursor: not-allowed; opacity: 0.6; }
+        .btn-success { background: #27ae60; }
+        .btn-success:hover { background: #219a52; }
+        .btn-warning { background: #f39c12; }
+        .btn-warning:hover { background: #e67e22; }
+        .btn-danger { background: #e74c3c; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-secondary { background: #95a5a6; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        .btn-loading { position: relative; animation: pulse 1.5s ease-in-out infinite; }
+        .btn-loading::after { content: "⏳"; margin-left: 5px; }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(52, 152, 219, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+        }
+        .problem-display { background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0; white-space: pre-wrap; }
+        .solution-container { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 5px; padding: 10px; background: #f9f9f9; }
+        .solution-step { background: white; border: 1px solid #ddd; padding: 10px; margin: 5px 0; border-radius: 4px; }
+        .solution-step.error { background: #ffeaa7; border-color: #fdcb6e; }
+        .solution-container::-webkit-scrollbar { width: 8px; }
+        .solution-container::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .solution-container::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+        .solution-container::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+        textarea, input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin: 5px 0; box-sizing: border-box; }
+        .error-message { background: #e74c3c; color: white; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .success-message { background: #27ae60; color: white; padding: 10px; border-radius: 4px; margin: 10px 0; }
+    </style>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+</head>
+<body>
+    <div class="container">
+        
+        {% if error %}
+            <div class="error-message">{{ error }}</div>
+        {% else %}
+            <div class="content">
+                <div class="sidebar">
+                    <div class="section">
+                        <h3>Navigation</h3>
+                        <div>Example {{ current_index + 1 }} of {{ total_examples }}</div>
+                        <div style="margin: 10px 0;">
+                            <button class="btn" onclick="navigate('first')">⏮️</button>
+                            <button class="btn" onclick="navigate('prev')">⬅️</button>
+                            <button class="btn" onclick="navigate('next')">➡️</button>
+                            <button class="btn" onclick="navigate('last')">⏭️</button>
+                        </div>
+                        <div style="margin: 10px 0;">
+                            <input type="number" id="jumpToExample" placeholder="Jump to #" min="1" max="{{ total_examples }}" style="width: 60%; margin-right: 5%;">
+                            <button class="btn" onclick="jumpToExample()" style="width: 30%;">Go</button>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Error Injection</h3>
+                        <textarea id="customSuggestion" placeholder="Custom error suggestion (optional)..." rows="3">{% if current_example and current_example.error_injection.manual_suggestion %}{{ current_example.error_injection.manual_suggestion }}{% endif %}</textarea>
+                        <div style="margin: 5px 0;">
+                            <input type="number" id="targetErrorStep" placeholder="Target step (optional)" min="1" style="width: 48%; display: inline-block; margin-right: 4%;" value="{% if current_example and current_example.error_injection.target_error_step %}{{ current_example.error_injection.target_error_step }}{% endif %}">
+                            <button class="btn btn-secondary" onclick="saveSuggestion()" style="width: 46%;">💾 Save</button>
+                        </div>
+                        <button class="btn" id="injectErrorBtn" onclick="injectError()">🎲 Inject Error</button>
+                        
+                        {% if current_example and current_example.error_injection.has_errors %}
+                            <div style="margin-top: 10px; padding: 8px; background: #f8f9fa; border-radius: 4px; font-size: 12px;">
+                                <strong>Previous Injection:</strong><br>
+                                {% if current_example.error_injection.manual_suggestion %}
+                                    <em>Custom:</em> {{ current_example.error_injection.manual_suggestion[:100] }}{% if current_example.error_injection.manual_suggestion|length > 100 %}...{% endif %}<br>
+                                {% endif %}
+                                {% if current_example.error_injection.target_error_step %}
+                                    <em>Target Step:</em> {{ current_example.error_injection.target_error_step }}<br>
+                                {% endif %}
+                                <em>Timestamp:</em> {{ current_example.error_injection.injection_timestamp[:19] if current_example.error_injection.injection_timestamp else 'Unknown' }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Critic Evaluation</h3>
+                        <select id="criticMode" style="width: 100%; margin-bottom: 10px;">
+                            <option value="auto">Auto (injected if available)</option>
+                            <option value="original">Original solution</option>
+                            <option value="injected">Injected solution only</option>
+                        </select>
+                        <button class="btn" id="criticBtn" onclick="evaluateWithCritic()">🔍 Run Critic</button>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Manual Decision</h3>
+                        <div>
+                            <button class="btn btn-success" onclick="saveDecision('yes')">✅ Yes</button>
+                            <button class="btn btn-warning" onclick="saveDecision('maybe')">⚠️ Maybe</button>
+                            <button class="btn btn-danger" onclick="saveDecision('no')">❌ No</button>
+                        </div>
+                        <textarea id="decisionNotes" placeholder="Notes..." rows="2"></textarea>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Stats</h3>
+                        <div id="stats">Decisions: {{ manual_decisions|length }}</div>
+                    </div>
+                </div>
+                
+                <div class="main-content">
+                    {% if current_example %}
+                        <div class="section">
+                            <h3>Problem Statement</h3>
+                            <div class="problem-display">{{ current_example.problem.statement }}</div>
+                        </div>
+                        
+                        <div class="section">
+                            <h3>Original Solution ({{ current_example.solution.steps|length }} steps)</h3>
+                            <div class="solution-container" id="originalSolution">
+                                {% for step in current_example.solution.steps %}
+                                    <div class="solution-step">
+                                        <strong>Step {{ loop.index }}:</strong> {{ step.content }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="section" id="injectedSolution" style="{% if not current_example.error_injection.has_errors or not current_example.error_injection.injected_solution %}display: none;{% endif %}">
+                            <h3>Modified Solution (After Error Injection)</h3>
+                            <div class="solution-container" id="modifiedSolutionDisplay">
+                                {% if current_example.error_injection.has_errors and current_example.error_injection.injected_solution %}
+                                    {% for step in current_example.error_injection.injected_solution.steps %}
+                                        <div class="solution-step {{ 'error' if step.is_error else '' }}">
+                                            <strong>Step {{ step.step_number }}:</strong> {{ step.content }}
+                                            {% if step.is_error %} <strong>[ERROR]</strong>{% endif %}
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% set critic_prediction = current_example.critic_predictions_injected or current_example.critic_predictions_original %}
+                        <div class="section" id="criticResult" style="{% if not critic_prediction %}display: none;{% endif %}">
+                            <h3>Critic Evaluation
+                                {% if critic_prediction %}
+                                    ({{ 'Injected' if current_example.critic_predictions_injected else 'Original' }} Solution)
+                                {% endif %}
+                            </h3>
+                            <div id="criticResultDisplay">
+                                {% if critic_prediction %}
+                                    <div><strong>Has Errors:</strong> {{ 'Yes' if critic_prediction.has_errors else 'No' }}</div>
+                                    <div><strong>Error Steps:</strong> {{ critic_prediction.error_steps|join(', ') if critic_prediction.error_steps else 'None' }}</div>
+                                    <div><strong>Processing Time:</strong> {{ "%.2f"|format(critic_prediction.processing_time) }}s</div>
+                                    <div><strong>Model Version:</strong> {{ critic_prediction.model_version }}</div>
+                                    {% if critic_prediction.explanations %}
+                                        <div><strong>Explanations:</strong></div>
+                                        {% for step, explanation in critic_prediction.explanations.items() %}
+                                            <div class="solution-step"><strong>Step {{ step }}:</strong> {{ explanation }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="section">
+                            <h3>No Example Available</h3>
+                            <p>No examples to display.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function navigate(direction) {
+            fetch(`/api/navigate/${direction}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => showError('Navigation error: ' + error));
+        }
+
+        function jumpToExample() {
+            const targetIndex = document.getElementById('jumpToExample').value;
+            if (!targetIndex) {
+                showError('Please enter an example number');
+                return;
+            }
+            
+            const exampleNumber = parseInt(targetIndex);
+            if (exampleNumber < 1 || exampleNumber > {{ total_examples }}) {
+                showError('Example number must be between 1 and {{ total_examples }}');
+                return;
+            }
+            
+            fetch(`/api/jump_to/${exampleNumber - 1}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    showError('Failed to jump to example: ' + data.error);
+                }
+            })
+            .catch(error => showError('Jump error: ' + error));
+        }
+
+        function saveSuggestion() {
+            const customSuggestion = document.getElementById('customSuggestion').value;
+            const targetErrorStep = document.getElementById('targetErrorStep').value;
+            
+            const payload = {
+                custom_suggestion: customSuggestion,
+                target_error_step: targetErrorStep ? parseInt(targetErrorStep) : null
+            };
+            
+            fetch('/api/save_suggestion', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess('Suggestion saved successfully!');
+                    // Update the previous injection display
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showError('Failed to save suggestion: ' + data.error);
+                }
+            })
+            .catch(error => showError('Save suggestion error: ' + error));
+        }
+
+        function injectError() {
+            const customSuggestion = document.getElementById('customSuggestion').value;
+            const targetErrorStep = document.getElementById('targetErrorStep').value;
+            const btn = document.getElementById('injectErrorBtn');
+            
+            // Prevent double-clicking
+            if (btn.disabled) return;
+            
+            // Disable button and show pulsating loading state
+            btn.disabled = true;
+            btn.classList.add('btn-loading');
+            btn.textContent = '🎲 Injecting...';
+            
+            const payload = {custom_suggestion: customSuggestion};
+            if (targetErrorStep) {
+                payload.target_error_step = parseInt(targetErrorStep);
+            }
+            
+            fetch('/api/inject_error', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayInjectionResult(data.injection_result);
+                    showSuccess('Error injection successful!');
+                } else {
+                    showError('Error injection failed: ' + data.error);
+                }
+            })
+            .catch(error => {
+                showError('Error injection error: ' + error);
+            })
+            .finally(() => {
+                // Re-enable button and stop pulsating
+                btn.disabled = false;
+                btn.classList.remove('btn-loading');
+                btn.textContent = '🎲 Inject Error';
+            });
+        }
+
+        function evaluateWithCritic() {
+            const criticMode = document.getElementById('criticMode').value;
+            const btn = document.getElementById('criticBtn');
+            
+            // Prevent double-clicking
+            if (btn.disabled) return;
+            
+            // Disable button and show pulsating loading state
+            btn.disabled = true;
+            btn.classList.add('btn-loading');
+            btn.textContent = '🔍 Evaluating...';
+            
+            fetch('/api/evaluate_with_critic', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({evaluation_mode: criticMode})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayCriticResult(data.critic_result);
+                    showSuccess(`Critic evaluation complete! (${criticMode} mode)`);
+                } else {
+                    showError('Critic evaluation failed: ' + data.error);
+                }
+            })
+            .catch(error => {
+                showError('Critic evaluation error: ' + error);
+            })
+            .finally(() => {
+                // Re-enable button and stop pulsating
+                btn.disabled = false;
+                btn.classList.remove('btn-loading');
+                btn.textContent = '🔍 Run Critic';
+            });
+        }
+
+        function saveDecision(decision) {
+            const notes = document.getElementById('decisionNotes').value;
+            
+            fetch('/api/save_decision', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({decision: decision, notes: notes})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess(`Decision saved: ${decision}`);
+                    updateStats();
+                } else {
+                    showError('Failed to save decision: ' + data.error);
+                }
+            })
+            .catch(error => showError('Decision save error: ' + error));
+        }
+
+        function displayInjectionResult(result) {
+            const section = document.getElementById('injectedSolution');
+            const display = document.getElementById('modifiedSolutionDisplay');
+            
+            if (result.injected_solution && result.injected_solution.steps) {
+                let html = '';
+                result.injected_solution.steps.forEach(step => {
+                    const cssClass = step.is_error ? 'solution-step error' : 'solution-step';
+                    html += `<div class="${cssClass}">
+                        <strong>Step ${step.step_number}:</strong> ${step.content}
+                        ${step.is_error ? ' <strong>[ERROR]</strong>' : ''}
+                    </div>`;
+                });
+                display.innerHTML = html;
+                section.style.display = 'block';
+                
+                // Scroll to top of modified solution
+                display.scrollTop = 0;
+                
+                if (window.MathJax) {
+                    MathJax.typesetPromise([display]);
+                }
+            }
+        }
+
+        function displayCriticResult(result) {
+            const section = document.getElementById('criticResult');
+            const display = document.getElementById('criticResultDisplay');
+            
+            let html = `
+                <div><strong>Has Errors:</strong> ${result.has_errors ? 'Yes' : 'No'}</div>
+                <div><strong>Error Steps:</strong> ${result.error_steps ? result.error_steps.join(', ') : 'None'}</div>
+                <div><strong>Processing Time:</strong> ${result.processing_time.toFixed(2)}s</div>
+                <div><strong>Model Version:</strong> ${result.model_version || 'Unknown'}</div>
+            `;
+            
+            if (result.explanations && Object.keys(result.explanations).length > 0) {
+                html += '<div><strong>Explanations:</strong></div>';
+                for (const [step, explanation] of Object.entries(result.explanations)) {
+                    html += `<div class="solution-step"><strong>Step ${step}:</strong> ${explanation}</div>`;
+                }
+            }
+            
+            display.innerHTML = html;
+            section.style.display = 'block';
+            
+            // Update the header to show which solution was evaluated
+            const header = section.querySelector('h3');
+            const criticMode = document.getElementById('criticMode').value;
+            if (header) {
+                let modeText = criticMode === 'auto' ? 'Auto' : 
+                              criticMode === 'original' ? 'Original' : 'Injected';
+                header.textContent = `Critic Evaluation (${modeText} - Latest Run)`;
+            }
+        }
+
+        function updateStats() {
+            fetch('/api/stats')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('stats').innerHTML = `
+                    Decisions: ${data.decisions_made}/${data.total_examples}<br>
+                    Yes: ${data.decisions_by_type.yes} Maybe: ${data.decisions_by_type.maybe} No: ${data.decisions_by_type.no}
+                `;
+            });
+        }
+
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.textContent = message;
+            document.body.appendChild(successDiv);
+            setTimeout(() => successDiv.remove(), 3000);
+        }
+
+        // Update stats on page load
+        document.addEventListener('DOMContentLoaded', updateStats);
+    </script>
+</body>
+</html>

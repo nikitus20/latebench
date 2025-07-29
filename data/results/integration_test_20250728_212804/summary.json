@@ -1,0 +1,8 @@
+{
+  "experiment_name": "integration_test",
+  "timestamp": "20250728_212804",
+  "total_results": 2,
+  "successful_results": 1,
+  "results_file": "data/results/integration_test_20250728_212804/results.json",
+  "metadata_file": "data/results/integration_test_20250728_212804/metadata.json"
+}

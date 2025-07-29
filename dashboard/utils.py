@@ -7,10 +7,33 @@ import os
 from typing import List, Dict, Any, Optional
 import sys
 import os
+# Add both parent directory and src directory to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src'))
 
-from src.critic import StepFormatter, CriticResult
-from src.dataset_manager import LateBenchDatasetManager
+from core.critic import MathCritic
+from core.data_loader import LateBenchDataLoader
+
+# Simple compatibility classes for old dashboard
+class StepFormatter:
+    @staticmethod
+    def clean_latex_escaping(text):
+        """Simple text cleaning for dashboard display."""
+        if not text:
+            return ""
+        # Remove extra LaTeX escaping
+        text = str(text).replace('\\\\', '\\')
+        return text
+
+class CriticResult:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+    
+    def to_dict(self):
+        return self.__dict__
+
+# Use LateBenchDataLoader as replacement for LateBenchDatasetManager
+LateBenchDatasetManager = LateBenchDataLoader
 
 
 class DashboardData:
@@ -21,7 +44,7 @@ class DashboardData:
         self.examples = []
         self.critic_results = {}
         self.manual_injection_data = {}  # Store manual injection data
-        self.dataset_manager = LateBenchDatasetManager()  # New dataset manager
+        self.dataset_manager = LateBenchDatasetManager()  # LateBenchDataLoader
         self.current_dataset_name = None
         self.current_problem_type = "all"
         self.load_data()
@@ -30,7 +53,10 @@ class DashboardData:
     def load_data(self):
         """Load examples using the new dataset manager or fallback to legacy loading."""
         # Try to load using dataset manager first
-        available_datasets = self.dataset_manager.list_available_datasets()
+        try:
+            available_datasets = self.dataset_manager.list_available_datasets()
+        except:
+            available_datasets = {}
         
         if available_datasets:
             # Prioritize MATH Level 5 natural errors dataset if available
@@ -46,11 +72,15 @@ class DashboardData:
                 first_dataset = list(available_datasets.keys())[0]
                 first_type = available_datasets[first_dataset][0] if available_datasets[first_dataset] else "all"
             
-            if self.dataset_manager.load_dataset(first_dataset, first_type):
-                self.current_dataset_name = first_dataset
-                self.current_problem_type = first_type
-                self._convert_latebench_to_dashboard_format()
-                return
+            try:
+                examples = self.dataset_manager.load_dataset(first_dataset, first_type)
+                if examples:
+                    self.current_dataset_name = first_dataset
+                    self.current_problem_type = first_type
+                    self._convert_latebench_to_dashboard_format(examples)
+                    return
+            except:
+                pass  # Fall back to legacy loading
         
         # Fallback to legacy loading
         if os.path.exists(self.results_file):
@@ -598,11 +628,15 @@ class DashboardData:
     
     def switch_dataset(self, dataset_name: str, problem_type: str = "all") -> bool:
         """Switch to a different dataset and problem type."""
-        if self.dataset_manager.switch_dataset(dataset_name, problem_type):
-            self.current_dataset_name = dataset_name
-            self.current_problem_type = problem_type
-            self._convert_latebench_to_dashboard_format()
-            return True
+        try:
+            examples = self.dataset_manager.load_dataset(dataset_name, problem_type)
+            if examples:
+                self.current_dataset_name = dataset_name
+                self.current_problem_type = problem_type
+                self._convert_latebench_to_dashboard_format(examples)
+                return True
+        except:
+            pass
         return False
     
     def get_current_dataset_info(self) -> Dict[str, str]:
@@ -612,9 +646,8 @@ class DashboardData:
             "type": self.current_problem_type or "all"
         }
     
-    def _convert_latebench_to_dashboard_format(self):
+    def _convert_latebench_to_dashboard_format(self, latebench_examples):
         """Convert LateBench examples to dashboard format."""
-        latebench_examples = self.dataset_manager.get_current_examples()
         self.examples = []
         
         for i, lb_example in enumerate(latebench_examples):

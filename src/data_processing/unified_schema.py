@@ -28,7 +28,7 @@ class LateBenchSource:
     """Source dataset information"""
     dataset: str  # numinamath, prm800k, etc.
     original_id: str  # original problem ID in source dataset
-    difficulty: Union[int, float, str]  # normalized or original difficulty
+    difficulty: Union[int, float, str] = 3  # difficulty score, defaults to 3 (medium)
     subject: str = "mathematics"  # algebra, geometry, calculus, etc.
     competition: Optional[str] = None  # AMC, AIME, etc.
     year: Optional[int] = None  # competition year if available
@@ -44,15 +44,8 @@ class LateBenchSource:
 
 @dataclass
 class LateBenchProblem:
-    """Problem statement and context"""
+    """Problem statement - clean and simple"""
     statement: str
-    constraints: Optional[str] = None  # additional constraints
-    context: Optional[str] = None  # problem context/background
-    figures: Optional[List[str]] = None  # figure descriptions/paths
-    
-    def __post_init__(self):
-        if self.figures is None:
-            self.figures = []
     
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -63,7 +56,7 @@ class LateBenchSolution:
     """Complete solution with steps"""
     steps: List[LateBenchStep]
     final_answer: str
-    total_steps: int
+    total_steps: int = 0  # Calculated in __post_init__
     solution_method: str = "unknown"  # analytical, computational, etc.
     
     def __post_init__(self):
@@ -79,44 +72,52 @@ class LateBenchSolution:
 
 
 @dataclass
-class ErrorInjectionAttempt:
-    """Single manual error injection attempt"""
-    attempt_number: int
-    user_suggestion: str
-    user_remarks: str
-    injection_result: Dict[str, Any]  # result from error injector
-    timestamp: str
-    success: bool
-    
-    def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
-
-
-@dataclass
 class LateBenchErrorInjection:
-    """Error injection data and manual annotations"""
+    """Simplified error injection data - single attempt only"""
     has_errors: bool = False
-    error_info: Optional[Dict[str, Any]] = None  # populated when errors injected
-    manual_attempts: List[ErrorInjectionAttempt] = None
-    final_decision: Optional[str] = None  # yes, maybe, no
-    decision_timestamp: Optional[str] = None
-    custom_suggestions: List[str] = None  # saved error suggestions
-    
-    def __post_init__(self):
-        if self.manual_attempts is None:
-            self.manual_attempts = []
-        if self.custom_suggestions is None:
-            self.custom_suggestions = []
+    injected_solution: Optional['LateBenchSolution'] = None  # Complete error-injected solution
+    base_prompt: Optional[str] = None  # Base error injection prompt used
+    manual_suggestion: Optional[str] = None  # Optional manual suggestion added to prompt
+    target_error_step: Optional[int] = None  # Optional specific step number to target for error
+    injection_timestamp: Optional[str] = None  # When injection was performed
+    success: bool = False  # Whether injection succeeded
+    error_info: Optional[Dict[str, Any]] = None  # Details like which step, explanation
     
     def to_dict(self) -> Dict[str, Any]:
         return {
             "has_errors": self.has_errors,
-            "error_info": self.error_info,
-            "manual_attempts": [attempt.to_dict() for attempt in self.manual_attempts],
-            "final_decision": self.final_decision,
-            "decision_timestamp": self.decision_timestamp,
-            "custom_suggestions": self.custom_suggestions
+            "injected_solution": self.injected_solution.to_dict() if self.injected_solution else None,
+            "base_prompt": self.base_prompt,
+            "manual_suggestion": self.manual_suggestion,
+            "target_error_step": self.target_error_step,
+            "injection_timestamp": self.injection_timestamp,
+            "success": self.success,
+            "error_info": self.error_info
         }
+
+
+@dataclass
+class LateBenchCriticPrediction:
+    """Critic model predictions for error detection"""
+    has_errors: bool = False  # Critic's prediction of whether there are errors
+    error_steps: List[int] = None  # Step numbers the critic identifies as errors
+    confidence_scores: Optional[Dict[int, float]] = None  # Confidence per step (0.0-1.0)
+    explanations: Optional[Dict[int, str]] = None  # Explanations for error steps
+    processing_time: Optional[float] = None  # Time taken for prediction (seconds)
+    model_version: Optional[str] = None  # Which critic model was used
+    prediction_timestamp: Optional[str] = None  # When prediction was made (ISO format)
+    success: bool = True  # Whether the prediction was successful
+    
+    def __post_init__(self):
+        if self.error_steps is None:
+            self.error_steps = []
+        if self.confidence_scores is None:
+            self.confidence_scores = {}
+        if self.explanations is None:
+            self.explanations = {}
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
 
 
 @dataclass
@@ -140,6 +141,8 @@ class LateBenchExample:
     solution: LateBenchSolution
     error_injection: LateBenchErrorInjection
     processing: LateBenchProcessing
+    critic_predictions_original: Optional[LateBenchCriticPrediction] = None  # Critic predictions for original solution
+    critic_predictions_injected: Optional[LateBenchCriticPrediction] = None  # Critic predictions for error-injected solution
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization"""
@@ -149,7 +152,9 @@ class LateBenchExample:
             "problem": self.problem.to_dict(),
             "solution": self.solution.to_dict(),
             "error_injection": self.error_injection.to_dict(),
-            "processing": self.processing.to_dict()
+            "processing": self.processing.to_dict(),
+            "critic_predictions_original": self.critic_predictions_original.to_dict() if self.critic_predictions_original else None,
+            "critic_predictions_injected": self.critic_predictions_injected.to_dict() if self.critic_predictions_injected else None
         }
     
     def to_json(self) -> str:
@@ -158,32 +163,48 @@ class LateBenchExample:
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'LateBenchExample':
-        """Create LateBenchExample from dictionary"""
-        # Reconstruct steps
-        steps = [LateBenchStep(**step) for step in data["solution"]["steps"]]
+        """Create LateBenchExample from dictionary - simple deserialization with backward compatibility"""
         
-        # Reconstruct manual attempts
-        attempts = [ErrorInjectionAttempt(**attempt) for attempt in data["error_injection"]["manual_attempts"]]
+        # Handle backward compatibility for old critic_predictions field
+        critic_predictions_original = None
+        critic_predictions_injected = None
+        
+        if data.get("critic_predictions_original"):
+            critic_predictions_original = LateBenchCriticPrediction(**data["critic_predictions_original"])
+        elif data.get("critic_predictions"):  # Backward compatibility
+            critic_predictions_original = LateBenchCriticPrediction(**data["critic_predictions"])
+            
+        if data.get("critic_predictions_injected"):
+            critic_predictions_injected = LateBenchCriticPrediction(**data["critic_predictions_injected"])
         
         return cls(
-            id=data["id"],
+            id=data["id"], 
             source=LateBenchSource(**data["source"]),
             problem=LateBenchProblem(**data["problem"]),
             solution=LateBenchSolution(
-                steps=steps,
+                steps=[LateBenchStep(**step) for step in data["solution"]["steps"]],
                 final_answer=data["solution"]["final_answer"],
                 total_steps=data["solution"]["total_steps"],
-                solution_method=data["solution"].get("solution_method", "unknown")
+                solution_method=data["solution"]["solution_method"]
             ),
             error_injection=LateBenchErrorInjection(
                 has_errors=data["error_injection"]["has_errors"],
-                error_info=data["error_injection"]["error_info"],
-                manual_attempts=attempts,
-                final_decision=data["error_injection"]["final_decision"],
-                decision_timestamp=data["error_injection"]["decision_timestamp"],
-                custom_suggestions=data["error_injection"]["custom_suggestions"]
+                injected_solution=LateBenchSolution(
+                    steps=[LateBenchStep(**step) for step in data["error_injection"]["injected_solution"]["steps"]],
+                    final_answer=data["error_injection"]["injected_solution"]["final_answer"],
+                    total_steps=data["error_injection"]["injected_solution"]["total_steps"],
+                    solution_method=data["error_injection"]["injected_solution"]["solution_method"]
+                ) if data["error_injection"].get("injected_solution") else None,
+                base_prompt=data["error_injection"].get("base_prompt"),
+                manual_suggestion=data["error_injection"].get("manual_suggestion"),
+                target_error_step=data["error_injection"].get("target_error_step"),
+                injection_timestamp=data["error_injection"].get("injection_timestamp"),
+                success=data["error_injection"].get("success", False),
+                error_info=data["error_injection"].get("error_info")
             ),
-            processing=LateBenchProcessing(**data["processing"])
+            processing=LateBenchProcessing(**data["processing"]),
+            critic_predictions_original=critic_predictions_original,
+            critic_predictions_injected=critic_predictions_injected
         )
 
 
@@ -199,6 +220,9 @@ def generate_latebench_id(source_dataset: str, original_id: str) -> str:
 def create_timestamp() -> str:
     """Create ISO format timestamp"""
     return datetime.utcnow().isoformat() + "Z"
+
+
+# Error injection prompts are now handled by the ErrorInjector unified method
 
 
 # Step importance color mapping for PRM800K
@@ -222,17 +246,3 @@ REASONING_TYPES = {
     "unknown": "Unclassified reasoning"
 }
 
-# Difficulty normalization
-def normalize_difficulty(difficulty: Union[int, float, str], source_dataset: str) -> float:
-    """Normalize difficulty to 0-5 scale"""
-    if source_dataset == "numinamath":
-        # NuminaMath doesn't have explicit difficulty, estimate from complexity
-        return 3.0  # default medium difficulty
-    elif source_dataset == "prm800k":
-        # PRM800K uses 1-5 scale, return as is
-        try:
-            return float(difficulty)
-        except:
-            return 3.0
-    else:
-        return 3.0  # default

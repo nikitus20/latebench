@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LateBench Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            min-height: 80vh;
+        }
+        
+        .sidebar {
+            background: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            padding: 20px;
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+        
+        .section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 2px;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+        }
+        
+        .btn-success { background: #27ae60; }
+        .btn-success:hover { background: #219a52; }
+        
+        .btn-warning { background: #f39c12; }
+        .btn-warning:hover { background: #e67e22; }
+        
+        .btn-danger { background: #e74c3c; }
+        .btn-danger:hover { background: #c0392b; }
+        
+        .btn-secondary { background: #95a5a6; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        
+        select, input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .problem-display {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .solution-step {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 5px 0;
+        }
+        
+        .solution-step.error {
+            background: #ffeaa7;
+            border-color: #fdcb6e;
+        }
+        
+        .solution-step.modified {
+            background: #74b9ff;
+            color: white;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-yes { background: #27ae60; }
+        .status-maybe { background: #f39c12; }
+        .status-no { background: #e74c3c; }
+        .status-undecided { background: #95a5a6; }
+        
+        .stats {
+            background: #ecf0f1;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+        
+        .error-message {
+            background: #e74c3c;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .success-message {
+            background: #27ae60;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧮 LateBench Dashboard</h1>
+            <p>Mathematical Error Injection & Review System</p>
+        </div>
+        
+        <div class="content">
+            <div class="sidebar">
+                <div class="section">
+                    <h3>Dataset Selection</h3>
+                    <select id="datasetSelect">
+                        <option value="">Select dataset...</option>
+                        {% for dataset, types in datasets.items() %}
+                            {% for type in types %}
+                                <option value="{{ dataset }}_{{ type }}">{{ dataset }} ({{ type }})</option>
+                            {% endfor %}
+                        {% endfor %}
+                    </select>
+                    <button class="btn" onclick="loadDataset()">Load Dataset</button>
+                </div>
+                
+                <div class="section">
+                    <h3>Navigation</h3>
+                    <div class="stats" id="navStats">
+                        {% if current_example %}
+                            Example {{ current_index + 1 }} of {{ total_examples }}
+                        {% else %}
+                            No dataset loaded
+                        {% endif %}
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary" onclick="navigate('first')">⏮️ First</button>
+                        <button class="btn btn-secondary" onclick="navigate('prev')">⬅️ Prev</button>
+                        <button class="btn btn-secondary" onclick="navigate('next')">➡️ Next</button>
+                        <button class="btn btn-secondary" onclick="navigate('last')">⏭️ Last</button>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h3>Error Injection</h3>
+                    <textarea id="customSuggestion" placeholder="Custom error suggestion (optional)..." rows="3"></textarea>
+                    <button class="btn" onclick="injectError()">🎲 Inject Error</button>
+                    <button class="btn btn-secondary" onclick="evaluateWithCritic()">🔍 Run Critic</button>
+                </div>
+                
+                <div class="section">
+                    <h3>Manual Decision</h3>
+                    <div>
+                        <button class="btn btn-success" onclick="saveDecision('yes')">✅ Yes (Good)</button>
+                        <button class="btn btn-warning" onclick="saveDecision('maybe')">⚠️ Maybe</button>
+                        <button class="btn btn-danger" onclick="saveDecision('no')">❌ No (Bad)</button>
+                    </div>
+                    <textarea id="decisionNotes" placeholder="Notes (optional)..." rows="2"></textarea>
+                </div>
+                
+                <div class="section">
+                    <h3>Session Stats</h3>
+                    <div class="stats" id="sessionStats">
+                        <div>Decisions: {{ manual_decisions|length }}</div>
+                        <div>
+                            <span class="status-indicator status-yes"></span> Yes: 0
+                            <span class="status-indicator status-maybe"></span> Maybe: 0
+                            <span class="status-indicator status-no"></span> No: 0
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="exportDecisions()">💾 Export</button>
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <div id="currentExample">
+                    {% if current_example %}
+                        <div class="section">
+                            <h3>Problem Statement</h3>
+                            <div class="problem-display">{{ current_example.problem.statement or "No problem statement" }}</div>
+                        </div>
+                        
+                        <div class="section">
+                            <h3>Original Solution</h3>
+                            <div id="originalSolution">
+                                {% for step in current_example.solution.steps %}
+                                    <div class="solution-step">
+                                        <strong>Step {{ loop.index }}:</strong> {{ step.content if step.content else step }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="section" id="injectedSolution" style="display: none;">
+                            <h3>Modified Solution (After Error Injection)</h3>
+                            <div id="modifiedSolutionDisplay"></div>
+                        </div>
+                        
+                        <div class="section" id="criticResult" style="display: none;">
+                            <h3>Critic Evaluation</h3>
+                            <div id="criticResultDisplay"></div>
+                        </div>
+                    {% else %}
+                        <div class="loading">
+                            <h3>No Example Selected</h3>
+                            <p>Please load a dataset and navigate to an example to begin.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentInjectionResult = null;
+
+        function loadDataset() {
+            const select = document.getElementById('datasetSelect');
+            const selectedValue = select.value;
+            
+            if (!selectedValue) {
+                alert('Please select a dataset');
+                return;
+            }
+            
+            const [dataset, type] = selectedValue.split('_');
+            
+            fetch('/api/load_dataset', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({dataset_name: dataset, problem_type: type})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Refresh page to show new dataset
+                } else {
+                    showError('Failed to load dataset: ' + data.error);
+                }
+            })
+            .catch(error => showError('Error loading dataset: ' + error));
+        }
+
+        function navigate(direction) {
+            fetch(`/api/navigate/${direction}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // Refresh to show new example
+                }
+            })
+            .catch(error => showError('Navigation error: ' + error));
+        }
+
+        function injectError() {
+            const customSuggestion = document.getElementById('customSuggestion').value;
+            
+            showLoading('Injecting error...');
+            
+            fetch('/api/inject_error', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({custom_suggestion: customSuggestion})
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    currentInjectionResult = data.injection_result;
+                    displayInjectionResult(data.injection_result);
+                    showSuccess('Error injection successful!');
+                } else {
+                    showError('Error injection failed: ' + data.error);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showError('Error injection error: ' + error);
+            });
+        }
+
+        function evaluateWithCritic() {
+            showLoading('Running critic evaluation...');
+            
+            fetch('/api/evaluate_with_critic', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({modified_solution: currentInjectionResult?.modified_solution})
+            })
+            .then(response => response.json())
+            .then(data => {
+                hideLoading();
+                if (data.success) {
+                    displayCriticResult(data.critic_result);
+                    showSuccess('Critic evaluation complete!');
+                } else {
+                    showError('Critic evaluation failed: ' + data.error);
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showError('Critic evaluation error: ' + error);
+            });
+        }
+
+        function saveDecision(decision) {
+            const notes = document.getElementById('decisionNotes').value;
+            
+            fetch('/api/save_decision', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({decision: decision, notes: notes})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess(`Decision saved: ${decision}`);
+                    updateStats();
+                    document.getElementById('decisionNotes').value = '';
+                } else {
+                    showError('Failed to save decision: ' + data.error);
+                }
+            })
+            .catch(error => showError('Decision save error: ' + error));
+        }
+
+        function exportDecisions() {
+            fetch('/api/export_decisions')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess('Decisions exported to: ' + data.export_path);
+                } else {
+                    showError('Export failed: ' + data.error);
+                }
+            })
+            .catch(error => showError('Export error: ' + error));
+        }
+
+        function displayInjectionResult(result) {
+            const section = document.getElementById('injectedSolution');
+            const display = document.getElementById('modifiedSolutionDisplay');
+            
+            let html = '';
+            if (result.modified_solution && result.modified_solution.steps) {
+                result.modified_solution.steps.forEach(step => {
+                    const cssClass = step.error ? 'solution-step error' : 
+                                   step.modified ? 'solution-step modified' : 'solution-step';
+                    html += `<div class="${cssClass}">
+                        <strong>Step ${step.step_num}:</strong> ${step.content}
+                        ${step.error ? ' <strong>[ERROR INJECTED]</strong>' : ''}
+                        ${step.modified ? ' <strong>[MODIFIED]</strong>' : ''}
+                    </div>`;
+                });
+            }
+            
+            display.innerHTML = html;
+            section.style.display = 'block';
+            
+            // Reprocess MathJax
+            if (window.MathJax) {
+                MathJax.typesetPromise([display]);
+            }
+        }
+
+        function displayCriticResult(result) {
+            const section = document.getElementById('criticResult');
+            const display = document.getElementById('criticResultDisplay');
+            
+            let html = `
+                <div><strong>Has Errors:</strong> ${result.has_errors ? 'Yes' : 'No'}</div>
+                <div><strong>Error Steps:</strong> ${result.error_steps.join(', ') || 'None'}</div>
+                <div><strong>Processing Time:</strong> ${result.processing_time.toFixed(2)}s</div>
+            `;
+            
+            if (result.explanations && Object.keys(result.explanations).length > 0) {
+                html += '<div><strong>Explanations:</strong></div>';
+                for (const [step, explanation] of Object.entries(result.explanations)) {
+                    html += `<div class="solution-step"><strong>Step ${step}:</strong> ${explanation}</div>`;
+                }
+            }
+            
+            display.innerHTML = html;
+            section.style.display = 'block';
+        }
+
+        function updateStats() {
+            fetch('/api/stats')
+            .then(response => response.json())
+            .then(data => {
+                const statsDiv = document.getElementById('sessionStats');
+                statsDiv.innerHTML = `
+                    <div>Decisions: ${data.decisions_made}/${data.total_examples}</div>
+                    <div>
+                        <span class="status-indicator status-yes"></span> Yes: ${data.decisions_by_type.yes}
+                        <span class="status-indicator status-maybe"></span> Maybe: ${data.decisions_by_type.maybe}
+                        <span class="status-indicator status-no"></span> No: ${data.decisions_by_type.no}
+                    </div>
+                    <div>Progress: ${(data.completion_rate * 100).toFixed(1)}%</div>
+                `;
+            });
+        }
+
+        function showLoading(message) {
+            // Simple loading indicator
+            document.body.style.cursor = 'wait';
+        }
+
+        function hideLoading() {
+            document.body.style.cursor = 'default';
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.textContent = message;
+            document.body.appendChild(successDiv);
+            setTimeout(() => successDiv.remove(), 3000);
+        }
+
+        // Update stats on page load
+        document.addEventListener('DOMContentLoaded', updateStats);
+    </script>
+</body>
+</html>

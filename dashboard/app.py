@@ -7,16 +7,16 @@ import os
 import logging
 from datetime import datetime
 
-# Add parent directory to path for imports
+# Add parent directory and src directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src'))
 
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 import json
 from typing import Dict, Any, Optional
 
 from dashboard.utils import DashboardData, analyze_critic_performance
-from src.critic import LLMCritic, evaluate_single_example
-from src.adapters.latebench_adapter import LateBenchAdapter, EvaluationPipeline
+from core.critic import MathCritic, evaluate_single_example
 
 # Configure logging (will be properly set up by run_dashboard.py)
 logger = logging.getLogger(__name__)
@@ -60,13 +60,15 @@ def initialize_data():
     
     if results_file:
         dashboard_data = DashboardData(results_file)
-        dashboard_data.load_critic_results()  # Load any existing critic results
+        # Load any existing critic results if method exists
+        if hasattr(dashboard_data, 'load_critic_results'):
+            dashboard_data.load_critic_results()
     else:
         print("Warning: No results file found. Dashboard will start empty.")
         dashboard_data = DashboardData()
     
     # Initialize LateBench adapter for batch operations
-    latebench_adapter = LateBenchAdapter(enable_dashboard_integration=True)
+    latebench_adapter = None  # TODO: Implement batch operations later
 
 
 @app.route('/')
@@ -293,7 +295,7 @@ def api_manual_injection(example_id):
         use_general_injection = not custom_suggestions
         
         # Import error injector
-        from src.error_injector import AdversarialErrorInjector
+        from core.error_injector import ErrorInjector as AdversarialErrorInjector
         
         # Create injector instance
         injector = AdversarialErrorInjector()
@@ -379,7 +381,7 @@ def api_general_injection(example_id):
         user_remarks = data.get('user_remarks', '').strip()
         
         # Import error injector
-        from src.error_injector import AdversarialErrorInjector
+        from core.error_injector import ErrorInjector as AdversarialErrorInjector
         
         # Create injector instance
         injector = AdversarialErrorInjector()
@@ -582,11 +584,14 @@ def api_switch_dataset():
         }), 500
 
 
-# Batch Evaluation API Endpoints
+# Batch Evaluation API Endpoints - TODO: Re-implement later
 
-@app.route('/api/batch_evaluate', methods=['POST'])
-def api_batch_evaluate():
+# @app.route('/api/batch_evaluate', methods=['POST'])
+def api_batch_evaluate_disabled():
     """Start batch evaluation of current dataset."""
+    return jsonify({'success': False, 'error': 'Batch evaluation disabled temporarily'})
+    
+def api_batch_evaluate_old():
     try:
         data = request.get_json() or {}
         
@@ -648,8 +653,11 @@ def api_batch_evaluate():
         }), 500
 
 
-@app.route('/api/batch_status')
-def api_batch_status():
+# @app.route('/api/batch_status')
+def api_batch_status_disabled():
+    return jsonify({'status': 'disabled', 'message': 'Batch evaluation disabled temporarily'})
+
+def api_batch_status_old():
     """Get status of batch evaluation."""
     try:
         # Check if evaluation completed
@@ -687,8 +695,11 @@ def api_batch_status():
         }), 500
 
 
-@app.route('/api/evaluation_summary/<dataset_name>')
-def api_evaluation_summary(dataset_name):
+# @app.route('/api/evaluation_summary/<dataset_name>')
+def api_evaluation_summary_disabled(dataset_name):
+    return jsonify({'error': 'Evaluation summary disabled temporarily'})
+
+def api_evaluation_summary_old(dataset_name):
     """Get comprehensive evaluation summary for a dataset."""
     try:
         summary = latebench_adapter.get_evaluation_summary(dataset_name)
@@ -700,8 +711,11 @@ def api_evaluation_summary(dataset_name):
         }), 500
 
 
-@app.route('/api/batch_history')
-def api_batch_history():
+# @app.route('/api/batch_history')
+def api_batch_history_disabled():
+    return jsonify([])
+
+def api_batch_history_old():
     """Get history of batch evaluations."""
     try:
         # Get current dataset name
@@ -737,8 +751,11 @@ def api_batch_history():
         }), 500
 
 
-@app.route('/api/refresh_critic_results', methods=['POST'])
-def api_refresh_critic_results():
+# @app.route('/api/refresh_critic_results', methods=['POST'])
+def api_refresh_critic_results_disabled():
+    return jsonify({'success': False, 'error': 'Refresh disabled temporarily'})
+
+def api_refresh_critic_results_old():
     """Refresh critic results from storage for current dataset."""
     try:
         # Get current dataset info

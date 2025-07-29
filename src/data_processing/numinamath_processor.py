@@ -7,11 +7,10 @@ import json
 import os
 import re
 from typing import List, Dict, Any, Optional
-from .unified_schema import (
+from unified_schema import (
     LateBenchExample, LateBenchSource, LateBenchProblem, 
     LateBenchSolution, LateBenchStep, LateBenchErrorInjection,
-    LateBenchProcessing, generate_latebench_id, create_timestamp,
-    normalize_difficulty
+    LateBenchProcessing, generate_latebench_id, create_timestamp
 )
 
 
@@ -185,7 +184,7 @@ class NuminaMathProcessor:
             source = LateBenchSource(
                 dataset=self.dataset_name,
                 original_id=original_id,
-                difficulty=normalize_difficulty(3.0, self.dataset_name),  # Default medium
+                difficulty=3.0,  # Default medium
                 subject=self._extract_subject(problem_text),
                 competition=raw_example.get('source', '').split('_')[0] if raw_example.get('source') else None,
                 metadata=raw_example.get('metadata', {})

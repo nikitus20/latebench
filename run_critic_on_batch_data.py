@@ -224,12 +224,7 @@ def convert_injection_to_latebench_format(injection_data: Dict[str, Any]) -> Opt
     
     # Create problem object
     problem_data = original_example.get('problem', {})
-    problem = LateBenchProblem(
-        statement=problem_data.get('statement', ''),
-        constraints=problem_data.get('constraints'),
-        context=problem_data.get('context'),
-        figures=problem_data.get('figures', [])
-    )
+    problem = LateBenchProblem(statement=problem_data.get('statement', ''))
     
     # Create LateBenchExample
     from src.data_processing.unified_schema import LateBenchSource, LateBenchErrorInjection, LateBenchProcessing
