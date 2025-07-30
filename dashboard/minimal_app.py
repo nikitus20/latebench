@@ -19,7 +19,8 @@ from typing import List, Dict, Any, Optional
 from core.data_loader import LateBenchDataLoader
 from core.error_injector import ErrorInjector
 from core.critic import MathCritic, evaluate_single_example
-from data_processing.unified_schema import LateBenchExample
+from data_processing.unified_schema import LateBenchExample, LateBenchManualDecision
+from utils.storage import save_examples_to_file, load_examples_from_file
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -28,27 +29,49 @@ app.secret_key = 'latebench_minimal_dashboard'
 # Global state
 examples: List[LateBenchExample] = []
 current_index = 0
-manual_decisions = {}
+PERSISTENT_FILE = "dashboard/data/examples_with_decisions.json"
 
-def load_numinamath_dataset():
-    """Load the NuminaMath LateBench dataset using LateBenchDataLoader."""
+def load_dataset():
+    """Load the LateBench dataset, preferring persistent file if it exists."""
     global examples
     
     try:
-        # Use LateBenchDataLoader for efficient loading
+        # First try to load from persistent file
+        if os.path.exists(PERSISTENT_FILE):
+            print(f"📂 Loading examples from persistent file: {PERSISTENT_FILE}")
+            examples = load_examples_from_file(PERSISTENT_FILE)
+            print(f"✅ Loaded {len(examples)} examples with persistent decisions")
+            return True
+        
+        # If no persistent file, load from original dataset
+        print("📂 No persistent file found, loading fresh from dataset...")
         loader = LateBenchDataLoader()
-        examples = loader.load_dataset("numinamath", "complete")
+        examples = loader.load_dataset("prm800k", "complete")
         
         if not examples:
-            print(f"❌ No examples loaded from numinamath dataset")
+            print(f"❌ No examples loaded from prm800k dataset")
             return False
             
-        print(f"✅ Loaded {len(examples)} LateBenchExample objects from NuminaMath dataset")
+        print(f"✅ Loaded {len(examples)} LateBenchExample objects from PRM800K dataset")
+        
+        # Save to persistent file for future loads
+        save_examples_to_persistent_file()
+        
         return True
         
     except Exception as e:
         print(f"❌ Error loading dataset: {e}")
         return False
+
+def save_examples_to_persistent_file():
+    """Save current examples to persistent file."""
+    try:
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(PERSISTENT_FILE), exist_ok=True)
+        save_examples_to_file(examples, PERSISTENT_FILE)
+        print(f"💾 Saved {len(examples)} examples to persistent file")
+    except Exception as e:
+        print(f"❌ Error saving to persistent file: {e}")
 
 @app.route('/')
 def index():
@@ -63,12 +86,17 @@ def index():
     
     current_example = examples[current_index] if current_index < len(examples) else None
     
+    # Get current decision if it exists
+    current_decision = None
+    if current_example and current_example.manual_decision and current_example.manual_decision.decision:
+        current_decision = current_example.manual_decision.decision
+    
     return render_template('minimal_dashboard.html',
                          examples=[],  # Don't pass all examples to template
                          current_example=current_example,
                          current_index=current_index,
                          total_examples=len(examples),
-                         manual_decisions=manual_decisions)
+                         current_decision=current_decision)
 
 @app.route('/api/navigate/<direction>')
 def navigate(direction):
@@ -140,6 +168,9 @@ def inject_error():
         # Update the example in our examples list
         examples[current_index] = result_example
         
+        # Save to persistent file
+        save_examples_to_persistent_file()
+        
         if result_example.error_injection.success:
             return jsonify({
                 'success': True,
@@ -177,6 +208,9 @@ def evaluate_with_critic():
         # Update the example in our examples list
         examples[current_index] = updated_example
         
+        # Save to persistent file
+        save_examples_to_persistent_file()
+        
         # Return the appropriate critic prediction based on evaluation mode
         if evaluation_mode == "original":
             critic_result = updated_example.critic_predictions_original.to_dict() if updated_example.critic_predictions_original else None
@@ -213,18 +247,27 @@ def save_decision():
     
     try:
         current_example = examples[current_index]
-        example_id = current_example.id  # LateBenchExample has id attribute
         
-        manual_decisions[example_id] = {
-            'decision': decision,
-            'notes': notes,
-            'example_index': current_index
-        }
+        # Create or update the manual decision 
+        from datetime import datetime
+        current_example.manual_decision = LateBenchManualDecision(
+            decision=decision,
+            notes=notes.strip() if notes.strip() else None,
+            annotator="dashboard_user",  # Could be made configurable later
+            timestamp=datetime.utcnow().isoformat() + "Z"
+        )
+        
+        # Update the example in our examples list
+        examples[current_index] = current_example
+        
+        # Save to persistent file
+        save_examples_to_persistent_file()
         
         return jsonify({
             'success': True,
             'decision': decision,
-            'example_id': example_id
+            'notes': notes,
+            'example_id': current_example.id
         })
         
     except Exception as e:
@@ -250,6 +293,9 @@ def save_suggestion():
         # Update the example in our examples list
         examples[current_index] = current_example
         
+        # Save to persistent file
+        save_examples_to_persistent_file()
+        
         return jsonify({
             'success': True,
             'message': 'Suggestion saved successfully',
@@ -263,14 +309,23 @@ def save_suggestion():
 @app.route('/api/stats')
 def get_stats():
     """Get current session statistics."""
+    # Count decisions from example objects
+    decisions_with_manual = [ex for ex in examples if ex.manual_decision and ex.manual_decision.decision]
+    decisions_made = len(decisions_with_manual)
+    
+    # Count by decision type
+    yes_count = sum(1 for ex in examples if ex.manual_decision and ex.manual_decision.decision == 'yes')
+    maybe_count = sum(1 for ex in examples if ex.manual_decision and ex.manual_decision.decision == 'maybe')
+    no_count = sum(1 for ex in examples if ex.manual_decision and ex.manual_decision.decision == 'no')
+    
     stats = {
         'total_examples': len(examples),
         'current_index': current_index,
-        'decisions_made': len(manual_decisions),
+        'decisions_made': decisions_made,
         'decisions_by_type': {
-            'yes': sum(1 for d in manual_decisions.values() if d['decision'] == 'yes'),
-            'maybe': sum(1 for d in manual_decisions.values() if d['decision'] == 'maybe'),
-            'no': sum(1 for d in manual_decisions.values() if d['decision'] == 'no')
+            'yes': yes_count,
+            'maybe': maybe_count,
+            'no': no_count
         }
     }
     
@@ -580,7 +635,7 @@ if __name__ == '__main__':
     print("🚀 Starting LateBench Minimal Dashboard")
     
     # Load dataset
-    if not load_numinamath_dataset():
+    if not load_dataset():
         print("❌ Failed to load dataset")
         exit(1)
     

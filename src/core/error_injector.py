@@ -106,6 +106,9 @@ class ErrorInjector:
                 solution_method=example.solution.solution_method
             )
             
+            # Extract injected error step numbers from the solution
+            injected_error_steps = [step.step_number for step in complete_steps if step.is_error]
+            
             # Update error injection data
             example.error_injection.has_errors = True
             example.error_injection.injected_solution = injected_solution
@@ -119,6 +122,9 @@ class ErrorInjector:
                 'step_targeting': 'manual' if example.error_injection.target_error_step else 'automatic'
             }
             
+            # Update injected error steps field (preserve original_error_steps)
+            example.injected_error_steps = injected_error_steps
+            
             return example
             
         except Exception as e:
@@ -126,6 +132,8 @@ class ErrorInjector:
             example.error_injection.success = False
             example.error_injection.error_info = {"error": str(e)}
             example.error_injection.injection_timestamp = create_timestamp()
+            # Keep injected_error_steps empty for failed injections
+            example.injected_error_steps = []
             return example
 
     def inject_batch(self, examples: List[LateBenchExample], max_workers: int = 4) -> List[LateBenchExample]:

@@ -54,13 +54,16 @@ logs/
 
 # Data (large files) 
 data/numinamath_local/
+data/numinamath_full.json
 data/filtered_long_solutions.json
 data/filtered_long_solutions.json.gz
 data/experiments/
 data/datasets/latebench_*.json
 data/sources/
+data/prm800k/
 
-# Results (generated files)
+# Results (generated files and experiments)
+results/
 data/checkpoint_batch_*.json
 data/*_results.json
 data/*.png
@@ -71,6 +74,9 @@ data/critic_store/
 data/cache/
 data/test_critic_store/
 
+# Dashboard data
+dashboard/data/
+
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb
@@ -78,3 +84,4 @@ data/test_critic_store/
 # Temporary files
 *.tmp
 *.temp
+prm800k_temp/

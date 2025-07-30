@@ -23,6 +23,15 @@
         .btn-danger:hover { background: #c0392b; }
         .btn-secondary { background: #95a5a6; }
         .btn-secondary:hover { background: #7f8c8d; }
+        
+        /* Decision button styles */
+        .decision-buttons { display: flex; gap: 3px; margin-bottom: 10px; }
+        .decision-btn { padding: 6px 8px; font-size: 12px; flex: 1; min-width: 0; }
+        .decision-btn.inactive { background: #ecf0f1; color: #7f8c8d; border: 1px solid #bdc3c7; }
+        .decision-btn.inactive:hover { background: #d5dbdb; }
+        .decision-btn-yes.active { background: #27ae60; color: white; }
+        .decision-btn-maybe.active { background: #f39c12; color: white; }
+        .decision-btn-no.active { background: #e74c3c; color: white; }
         .btn-loading { position: relative; animation: pulse 1.5s ease-in-out infinite; }
         .btn-loading::after { content: "⏳"; margin-left: 5px; }
         @keyframes pulse {
@@ -111,14 +120,39 @@
                     
                     <div class="section">
                         <h3>Manual Decision</h3>
-                        <div>
-                            <button class="btn btn-success" onclick="saveDecision('yes')">✅ Yes</button>
-                            <button class="btn btn-warning" onclick="saveDecision('maybe')">⚠️ Maybe</button>
-                            <button class="btn btn-danger" onclick="saveDecision('no')">❌ No</button>
+                        <div class="decision-buttons">
+                            <button id="yesBtn" class="decision-btn decision-btn-yes inactive" onclick="saveDecision('yes')">✅ Yes</button>
+                            <button id="maybeBtn" class="decision-btn decision-btn-maybe inactive" onclick="saveDecision('maybe')">⚠️ Maybe</button>
+                            <button id="noBtn" class="decision-btn decision-btn-no inactive" onclick="saveDecision('no')">❌ No</button>
                         </div>
                         <textarea id="decisionNotes" placeholder="Notes..." rows="2"></textarea>
                     </div>
                     
+                    <div class="section">
+                        <h3>Current Example Info</h3>
+                        {% if current_example %}
+                            <div style="font-size: 12px; line-height: 1.4;">
+                                <strong>Dataset:</strong> {{ current_example.source.dataset }}<br>
+                                <strong>Has Natural Errors:</strong> 
+                                {% if current_example.error_injection.has_errors %}
+                                    <span style="color: #e74c3c;">Yes</span>
+                                {% else %}
+                                    <span style="color: #27ae60;">No</span>
+                                {% endif %}<br>
+                                <strong>Error Steps:</strong> 
+                                {% set error_steps = current_example.solution.steps | selectattr('is_error', 'equalto', true) | list %}
+                                {% if error_steps %}
+                                    <span style="color: #e74c3c;">{{ error_steps | length }}</span>
+                                {% else %}
+                                    <span style="color: #27ae60;">0</span>
+                                {% endif %}<br>
+                                {% if current_example.source.metadata.get('human_annotated', False) %}
+                                    <strong>Annotation Time:</strong> {{ (current_example.source.metadata.get('total_annotation_time_ms', 0) / 1000) | round(1) }}s<br>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+
                     <div class="section">
                         <h3>Stats</h3>
                         <div id="stats">Decisions: {{ manual_decisions|length }}</div>
@@ -133,11 +167,19 @@
                         </div>
                         
                         <div class="section">
-                            <h3>Original Solution ({{ current_example.solution.steps|length }} steps)</h3>
+                            <h3>Original Solution ({{ current_example.solution.steps|length }} steps)
+                                {% if current_example.source.metadata.get('human_annotated', False) %}
+                                    <span style="color: #27ae60; font-size: 14px; font-weight: normal;"> [Human Annotated]</span>
+                                {% endif %}
+                            </h3>
                             <div class="solution-container" id="originalSolution">
                                 {% for step in current_example.solution.steps %}
-                                    <div class="solution-step">
-                                        <strong>Step {{ loop.index }}:</strong> {{ step.content }}
+                                    <div class="solution-step {{ 'error' if step.is_error else '' }}">
+                                        <strong>Step {{ step.step_number }}:</strong> {{ step.content }}
+                                        {% if step.is_error %} <strong style="color: #e74c3c;">[ERROR]</strong>{% endif %}
+                                        {% if step.importance == 'high' and not step.is_error %}
+                                            <span style="color: #27ae60; font-size: 12px; font-weight: bold;"> [HIGH]</span>
+                                        {% endif %}
                                     </div>
                                 {% endfor %}
                             </div>
@@ -200,6 +242,25 @@
                 }
             })
             .catch(error => showError('Navigation error: ' + error));
+        }
+
+        function updateDecisionButtons(currentDecision) {
+            // Reset all buttons to inactive state
+            const buttons = ['yesBtn', 'maybeBtn', 'noBtn'];
+            buttons.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                btn.classList.remove('active');
+                btn.classList.add('inactive');
+            });
+
+            // Activate the current decision button
+            if (currentDecision) {
+                const activeBtn = document.getElementById(currentDecision + 'Btn');
+                if (activeBtn) {
+                    activeBtn.classList.remove('inactive');
+                    activeBtn.classList.add('active');
+                }
+            }
         }
 
         function jumpToExample() {
@@ -346,6 +407,7 @@
             .then(data => {
                 if (data.success) {
                     showSuccess(`Decision saved: ${decision}`);
+                    updateDecisionButtons(decision);
                     updateStats();
                 } else {
                     showError('Failed to save decision: ' + data.error);
@@ -438,8 +500,15 @@
             setTimeout(() => successDiv.remove(), 3000);
         }
 
-        // Update stats on page load
-        document.addEventListener('DOMContentLoaded', updateStats);
+        // Initialize page on load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            {% if current_decision %}
+                updateDecisionButtons('{{ current_decision }}');
+            {% else %}
+                updateDecisionButtons(null);
+            {% endif %}
+        });
     </script>
 </body>
 </html>

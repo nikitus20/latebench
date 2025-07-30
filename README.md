@@ -1,171 +1,256 @@
 # LateBench: Mathematical Reasoning Error Analysis Framework
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![Dashboard](https://img.shields.io/badge/Dashboard-Live-green.svg)](http://localhost:8000)
+**LateBench** is a research project for analyzing and evaluating reasoning errors in math problems. The project focuses on **late-occurring errors**—subtle mistakes that appear deep within mathematical reasoning chains, making them particularly challenging to detect.
 
-**LateBench** is a comprehensive research framework for analyzing and evaluating mathematical reasoning errors in Large Language Models (LLMs). The project focuses on **late-occurring errors**—subtle mistakes that appear deep within mathematical reasoning chains, making them particularly challenging to detect and crucial for robust AI evaluation.
+## 🎯 Project Vision & Objectives
 
-## 🎯 Ultimate Vision & Objectives
-
-LateBench addresses a critical gap in mathematical reasoning evaluation by creating a standardized framework that combines:
+LateBench addresses critical gaps in mathematical reasoning evaluation by creating a standardized framework that combines:
 
 ### **Core Research Goals**
-1. **Systematic Error Analysis**: Study both naturally occurring and artificially injected mathematical reasoning errors
-2. **Late Error Focus**: Specifically target errors that occur in the final third of solution steps (most challenging to detect)
-3. **Multi-Dataset Unification**: Create a unified evaluation standard across diverse mathematical reasoning datasets
-4. **Critic Quality Assessment**: Develop robust metrics for evaluating LLM critics' error detection capabilities
-5. **Research Infrastructure**: Provide a complete toolkit for mathematical reasoning research
+1. **Systematic Error Analysis**: Study late error performance on late appearing errors, both naturally occurring and artificially injected.
+2. **Data curation**: Create a dataset of erroneous solutions with careful mistake injection.
+3. **Multi-Dataset Unification**: Combine problems across diverse mathematical reasoning datasets
+4. **Critic Quality Assessment**: Analyze current critic capabilities on the created benchmark
+5. **Research Infrastructure**: Create a dashboard for convenient visualization that allows simple experiments with error injection.
 
-### **Target Dataset Ecosystem**
-- ✅ **PRM800K**: Human-annotated process supervision dataset (800K+ examples)
-- ✅ **NuminaMath-CoT**: Massive competition mathematics dataset (859K+ examples) with step-by-step solutions
-- ✅ **MATH Level 5**: Natural error examples from high-difficulty problems
-- ✅ **ProcessBench OlympiadBench**: Mathematics Olympiad problems with error annotations
-- ✅ **ProcessBench OmniMath**: Complex multi-domain mathematical reasoning problems
-- ✅ **DeltaBench Metrics**: Research-grade evaluation metrics implementation
-- 🔄 **Custom Datasets**: Framework supports easy integration of new datasets
+## 🏗️ Complete Project Architecture & Data Flow
 
-## 🚀 Current Implementation Status
+### **Full Data Processing Pipeline**
 
-### ✅ **Production-Ready Core System**
+```mermaid
+graph TD
+    A[Raw Datasets] --> B[Dataset Processors]
+    B --> C[LateBench Unified Format]
+    C --> D[Dataset Filtering]
+    D --> E[Manual Dashboard Loading]
+    E --> F{Error Source}
+    F -->|Natural Errors| G[Human Annotations]
+    F -->|Artificial Errors| H[Error Injection]
+    G --> I[Critic Evaluation]
+    H --> I
+    I --> J[Metrics Computation]
+    J --> K[Results Storage]
+```
 
-#### **1. Multi-Dataset Processing Pipeline**
-- **Unified Schema**: `LateBenchExample` format standardizes all datasets
-- **Smart Data Processing**: 
-  - PRM800K: Extracts human annotations (error steps, importance ratings)
-  - NuminaMath: Processes competition problems with solution parsing
-  - MATH: Handles natural error examples with difficulty classification
-- **Solution Continuation**: Revolutionary feature that extends PRM800K solutions beyond first error to create realistic evaluation scenarios
-- **Metadata Preservation**: Maintains source dataset characteristics while enabling cross-dataset analysis
+### **Detailed Data Flow Documentation**
 
-#### **2. Advanced Error Injection System**
-- **GPT-4 Powered**: Sophisticated prompt engineering for natural-looking error injection
-- **Late Error Targeting**: Specifically places errors in final 33% of solution steps
-- **Error Type Taxonomy**: Comprehensive classification system:
-  - Logical errors (incomplete case analysis, invalid assumptions)
-  - Theorem misapplication (domain violations, incorrect prerequisites)  
-  - Invalid generalizations (unjustified pattern extensions)
-  - Assumption errors (missing constraints, circular reasoning)
-- **Custom Suggestions**: Dashboard integration for manual error specification
-- **Quality Assurance**: Maintains mathematical validity while introducing subtle flaws
+#### **Phase 1: Raw Data Loading → Processing**
 
-#### **3. LLM Critic Evaluation Framework**
+**1.1 Dataset Sources**
+- **PRM800K**: Human-annotated step-level mathematical reasoning with ratings (-1, 0, +1)
+- **NuminaMath**: Large-scale competition mathematics with step-by-step solutions
+- **ProcessBench**: Mathematics Olympiad problems with expert annotations
+
+**1.2 Processing to LateBench Format**
+```python
+# Each processor converts raw data to unified LateBenchExample format
+prm800k_processor = PRM800KProcessor()
+examples = prm800k_processor.process_dataset(
+    input_file="data/prm800k/phase2_train.jsonl",
+    output_file="data/datasets/latebench_prm800k_complete_v2.json"
+)
+```
+
+**Key Processing Features:**
+- **Unified Schema**: All datasets converted to `LateBenchExample` objects with consistent fields
+- **Explicit Error Location**: `original_error_steps` and `injected_error_steps` fields for clean ground truth
+- **Human Annotation Preservation**: Maintains step-level ratings and importance from human annotators
+- **Metadata Conservation**: Preserves source dataset characteristics while enabling cross-dataset analysis
+
+#### **Phase 2: LateBench Format → Filtering**
+
+**2.1 Dataset Filtering by solution length**
+```bash
+# Automatic filtering based on step count and error presence
+python3 -c "
+# Correct examples: ≥20 steps, no original errors
+# Error examples: ≥10 steps, has human-identified errors
+correct_examples = filter(lambda ex: len(ex.solution.steps) >= 20 and not ex.original_error_steps)
+error_examples = filter(lambda ex: len(ex.solution.steps) >= 10 and ex.original_error_steps)
+"
+```
+
+**Current Filtered Dataset Statistics:**
+- **PRM800K Correct**: 1,579 examples (≥20 steps, no errors)
+- **PRM800K Error**: 16,100 examples (≥10 steps, finishes with human-identified errors)
+
+#### **Phase 3: Manual Dashboard Loading**
+
+**3.1 Interactive Research Dashboard**
+```bash
+python3 dashboard/minimal_app.py
+# Access at http://localhost:8080
+```
+
+**Dashboard Features:**
+- **Dataset Selection**: Load different subsets (correct vs error examples)
+- **Problem Navigation**: Browse through examples with step-by-step visualization
+- **Real-time Processing**: Manual error injection and critic evaluation
+- **Decision Workflow**: Yes/Maybe/No curation for quality control
+
+#### **Phase 4: Error Source Handling**
+
+**4.1 Natural Errors (from Human Annotations)**
+- **Ground Truth Source**: `original_error_steps` field populated from human ratings
+- **PRM800K Example**: Human annotators identified specific steps with -1 ratings as errors
+
+**4.2 Artificial Errors (Error Injection)**
+```python
+injector = ErrorInjector(model="gpt-4-turbo-preview")
+result_example = injector.inject_error(example)
+# Populates injected_error_steps field with artificial error locations
+```
+
+**Error Injection Features:**
+- **GPT-4 Powered**: Sophisticated natural-looking error introduction
+- **Late Error Targeting**: Focus on errors in final third of solution steps
+- **Custom Suggestions**: Manual error specification through dashboard
+- **Explicit Tracking**: `injected_error_steps` field records exact error locations
+
+#### **Phase 5: Critic Evaluation**
+
+**5.1 Batch Critic Processing**
+```bash
+python3 scripts/run_batch_processing.py \
+  --input-file data/datasets/latebench_prm800k_error_v2.json \
+  --output-file results/experiments/prm800k_critic_results_100.json \
+  --run-critic --critic-mode original --max-examples 100
+```
+
+**Critic Features:**
 - **Independent Assessment**: GPT-4o-mini powered mathematical reasoning validation
 - **Step-Level Analysis**: Granular error detection with detailed explanations
-- **Batch Processing**: Parallel evaluation with intelligent caching and rate limiting
-- **Ground Truth Comparison**: Performance metrics against human annotations
-- **DeltaBench Compatibility**: Research-grade metrics including F1, precision, recall
+- **Batch Processing**: Parallel evaluation with intelligent rate limiting
+- **Embedded Predictions**: Results stored directly in `critic_predictions_original/injected` fields
 
-#### **4. Interactive Research Dashboard**
-- **Problem Navigation**: Browse mathematical problems with advanced filtering
-- **Real-Time Error Injection**: Interactive interface for manual error curation
-- **Critic Evaluation**: Run and visualize LLM critic performance
-- **Decision Workflow**: Yes/Maybe/No curation for high-quality dataset creation
-- **Progress Tracking**: Visual feedback and state management
-- **Multi-Dataset Support**: Seamless switching between dataset sources
+#### **Phase 6: Metrics Computation**
 
-#### **5. Comprehensive Quality Metrics**
-- **DeltaBench Standards**: Step-level and example-level evaluation metrics
-- **Error Detection Analysis**: Early vs. late detection, false positive rates
-- **Calibration Metrics**: Confidence assessment and prediction quality
-- **Per-Example Breakdown**: Detailed analysis for research insights
+**6.1 Clean Metrics Evaluation**
+```python
+from core.metrics import evaluate_critic_on_dataset, print_metrics_summary
 
-### 🗂️ **Clean Architecture & Project Structure**
+# Direct evaluation using explicit error fields - no fallback logic
+metrics = evaluate_critic_on_dataset(
+    examples_with_predictions, 
+    evaluation_mode="original",  # Uses original_error_steps as ground truth
+    use_first_error_cutoff=True
+)
+print_metrics_summary(metrics)
+```
+
+**Ground Truth Extraction (No Fallback Logic):**
+```python
+def get_ground_truth_error_steps(example: LateBenchExample, evaluation_mode: str) -> List[int]:
+    if evaluation_mode == "original":
+        return example.original_error_steps  # Direct field access
+    elif evaluation_mode == "injected":
+        return example.injected_error_steps  # Direct field access
+    else:  # auto mode
+        return example.injected_error_steps if example.injected_error_steps else example.original_error_steps
+```
+
+#### **Phase 7: Results Storage**
+
+**7.1 Organized Results Structure**
+```
+results/
+├── experiments/          # Raw experimental data and critic predictions
+│   ├── prm800k_critic_results_100.json
+│   └── [other experiment results]
+├── evaluations/         # Processed evaluation metrics and analysis
+│   ├── prm800k_metrics_analysis.json
+│   └── [other metric analyses]
+├── metrics/            # Standalone metric computations
+└── README.md          # Results documentation
+```
+
+**7.2 Clean Evaluation Pipeline**
+```bash
+# Run experiment
+python3 scripts/run_batch_processing.py [options] --output-file results/experiments/experiment_name.json
+
+# Compute metrics
+python3 scripts/run_evaluation.py results/experiments/experiment_name.json --output-name analysis_name
+```
+
+## 🗂️ **Current Project Structure**
 
 ```
 latebench/
-├── src/                              # Core framework
-│   ├── data_processing/              # Dataset processors & unified schema
-│   │   ├── unified_schema.py         # LateBenchExample standard format
-│   │   ├── prm800k_processor.py      # PRM800K human annotation processing
-│   │   ├── numinamath_processor.py   # Competition mathematics processing
-│   │   ├── processbench_processor.py # ProcessBench multi-split processing
-│   │   └── __init__.py
-│   ├── error_injector.py             # GPT-4 powered error injection system
-│   ├── critic.py                     # LLM critic evaluation framework  
-│   ├── critic_batch.py               # Parallel batch evaluation system
-│   ├── dataset_manager.py            # Unified dataset loading & management
-│   ├── error_types.py                # Mathematical error taxonomy
-│   ├── adapters/                     # Integration & compatibility layers
-│   │   └── latebench_adapter.py      # Main system integration adapter
-│   ├── metrics/                      # Evaluation metrics & analysis
-│   │   ├── deltabench.py             # DeltaBench-compatible metrics
-│   │   └── __init__.py
-│   ├── storage/                      # Result storage & caching
-│   │   └── critic_store.py           # Advanced result storage system
-│   └── visualization.py             # Analysis visualization tools
-├── dashboard/                        # Interactive web interface
-│   ├── app.py                        # Flask application with full API
-│   ├── utils.py                      # Dashboard data integration
-│   ├── static/                       # Frontend assets (CSS, JS)
-│   │   ├── style.css
-│   │   └── script.js
-│   └── templates/                    # HTML templates
-│       ├── base.html
-│       ├── index.html
-│       └── empty.html
-├── tests/                            # Comprehensive test coverage
-│   ├── test_core_system.py           # Core functionality validation
-│   ├── test_api_endpoints.py         # Dashboard API testing
-│   ├── test_data_integrity.py        # Data processing verification
-│   └── test_error_injection.py       # End-to-end workflow testing
-├── scripts/                          # Utility & processing scripts
-│   ├── download_prm800k.py           # PRM800K dataset acquisition
-│   ├── run_batch_evaluation.py       # Large-scale critic evaluation
-│   ├── filter_level5_late_errors.py  # Advanced dataset filtering
-│   └── run_experiment.py             # Research experiment runner
-├── data/                             # Data organization
-│   ├── datasets/                     # Processed LateBench format datasets
-│   │   ├── latebench_prm800k_raw.json                    # PRM800K (319KB, 491 examples)
-│   │   ├── latebench_numinamath_raw.json                 # NuminaMath (26KB, 67 examples)
-│   │   ├── latebench_math_level5_natural_raw_errors.json # MATH L5 (1.3MB, 200 examples)
-│   │   ├── latebench_processbench_olympiadbench_*.json   # ProcessBench Olympiad (61 examples)
-│   │   └── latebench_processbench_omnimath_*.json        # ProcessBench OmniMath (86 examples)
-│   ├── sources/                      # Original dataset sources
-│   │   └── prm800k/                  # Complete PRM800K download
-│   ├── critic_store/                 # Evaluation results & caching
-│   └── annotations/                  # Manual annotation storage
-├── logs/                             # Application & processing logs
-├── notebooks/                        # Research & analysis notebooks
-├── requirements.txt                  # Python dependencies
-├── run_dashboard.py                  # Dashboard entry point
-└── README.md                         # This file
+├── src/                                    # Core framework
+│   ├── data_processing/                    # Dataset processors & unified schema
+│   │   ├── unified_schema.py               # LateBenchExample with explicit error fields
+│   │   │   ├── LateBenchExample            # Main data structure
+│   │   │   ├── original_error_steps        # Ground truth from human annotations
+│   │   │   ├── injected_error_steps        # Ground truth from error injection
+│   │   │   └── [critic_predictions fields] # Embedded critic results
+│   │   ├── prm800k_processor.py            # PRM800K human annotation processing
+│   │   ├── numinamath_processor.py         # Competition mathematics processing
+│   │   └── processbench_processor.py       # ProcessBench processing
+│   ├── core/                               # Core processing systems
+│   │   ├── data_loader.py                  # Unified dataset loading
+│   │   ├── error_injector.py               # GPT-4 powered error injection
+│   │   ├── critic.py                       # LLM critic evaluation with batch processing
+│   │   └── metrics.py                      # Clean metrics using explicit error fields
+│   └── utils/                              # Utilities
+│       └── storage.py                      # Data storage and loading utilities
+├── dashboard/                              # Interactive web interface
+│   ├── minimal_app.py                      # Flask application with full research workflow
+│   ├── templates/minimal_dashboard.html    # Dashboard interface with error visualization
+│   └── data/                               # Dashboard-specific data storage
+├── scripts/                                # Clean processing scripts
+│   ├── run_batch_processing.py             # Unified batch processing (injection + critic)
+│   ├── run_evaluation.py                   # Clean metrics computation script
+│   ├── create_numinamath_subsample.py      # Dataset sampling utilities
+│   └── download_numinamath.py              # Dataset acquisition
+├── data/                                   # Data organization
+│   ├── datasets/                           # Processed LateBench format datasets
+│   │   ├── latebench_prm800k_correct_v2.json      # 1,579 examples (≥20 steps, no errors)
+│   │   ├── latebench_prm800k_error_v2.json        # 16,100 examples (≥10 steps, has errors)
+│   │   ├── latebench_numinamath_complete.json     # NuminaMath competition problems
+│   │   └── latebench_processbench_*.json          # ProcessBench datasets
+│   └── prm800k/                            # Raw PRM800K data
+│       └── phase2_train.jsonl              # Original PRM800K with human annotations
+├── results/                                # Organized results storage
+│   ├── experiments/                        # Raw experimental data
+│   ├── evaluations/                        # Processed metrics and analysis
+│   ├── metrics/                            # Standalone metric computations
+│   └── README.md                           # Results documentation
+├── requirements.txt                        # Python dependencies
+└── README.md                              # This comprehensive documentation
 ```
 
-### 📊 **Current Dataset Statistics**
+## 📊 **Current Dataset Statistics & Performance**
 
-| Dataset | Examples | Format | Error Type | Status |
-|---------|----------|--------|------------|--------|
-| **PRM800K** | 491 | Human annotations | Natural errors from human ratings | ✅ Production |
-| **NuminaMath-CoT** | 859,594 | Competition problems | Complete solutions | 🔄 Integration |
-| **MATH Level 5** | 200 | High-difficulty | Natural late errors | ✅ Production |
-| **ProcessBench Olympiad** | 61 | Process supervision | Late errors (steps 12-25) | ✅ Production |
-| **ProcessBench OmniMath** | 86 | Process supervision | Late errors (steps 13-21) | ✅ Production |
+### **Processed Datasets**
+| Dataset | Total | Correct | Error | Format | Status |
+|---------|-------|---------|-------|---------|--------|
+| **PRM800K** | 97,782 | 1,579 (≥20 steps) | 16,100 (≥10 steps) | Human annotations | ✅ Production |
+| **NuminaMath** | 859,594 | 859,594 | - | Competition problems | ✅ Production |
+| **ProcessBench** | 147 | 51 | 96 | Process supervision | ✅ Production |
 
-**Total Current Capacity**: 860,499 examples across 5 datasets (note: NuminaMath-CoT requires subset selection for practical use)
+### **Critic Performance Results** (100 PRM800K Error Examples)
 
-#### **ProcessBench Integration Details**
-- **Combined ProcessBench**: 147 examples total (96 error examples, 51 correct examples)
-- **Late Error Focus**: All errors occur at step ≥12 for challenging evaluation scenarios
-- **Competition Diversity**: Mathematics Olympiad vs OmniMath multi-domain problems
-- **Error Step Range**: Steps 12-25 with average error position at step 16.4
-- **Data Quality**: Human-verified error annotations from ProcessBench research team
+| Metric | Value | Description |
+|--------|--------|-------------|
+| **Error Detection Accuracy** | 99.0% | Correctly identified that errors exist |
+| **First Error Accuracy** | 92.0% | Found the actual human-identified error step |
+| **Step-level F1 Score** | 0.357 | Balanced precision/recall for specific error steps |
+| **False Positive Rate** | 24.7% | Rate of incorrectly flagged non-error steps |
+| **Early Detection Rate** | 99.0% | Found errors at or before actual error position |
 
-#### **NuminaMath-CoT Dataset Details**
-- **Massive Scale**: 859,594 total examples (859,494 train + 100 test)
-- **Source Diversity**: 9 different sources including Chinese K12 (32.2%), Olympiads (17.5%), AMC/AIME, AoPS Forum
-- **High Quality**: 62.7% of solutions have clear step-by-step structure, average 1,157 characters per solution
-- **Competition Level**: Contains problems from Mathematics Olympiads, AMC, AIME, and advanced competition sources
-- **Perfect for Error Injection**: Complete, correct solutions ideal for systematic error introduction
-- **Subset Selection**: Framework supports selecting targeted subsets for manageable error injection experiments
+**Key Insights:**
+- **Excellent Error Detection**: Critics are very good at detecting *that* errors exist
+- **Good Error Localization**: Critics find the actual error step 92% of the time
+- **Over-Prediction Issue**: Critics predict 4.24 error steps per problem vs 1.0 actual
+- **Position Bias**: Critics predict errors earlier (avg 9.8) than they occur (avg 14.1)
 
 ## 🛠️ Installation & Quick Start
 
 ### Prerequisites
 - Python 3.8+
 - OpenAI API key (for error injection and critic evaluation)
-- 2GB+ free disk space (for datasets and processing)
+- 2GB+ free disk space (for datasets)
 
 ### Installation
 
@@ -182,253 +267,106 @@ pip install -r requirements.txt
 # 3. Configure OpenAI API
 export OPENAI_API_KEY="your-api-key-here"
 
-# 4. Download datasets (this will take several minutes)
-python scripts/download_prm800k.py
+# 4. Verify installation
+python3 -c "from src.data_processing.unified_schema import LateBenchExample; print('✅ Installation successful')"
 ```
 
 ### Launch Dashboard
 
 ```bash
-python run_dashboard.py
+python3 dashboard/minimal_app.py
+# Access at http://localhost:8080
 ```
 
-Open http://localhost:8000 to access the complete research interface.
+## 🔬 Complete Research Workflows
 
-## 🔬 Research Workflows
-
-### **1. Dataset Exploration & Analysis**
-
-```python
-from src.dataset_manager import LateBenchDatasetManager
-from src.adapters.latebench_adapter import LateBenchAdapter
-
-# Initialize system
-manager = LateBenchDatasetManager()
-adapter = LateBenchAdapter()
-
-# Explore available datasets
-datasets = manager.list_available_datasets()
-print("Available datasets:", datasets)
-# Output: {'prm800k': ['all'], 'numinamath': ['all'], 'math_level5_natural_raw': ['errors'], 
-#          'processbench_olympiadbench': ['errors', 'complete'], 'processbench_omnimath': ['errors', 'complete']}
-
-# Load specific dataset
-manager.load_dataset('processbench_olympiadbench', 'errors')  # Late error examples
-examples = manager.get_current_examples()
-
-# Analyze dataset characteristics
-stats = manager.get_dataset_stats()
-print(f"Dataset contains {stats['total_examples']} examples")
-print(f"Error distribution: {stats['error_source_breakdown']}")
-print(f"Average error step: {stats['avg_steps']}")
-```
-
-### **2. Error Injection Experiments**
-
-```python
-from src.error_injector import AdversarialErrorInjector
-
-# Initialize error injector
-injector = AdversarialErrorInjector(model="gpt-4-turbo-preview")
-
-# Single error injection with custom suggestion
-result = injector.inject_error_with_custom_suggestion(
-    problem=example_dict,
-    custom_suggestion="Introduce an invalid assumption about domain restrictions"
-)
-
-# Batch error injection with distribution
-error_distribution = {
-    "invalid_generalization": 0.3,
-    "theorem_misapplication": 0.3,
-    "logical_error": 0.4
-}
-
-results = injector.batch_inject_errors(
-    problems=problem_list,
-    error_distribution=error_distribution,
-    save_checkpoints=True
-)
-```
-
-### **3. LLM Critic Evaluation**
-
-```python
-from src.critic import LLMCritic
-from src.critic_batch import BatchCriticEvaluator, BatchEvaluationConfig
-
-# Single example evaluation
-critic = LLMCritic(model="gpt-4o-mini")
-result = critic.evaluate_solution(
-    problem="Find the derivative of x^2 + 3x",
-    solution_steps=["Step 1: ...", "Step 2: ..."]
-)
-
-# Large-scale batch evaluation
-config = BatchEvaluationConfig(
-    model="gpt-4o-mini",
-    max_concurrent=10,
-    rate_limit_per_minute=100
-)
-
-batch_evaluator = BatchCriticEvaluator(config)
-evaluation_results = adapter.evaluate_dataset(
-    dataset_name="prm800k",
-    model_version="gpt-4o-mini",
-    compute_deltabench_metrics=True
-)
-```
-
-### **4. Quality Metrics & Analysis**
-
-```python
-from src.metrics.deltabench import DeltaBenchEvaluator, print_metrics_summary
-
-# Compute comprehensive metrics
-evaluator = DeltaBenchEvaluator()
-metrics = evaluator.evaluate_batch(examples, critic_results)
-
-# Display results
-print_metrics_summary(metrics)
-print(f"Step-level F1: {metrics.step_f1:.3f}")
-print(f"Error detection accuracy: {metrics.error_detection_accuracy:.3f}")
-print(f"First error accuracy: {metrics.first_error_accuracy:.3f}")
-```
-
-## 🧪 Testing & Validation
-
-The framework includes comprehensive testing for all major components:
+### **1. Dataset Processing Pipeline**
 
 ```bash
-# Run all tests
-python run_tests.py
+# Process raw PRM800K data to LateBench format
+python3 -c "
+import sys
+sys.path.insert(0, 'src')
+from data_processing.prm800k_processor import PRM800KProcessor
 
-# Test specific components
-python -m pytest tests/test_core_system.py      # Core functionality
-python -m pytest tests/test_api_endpoints.py    # Dashboard API
-python -m pytest tests/test_data_integrity.py   # Data processing
-python -m pytest tests/test_error_injection.py  # Error injection workflow
+processor = PRM800KProcessor()
+processor.process_dataset(
+    'data/prm800k/phase2_train.jsonl',
+    'data/datasets/latebench_prm800k_complete_v2.json'
+)
+"
 
-# Run integration test
-python test_critic_system.py                    # End-to-end system test
+# Filter and split by complexity
+python3 -c "
+# Automatic filtering creates correct_v2.json and error_v2.json
+# with step count thresholds and error presence checks
+"
 ```
 
-## 📈 Current Research Capabilities
+### **2. Batch Critic Evaluation**
 
-### **Natural Error Analysis**
-- ✅ **PRM800K Human Annotations**: Process human-verified error steps with importance ratings
-- ✅ **Solution Continuation**: Extend truncated solutions for realistic evaluation
-- ✅ **Error Step Detection**: Identify first error location and propagation
-- ✅ **Multi-Subject Coverage**: Algebra, geometry, number theory, calculus
+```bash
+# Run critic on 100 error examples
+python3 scripts/run_batch_processing.py \
+  --input-file data/datasets/latebench_prm800k_error_v2.json \
+  --output-file results/experiments/prm800k_critic_100.json \
+  --run-critic \
+  --critic-mode original \
+  --max-examples 100 \
+  --batch-size 25 \
+  --critic-workers 4
+```
 
-### **Systematic Error Injection**
-- ✅ **Late Error Targeting**: Focus on errors in final third of solutions (most challenging)
-- ✅ **Natural Language Generation**: GPT-4 powered realistic error introduction
-- ✅ **Error Type Taxonomy**: Comprehensive classification of mathematical reasoning errors
-- ✅ **Custom Error Control**: Interactive specification through dashboard
+### **3. Clean Metrics Computation**
 
-### **Critic Evaluation & Metrics**
-- ✅ **Independent Assessment**: Unbiased LLM evaluation without reasoning hints
-- ✅ **DeltaBench Compatibility**: Research-standard metrics and evaluation protocols
-- ✅ **Parallel Processing**: Scalable batch evaluation with intelligent caching
-- ✅ **Detailed Analysis**: Step-level breakdowns and explanation quality assessment
+```bash
+# Compute metrics using explicit error fields (no fallback logic)
+python3 scripts/run_evaluation.py \
+  results/experiments/prm800k_critic_100.json \
+  --output-name prm800k_100_analysis
+```
 
-### **Research Infrastructure**
-- ✅ **Unified Data Format**: Consistent schema across all mathematical reasoning datasets
-- ✅ **Interactive Dashboard**: Complete workflow for dataset curation and analysis
-- ✅ **Batch Operations**: Large-scale processing and evaluation capabilities
-- ✅ **Result Storage**: Advanced caching, versioning, and backup systems
+### **4. Interactive Dashboard Research**
 
-## 🔮 Roadmap & Future Development
+```python
+# Launch dashboard for manual curation
+python3 dashboard/minimal_app.py
 
-### **Phase 1: Dataset Expansion** ✅ **COMPLETED**
-- ✅ **ProcessBench Integration**: Advanced process supervision examples (147 examples added)
-- ✅ **OlympiadBench Processing**: Mathematics Olympiad competition problems via ProcessBench
-- ✅ **OmniMath Processing**: Multi-domain mathematical reasoning problems via ProcessBench
-- ✅ **DeltaBench Compatibility**: Full implementation of research-grade evaluation metrics
-- ✅ **Multi-Split Processing**: Framework supports multiple ProcessBench splits seamlessly
+# Dashboard features:
+# - Navigate through examples with error visualization
+# - Run real-time error injection
+# - Evaluate with critic
+# - Make Yes/Maybe/No research decisions
+# - Export curated datasets
+```
 
-### **Phase 2: Advanced Error Analysis** (3-6 months)
-- [ ] **Error Propagation Studies**: Analyze how early errors affect later reasoning
-- [ ] **Subject-Specific Analysis**: Domain-specialized error patterns and detection
-- [ ] **Difficulty Progression**: Error characteristics across mathematical complexity levels
-- [ ] **Comparative Studies**: Error injection vs. natural error analysis
+## 🧪 Key Framework Features
 
-### **Phase 3: Critic Enhancement** (6-12 months)
-- [ ] **Multi-Model Evaluation**: Support for different LLM critics (Claude, Gemini, etc.)
-- [ ] **Confidence Calibration**: Improved uncertainty quantification
-- [ ] **Specialized Critics**: Domain-specific mathematical reasoning evaluators
-- [ ] **Human-AI Comparison**: Benchmark against expert human mathematicians
+### **Explicit Error Location System**
+- **No Fallback Logic**: Direct field access to `original_error_steps` and `injected_error_steps`
+- **Clean Ground Truth**: Human annotations stored explicitly, not inferred
+- **Deterministic Metrics**: Evaluation results are completely reproducible
 
-### **Phase 4: Research Applications** (Ongoing)
-- [ ] **Publication-Ready Studies**: Academic research using LateBench infrastructure
-- [ ] **Model Improvement**: Use insights to enhance mathematical reasoning capabilities
-- [ ] **Educational Applications**: Adapt framework for mathematics education research
-- [ ] **Industry Integration**: Partnership with AI labs for evaluation standards
+### **Unified Data Format**
+- **LateBenchExample**: Consistent schema across all mathematical reasoning datasets
+- **Embedded Predictions**: Critic results stored directly in example objects
+- **Metadata Preservation**: Source dataset characteristics maintained
 
-## 🎓 Academic Context & Research Potential
+### **Production-Ready Pipeline**
+- **Batch Processing**: Parallel error injection and critic evaluation
+- **Organized Results**: Clean directory structure for experiments and analysis
+- **Comprehensive Logging**: Full traceability of processing steps
 
-LateBench addresses several critical research questions in mathematical reasoning:
+## 🔮 Current Capabilities & Research Applications
 
-### **Open Research Questions**
-1. **Late Error Detection**: How well can current LLMs detect subtle errors deep in reasoning chains?
-2. **Error Type Sensitivity**: Which categories of mathematical errors are most/least detectable?
-3. **Dataset Generalization**: Do critics trained on one dataset generalize to others?
-4. **Human vs. AI Performance**: How do LLM critics compare to expert human evaluators?
+### **Completed Research Infrastructure**
+- ✅ **Multi-Dataset Unification**: PRM800K, NuminaMath, ProcessBench in unified format
+- ✅ **Explicit Ground Truth**: Clean error location tracking without fallback logic
+- ✅ **Batch Processing**: Scalable parallel processing for large-scale experiments
+- ✅ **Interactive Dashboard**: Complete research workflow in web interface
+- ✅ **Clean Metrics**: DeltaBench-compatible evaluation with explicit error fields
+- ✅ **Results Organization**: Structured storage for experiments and analysis
 
-### **Potential Research Applications**
-- **ICML/NeurIPS Papers**: Mathematical reasoning evaluation and error analysis
-- **Educational Research**: Understanding common reasoning failure patterns
-- **AI Safety**: Developing more reliable mathematical reasoning systems  
-- **Curriculum Development**: Identifying challenging problem types for training
-
-### **Unique Contributions**
-- **Late Error Focus**: First comprehensive framework targeting end-of-solution errors
-- **Multi-Dataset Unification**: Standardized evaluation across diverse mathematical datasets
-- **Production-Ready Infrastructure**: Complete research toolkit, not just isolated components
-- **Natural + Injected Errors**: Combines both naturally occurring and systematically introduced errors
-
-## 📊 Current Performance Metrics
-
-Based on comprehensive evaluations across all datasets:
-
-| Metric | PRM800K | MATH L5 | ProcessBench Olympiad | ProcessBench OmniMath | Target |
-|--------|---------|---------|----------------------|----------------------|--------|
-| **Error Detection F1** | 0.72 | 0.68 | 0.316 | 0.393 | >0.80 |
-| **Step-Level Precision** | 0.75 | 0.71 | 0.214 | 0.292 | >0.80 |
-| **Step-Level Recall** | 0.69 | 0.65 | 0.600 | 0.600 | >0.70 |
-| **Error Detection Accuracy** | 0.89 | 0.85 | 0.800 | 0.800 | >0.85 |
-| **Processing Speed** | 2.3s/example | 2.1s/example | 3.2s/example | 3.4s/example | <2.0s |
-
-#### **ProcessBench Evaluation Insights**
-- **High Recall, Low Precision**: Critic successfully detects most errors but produces many false positives
-- **Late Error Challenge**: Errors at steps 12+ are significantly harder to localize precisely
-- **Competition Complexity**: Olympiad/OmniMath problems represent peak difficulty for current critics
-- **Step-Level vs Example-Level**: Better at identifying problem has errors than pinpointing exact error steps
-
-*Performance measured using GPT-4o-mini critic with DeltaBench-standard metrics*
-
-## 🤝 Contributing & Collaboration
-
-LateBench is designed as a community research platform:
-
-### **For Researchers**
-- **Dataset Contributions**: Add new mathematical reasoning datasets
-- **Error Type Extensions**: Expand the mathematical error taxonomy
-- **Metric Development**: Contribute new evaluation metrics
-- **Use Case Studies**: Apply LateBench to novel research questions
-
-### **For Practitioners**
-- **Model Evaluation**: Use LateBench to assess mathematical reasoning capabilities
-- **Error Analysis**: Identify failure modes in production systems
-- **Training Data**: Generate high-quality error examples for model improvement
-- **Benchmarking**: Establish evaluation standards for mathematical AI
-
-### **Development Priorities**
-1. **Dataset Coverage**: Expand to 10+ mathematical reasoning datasets
-2. **Error Diversity**: Comprehensive taxonomy of mathematical reasoning failures
-3. **Evaluation Robustness**: Multiple critic models and human validation
-4. **Research Adoption**: Integration with major AI research labs and universities
 
 ## 📄 License & Citation
 
@@ -438,22 +376,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ```bibtex
 @software{latebench2024,
   title={LateBench: A Comprehensive Framework for Mathematical Reasoning Error Analysis},
-  author={[Your Name/Team]},
+  author={[Research Team]},
   year={2024},
   url={https://github.com/your-username/latebench},
-  note={Framework for analyzing late-occurring errors in mathematical reasoning}
+  note={Framework for analyzing late-occurring errors in mathematical reasoning with explicit ground truth}
 }
 ```
 
-## 🔗 Resources & Support
-
-- **📖 Documentation**: Comprehensive guides and API reference
-- **🐛 Issues**: Bug reports and feature requests via GitHub Issues  
-- **💬 Discussions**: Research questions and community support
-- **📧 Contact**: [your-email@domain.com] for collaboration inquiries
-
 ---
 
-**LateBench** - *Advancing the frontier of mathematical reasoning evaluation through systematic error analysis and late error detection.* 🔢✨
-
-*Built for researchers, by researchers, to understand and improve mathematical reasoning in AI systems.*
+**LateBench** - *Advancing mathematical reasoning evaluation through systematic error analysis.* 🔢✨

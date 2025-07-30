@@ -203,6 +203,9 @@ def main():
     parser = setup_argument_parser()
     args = parser.parse_args()
     
+    # Ensure results directory structure exists
+    Path("results/experiments").mkdir(parents=True, exist_ok=True)
+    
     # Validate arguments
     if not (args.inject_errors or args.run_critic):
         print("❌ Error: Must specify at least one of --inject-errors or --run-critic")

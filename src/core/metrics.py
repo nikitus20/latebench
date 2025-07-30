@@ -75,8 +75,13 @@ class DeltaBenchEvaluator:
         self.use_first_error_cutoff = use_first_error_cutoff
 
     def evaluate_batch(self, examples: List[LateBenchExample], 
-                      critic_results: Dict[str, Any]) -> DeltaBenchMetrics:
-        """Evaluate a batch of LateBenchExample objects with critic results."""
+                      evaluation_mode: str = "auto") -> DeltaBenchMetrics:
+        """Evaluate a batch of LateBenchExample objects using embedded critic predictions.
+        
+        Args:
+            examples: List of LateBenchExample objects with critic predictions
+            evaluation_mode: "original", "injected", or "auto" - which predictions to evaluate
+        """
         
         step_metrics = []
         example_metrics = []
@@ -87,16 +92,15 @@ class DeltaBenchEvaluator:
         early_detections = 0
         
         for example in examples:
-            if example.id not in critic_results:
-                continue
+            # Get ground truth error steps using explicit fields
+            ground_truth_steps = self._get_ground_truth_error_steps_explicit(example, evaluation_mode)
             
-            critic_result = critic_results[example.id]
+            # Get critic predictions from embedded fields
+            critic_prediction = self._get_critic_prediction(example, evaluation_mode)
+            if not critic_prediction:
+                continue  # Skip examples without critic predictions
             
-            # Get ground truth error steps
-            ground_truth_steps = self._get_ground_truth_error_steps(example)
-            
-            # Get critic predictions
-            predicted_steps = critic_result.error_steps if hasattr(critic_result, 'error_steps') else []
+            predicted_steps = critic_prediction.error_steps if critic_prediction.error_steps else []
             
             # Apply first-error cutoff if enabled
             if self.use_first_error_cutoff and ground_truth_steps:
@@ -200,31 +204,29 @@ class DeltaBenchEvaluator:
             total_steps=total_steps
         )
 
-    def _get_ground_truth_error_steps(self, example: LateBenchExample) -> List[int]:
-        """Extract ground truth error steps from LateBenchExample."""
-        error_steps = []
-        
-        # Check if we have an error-injected solution
-        if example.error_injection.has_errors and example.error_injection.injected_solution:
-            # Check injected solution steps for error markers
-            for i, step in enumerate(example.error_injection.injected_solution.steps, 1):
-                if step.is_error:
-                    error_steps.append(i)
+    def _get_ground_truth_error_steps_explicit(self, example: LateBenchExample, evaluation_mode: str) -> List[int]:
+        """Get ground truth error steps from explicit fields - no fallback logic."""
+        if evaluation_mode == "original":
+            return example.original_error_steps  # Could be [] if no errors
+        elif evaluation_mode == "injected":
+            return example.injected_error_steps  # Could be [] if no injection
+        elif evaluation_mode == "auto":
+            # Use injected if available, otherwise original
+            return example.injected_error_steps if example.injected_error_steps else example.original_error_steps
         else:
-            # Check original solution steps for error markers (fallback)
-            for i, step in enumerate(example.solution.steps, 1):
-                if step.is_error:
-                    error_steps.append(i)
-        
-        # Also check error_info for additional error step information
-        if example.error_injection.error_info and 'error_analysis' in example.error_injection.error_info:
-            error_analysis = example.error_injection.error_info['error_analysis']
-            if 'selected_error_step' in error_analysis:
-                error_step = error_analysis['selected_error_step']
-                if error_step not in error_steps:
-                    error_steps.append(error_step)
-        
-        return sorted(error_steps)
+            raise ValueError(f"Invalid evaluation_mode: {evaluation_mode}")
+    
+    def _get_critic_prediction(self, example: LateBenchExample, evaluation_mode: str):
+        """Get critic prediction from embedded fields based on evaluation mode."""
+        if evaluation_mode == "original":
+            return example.critic_predictions_original
+        elif evaluation_mode == "injected":
+            return example.critic_predictions_injected
+        elif evaluation_mode == "auto":
+            # Use injected if available, otherwise original
+            return example.critic_predictions_injected if example.critic_predictions_injected else example.critic_predictions_original
+        else:
+            raise ValueError(f"Invalid evaluation_mode: {evaluation_mode}")
 
     def _create_empty_metrics(self) -> DeltaBenchMetrics:
         """Create empty metrics for edge cases."""
@@ -283,3 +285,19 @@ def print_metrics_summary(metrics: DeltaBenchMetrics):
     print(f"   Total Steps:    {metrics.total_steps}")
     
     print("="*70)
+
+
+def evaluate_critic_on_dataset(examples: List[LateBenchExample], evaluation_mode: str = "auto", 
+                              use_first_error_cutoff: bool = True) -> DeltaBenchMetrics:
+    """Convenience function to evaluate critic performance on a dataset.
+    
+    Args:
+        examples: List of LateBenchExample objects with critic predictions
+        evaluation_mode: "original", "injected", or "auto" - which predictions to evaluate
+        use_first_error_cutoff: Whether to apply first-error cutoff for evaluation
+    
+    Returns:
+        DeltaBenchMetrics object with evaluation results
+    """
+    evaluator = DeltaBenchEvaluator(use_first_error_cutoff=use_first_error_cutoff)
+    return evaluator.evaluate_batch(examples, evaluation_mode=evaluation_mode)

@@ -4,7 +4,7 @@ Defines the standardized format for all datasets in LateBench
 """
 
 from typing import Dict, List, Any, Optional, Union
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 import json
 from datetime import datetime
 
@@ -121,6 +121,18 @@ class LateBenchCriticPrediction:
 
 
 @dataclass
+class LateBenchManualDecision:
+    """Manual decision annotation by human evaluator"""
+    decision: Optional[str] = None  # "yes", "maybe", "no"
+    notes: Optional[str] = None  # Optional notes about the decision
+    annotator: Optional[str] = None  # Who made the decision
+    timestamp: Optional[str] = None  # When decision was made (ISO format)
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
 class LateBenchProcessing:
     """Processing and status information"""
     added_to_latebench: str  # ISO timestamp
@@ -141,8 +153,11 @@ class LateBenchExample:
     solution: LateBenchSolution
     error_injection: LateBenchErrorInjection
     processing: LateBenchProcessing
+    original_error_steps: List[int] = field(default_factory=list)  # Ground truth errors in original solution (empty list = no errors)
+    injected_error_steps: List[int] = field(default_factory=list)  # Ground truth errors from injection (empty list = no injection or no errors)
     critic_predictions_original: Optional[LateBenchCriticPrediction] = None  # Critic predictions for original solution
     critic_predictions_injected: Optional[LateBenchCriticPrediction] = None  # Critic predictions for error-injected solution
+    manual_decision: Optional[LateBenchManualDecision] = None  # Manual human decision for the problem
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization"""
@@ -153,8 +168,11 @@ class LateBenchExample:
             "solution": self.solution.to_dict(),
             "error_injection": self.error_injection.to_dict(),
             "processing": self.processing.to_dict(),
+            "original_error_steps": self.original_error_steps,
+            "injected_error_steps": self.injected_error_steps,
             "critic_predictions_original": self.critic_predictions_original.to_dict() if self.critic_predictions_original else None,
-            "critic_predictions_injected": self.critic_predictions_injected.to_dict() if self.critic_predictions_injected else None
+            "critic_predictions_injected": self.critic_predictions_injected.to_dict() if self.critic_predictions_injected else None,
+            "manual_decision": self.manual_decision.to_dict() if self.manual_decision else None
         }
     
     def to_json(self) -> str:
@@ -176,6 +194,11 @@ class LateBenchExample:
             
         if data.get("critic_predictions_injected"):
             critic_predictions_injected = LateBenchCriticPrediction(**data["critic_predictions_injected"])
+        
+        # Handle manual decision
+        manual_decision = None
+        if data.get("manual_decision"):
+            manual_decision = LateBenchManualDecision(**data["manual_decision"])
         
         return cls(
             id=data["id"], 
@@ -203,8 +226,11 @@ class LateBenchExample:
                 error_info=data["error_injection"].get("error_info")
             ),
             processing=LateBenchProcessing(**data["processing"]),
+            original_error_steps=data.get("original_error_steps", []),  # Backward compatibility with empty list default
+            injected_error_steps=data.get("injected_error_steps", []),  # Backward compatibility with empty list default
             critic_predictions_original=critic_predictions_original,
-            critic_predictions_injected=critic_predictions_injected
+            critic_predictions_injected=critic_predictions_injected,
+            manual_decision=manual_decision
         )
 
 

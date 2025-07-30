@@ -7,7 +7,7 @@ import json
 import os
 import re
 from typing import List, Dict, Any, Optional
-from unified_schema import (
+from .unified_schema import (
     LateBenchExample, LateBenchSource, LateBenchProblem, 
     LateBenchSolution, LateBenchStep, LateBenchErrorInjection,
     LateBenchProcessing, generate_latebench_id, create_timestamp
