@@ -86,24 +86,17 @@
                     </div>
                     
                     <div class="section">
-                        <h3>Error Injection</h3>
-                        <textarea id="customSuggestion" placeholder="Custom error suggestion (optional)..." rows="3">{% if current_example and current_example.error_injection.manual_suggestion %}{{ current_example.error_injection.manual_suggestion }}{% endif %}</textarea>
-                        <div style="margin: 5px 0;">
-                            <input type="number" id="targetErrorStep" placeholder="Target step (optional)" min="1" style="width: 48%; display: inline-block; margin-right: 4%;" value="{% if current_example and current_example.error_injection.target_error_step %}{{ current_example.error_injection.target_error_step }}{% endif %}">
-                            <button class="btn btn-secondary" onclick="saveSuggestion()" style="width: 46%;">💾 Save</button>
-                        </div>
-                        <button class="btn" id="injectErrorBtn" onclick="injectError()">🎲 Inject Error</button>
-                        
+                        <h3>AI Solution Info</h3>
                         {% if current_example and current_example.error_injection.has_errors %}
-                            <div style="margin-top: 10px; padding: 8px; background: #f8f9fa; border-radius: 4px; font-size: 12px;">
-                                <strong>Previous Injection:</strong><br>
-                                {% if current_example.error_injection.manual_suggestion %}
-                                    <em>Custom:</em> {{ current_example.error_injection.manual_suggestion[:100] }}{% if current_example.error_injection.manual_suggestion|length > 100 %}...{% endif %}<br>
-                                {% endif %}
-                                {% if current_example.error_injection.target_error_step %}
-                                    <em>Target Step:</em> {{ current_example.error_injection.target_error_step }}<br>
-                                {% endif %}
-                                <em>Timestamp:</em> {{ current_example.error_injection.injection_timestamp[:19] if current_example.error_injection.injection_timestamp else 'Unknown' }}
+                            <div style="margin: 10px 0; padding: 8px; background: #fff3cd; border-radius: 4px; font-size: 12px; border-left: 4px solid #ffc107;">
+                                <strong>🤖 AI-Generated Solution Available</strong><br>
+                                <em>Type:</em> {{ current_example.error_injection.error_info.injection_type if current_example.error_injection.error_info else 'AI Generated' }}<br>
+                                <em>Added:</em> {{ current_example.error_injection.injection_timestamp[:19] if current_example.error_injection.injection_timestamp else 'Unknown' }}<br>
+                                <em>Status:</em> Expected to contain reasoning errors for analysis
+                            </div>
+                        {% else %}
+                            <div style="margin: 10px 0; padding: 8px; background: #f8f9fa; border-radius: 4px; font-size: 12px; color: #6c757d;">
+                                No AI solution available for this problem.
                             </div>
                         {% endif %}
                     </div>
@@ -126,6 +119,36 @@
                             <button id="noBtn" class="decision-btn decision-btn-no inactive" onclick="saveDecision('no')">❌ No</button>
                         </div>
                         <textarea id="decisionNotes" placeholder="Notes..." rows="2"></textarea>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>Natural Error Annotation</h3>
+                        <div style="margin-bottom: 10px;">
+                            <button id="markCorrectBtn" class="btn btn-success" onclick="markAsCorrect()" style="width: 48%; margin-right: 4%;">✅ Mark Correct</button>
+                            <button id="clearAnnotationBtn" class="btn btn-secondary" onclick="clearAnnotation()" style="width: 48%;">🗑️ Clear</button>
+                        </div>
+                        <input type="number" id="firstErrorStep" placeholder="First error step number (e.g., 5)" style="width: 100%; margin-bottom: 5px;" min="1" value="{% if current_example and current_example.natural_error_annotation and current_example.natural_error_annotation.first_error_step %}{{ current_example.natural_error_annotation.first_error_step }}{% endif %}">
+                        <textarea id="errorDescription" placeholder="Description of the first error (for future error injection guidance)..." rows="3">{% if current_example and current_example.natural_error_annotation and current_example.natural_error_annotation.error_description %}{{ current_example.natural_error_annotation.error_description }}{% endif %}</textarea>
+                        <input type="text" id="propagatedErrorSteps" placeholder="Steps where error propagated (e.g., 7,12,15)" style="width: 100%; margin-bottom: 5px;" value="{% if current_example and current_example.natural_error_annotation and current_example.natural_error_annotation.propagated_error_steps %}{{ current_example.natural_error_annotation.propagated_error_steps | join(',') }}{% endif %}">
+                        <button class="btn" onclick="saveNaturalErrorAnnotation()">💾 Save Annotation</button>
+                        
+                        {% if current_example and current_example.natural_error_annotation %}
+                            <div style="margin-top: 10px; padding: 8px; background: #f8f9fa; border-radius: 4px; font-size: 12px;">
+                                <strong>Current Annotation:</strong><br>
+                                {% if current_example.natural_error_annotation.is_correct %}
+                                    <span style="color: #27ae60;">✅ Solution marked as correct</span><br>
+                                {% elif current_example.natural_error_annotation.has_errors %}
+                                    <span style="color: #e74c3c;">❌ First error at step {{ current_example.natural_error_annotation.first_error_step }}</span><br>
+                                    {% if current_example.natural_error_annotation.propagated_error_steps %}
+                                        <span style="color: #f39c12;">⚠️ Propagated to steps: {{ current_example.natural_error_annotation.propagated_error_steps | join(', ') }}</span><br>
+                                    {% endif %}
+                                {% endif %}
+                                {% if current_example.natural_error_annotation.error_description %}
+                                    <em>Error:</em> {{ current_example.natural_error_annotation.error_description[:100] }}{% if current_example.natural_error_annotation.error_description|length > 100 %}...{% endif %}<br>
+                                {% endif %}
+                                <em>Timestamp:</em> {{ current_example.natural_error_annotation.timestamp[:19] if current_example.natural_error_annotation.timestamp else 'Unknown' }}
+                            </div>
+                        {% endif %}
                     </div>
                     
                     <div class="section">
@@ -166,8 +189,15 @@
                             <div class="problem-display">{{ current_example.problem.statement }}</div>
                         </div>
                         
+                        {% if current_example.problem.hint %}
                         <div class="section">
-                            <h3>Original Solution ({{ current_example.solution.steps|length }} steps)
+                            <h3>Hint</h3>
+                            <div class="problem-display" style="background: #fff3cd; border-left: 4px solid #ffc107;">{{ current_example.problem.hint }}</div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="section">
+                            <h3>Original Solution - Correct ({{ current_example.solution.steps|length }} steps)
                                 {% if current_example.source.metadata.get('human_annotated', False) %}
                                     <span style="color: #27ae60; font-size: 14px; font-weight: normal;"> [Human Annotated]</span>
                                 {% endif %}
@@ -186,7 +216,7 @@
                         </div>
                         
                         <div class="section" id="injectedSolution" style="{% if not current_example.error_injection.has_errors or not current_example.error_injection.injected_solution %}display: none;{% endif %}">
-                            <h3>Modified Solution (After Error Injection)</h3>
+                            <h3>AI-Generated Solution (Expected to contain errors)</h3>
                             <div class="solution-container" id="modifiedSolutionDisplay">
                                 {% if current_example.error_injection.has_errors and current_example.error_injection.injected_solution %}
                                     {% for step in current_example.error_injection.injected_solution.steps %}
@@ -481,6 +511,76 @@
                     Yes: ${data.decisions_by_type.yes} Maybe: ${data.decisions_by_type.maybe} No: ${data.decisions_by_type.no}
                 `;
             });
+        }
+
+        function saveNaturalErrorAnnotation() {
+            const firstErrorStep = document.getElementById('firstErrorStep').value;
+            const errorDescription = document.getElementById('errorDescription').value;
+            const propagatedErrorSteps = document.getElementById('propagatedErrorSteps').value;
+            
+            fetch('/api/save_natural_error_annotation', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    first_error_step: firstErrorStep,
+                    error_description: errorDescription,
+                    propagated_error_steps: propagatedErrorSteps,
+                    is_correct: false
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let message = 'Natural error annotation saved!';
+                    if (data.has_errors) {
+                        message += ` First error at step ${data.first_error_step}`;
+                        if (data.propagated_error_steps && data.propagated_error_steps.length > 0) {
+                            message += `, propagated to: ${data.propagated_error_steps.join(', ')}`;
+                        }
+                    }
+                    showSuccess(message);
+                    // Refresh page to show updated annotation display
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showError('Failed to save annotation: ' + data.error);
+                }
+            })
+            .catch(error => showError('Annotation save error: ' + error));
+        }
+
+        function markAsCorrect() {
+            // Clear the input fields and save as correct
+            document.getElementById('firstErrorStep').value = '';
+            document.getElementById('errorDescription').value = '';
+            document.getElementById('propagatedErrorSteps').value = '';
+            
+            fetch('/api/save_natural_error_annotation', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    first_error_step: null,
+                    error_description: '',
+                    propagated_error_steps: '',
+                    is_correct: true
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess('Solution marked as correct (no natural errors)');
+                    // Refresh page to show updated annotation display
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showError('Failed to mark as correct: ' + data.error);
+                }
+            })
+            .catch(error => showError('Mark correct error: ' + error));
+        }
+
+        function clearAnnotation() {
+            document.getElementById('firstErrorStep').value = '';
+            document.getElementById('errorDescription').value = '';
+            document.getElementById('propagatedErrorSteps').value = '';
         }
 
 

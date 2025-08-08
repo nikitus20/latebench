@@ -56,6 +56,8 @@ class LateBenchDataLoader:
         # Determine file path
         if problem_type == "complete":
             filename = f"latebench_{dataset_name}_complete.json"
+        elif problem_type == "final":
+            filename = f"latebench_{dataset_name}_final.json"
         elif problem_type == "errors":
             filename = f"latebench_{dataset_name}_errors.json"
         else:  # "all"
@@ -104,6 +106,8 @@ class LateBenchDataLoader:
         """Save LateBenchExample objects to a dataset file."""
         if problem_type == "complete":
             filename = f"latebench_{dataset_name}_complete.json"
+        elif problem_type == "final":
+            filename = f"latebench_{dataset_name}_final.json"
         elif problem_type == "errors":
             filename = f"latebench_{dataset_name}_errors.json"
         else:  # "all"

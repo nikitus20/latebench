@@ -44,8 +44,9 @@ class LateBenchSource:
 
 @dataclass
 class LateBenchProblem:
-    """Problem statement - clean and simple"""
+    """Problem statement with optional hint"""
     statement: str
+    hint: Optional[str] = None  # Optional hint for solving the problem
     
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -121,6 +122,21 @@ class LateBenchCriticPrediction:
 
 
 @dataclass
+class LateBenchNaturalErrorAnnotation:
+    """Human annotation of natural errors already present in the solution"""
+    has_errors: bool = False  # Whether the solution contains natural errors
+    first_error_step: Optional[int] = None  # The step number where the first error occurs
+    error_description: Optional[str] = None  # Description of the first error (for future error injection guidance)
+    propagated_error_steps: List[int] = field(default_factory=list)  # Step numbers where the original error propagated
+    is_correct: bool = False  # Explicitly mark solution as correct (no natural errors)
+    annotator: Optional[str] = None  # Who made the annotation
+    timestamp: Optional[str] = None  # When annotation was made (ISO format)
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass
 class LateBenchManualDecision:
     """Manual decision annotation by human evaluator"""
     decision: Optional[str] = None  # "yes", "maybe", "no"
@@ -158,6 +174,7 @@ class LateBenchExample:
     critic_predictions_original: Optional[LateBenchCriticPrediction] = None  # Critic predictions for original solution
     critic_predictions_injected: Optional[LateBenchCriticPrediction] = None  # Critic predictions for error-injected solution
     manual_decision: Optional[LateBenchManualDecision] = None  # Manual human decision for the problem
+    natural_error_annotation: Optional[LateBenchNaturalErrorAnnotation] = None  # Human annotation of natural errors in the solution
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization"""
@@ -172,7 +189,8 @@ class LateBenchExample:
             "injected_error_steps": self.injected_error_steps,
             "critic_predictions_original": self.critic_predictions_original.to_dict() if self.critic_predictions_original else None,
             "critic_predictions_injected": self.critic_predictions_injected.to_dict() if self.critic_predictions_injected else None,
-            "manual_decision": self.manual_decision.to_dict() if self.manual_decision else None
+            "manual_decision": self.manual_decision.to_dict() if self.manual_decision else None,
+            "natural_error_annotation": self.natural_error_annotation.to_dict() if self.natural_error_annotation else None
         }
     
     def to_json(self) -> str:
@@ -200,10 +218,18 @@ class LateBenchExample:
         if data.get("manual_decision"):
             manual_decision = LateBenchManualDecision(**data["manual_decision"])
         
+        # Handle natural error annotation
+        natural_error_annotation = None
+        if data.get("natural_error_annotation"):
+            natural_error_annotation = LateBenchNaturalErrorAnnotation(**data["natural_error_annotation"])
+        
         return cls(
             id=data["id"], 
             source=LateBenchSource(**data["source"]),
-            problem=LateBenchProblem(**data["problem"]),
+            problem=LateBenchProblem(
+                statement=data["problem"]["statement"],
+                hint=data["problem"].get("hint")
+            ),
             solution=LateBenchSolution(
                 steps=[LateBenchStep(**step) for step in data["solution"]["steps"]],
                 final_answer=data["solution"]["final_answer"],
@@ -230,7 +256,8 @@ class LateBenchExample:
             injected_error_steps=data.get("injected_error_steps", []),  # Backward compatibility with empty list default
             critic_predictions_original=critic_predictions_original,
             critic_predictions_injected=critic_predictions_injected,
-            manual_decision=manual_decision
+            manual_decision=manual_decision,
+            natural_error_annotation=natural_error_annotation
         )
 
 

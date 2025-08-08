@@ -19,7 +19,7 @@ from typing import List, Dict, Any, Optional
 from core.data_loader import LateBenchDataLoader
 from core.error_injector import ErrorInjector
 from core.critic import MathCritic, evaluate_single_example
-from data_processing.unified_schema import LateBenchExample, LateBenchManualDecision
+from data_processing.unified_schema import LateBenchExample, LateBenchManualDecision, LateBenchNaturalErrorAnnotation
 from utils.storage import save_examples_to_file, load_examples_from_file
 
 # Initialize Flask app
@@ -45,14 +45,14 @@ def load_dataset():
         
         # If no persistent file, load from original dataset
         print("📂 No persistent file found, loading fresh from dataset...")
-        loader = LateBenchDataLoader()
-        examples = loader.load_dataset("prm800k", "complete")
+        loader = LateBenchDataLoader(datasets_dir="../data/datasets")
+        examples = loader.load_dataset("russian07", "final")
         
         if not examples:
-            print(f"❌ No examples loaded from prm800k dataset")
+            print(f"❌ No examples loaded from russian07 dataset")
             return False
             
-        print(f"✅ Loaded {len(examples)} LateBenchExample objects from PRM800K dataset")
+        print(f"✅ Loaded {len(examples)} LateBenchExample objects from Russian07 dataset")
         
         # Save to persistent file for future loads
         save_examples_to_persistent_file()
@@ -267,6 +267,69 @@ def save_decision():
             'success': True,
             'decision': decision,
             'notes': notes,
+            'example_id': current_example.id
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/save_natural_error_annotation', methods=['POST'])
+def save_natural_error_annotation():
+    """Save natural error annotation for current example."""
+    if not examples or current_index >= len(examples):
+        return jsonify({'success': False, 'error': 'No example selected'}), 400
+    
+    data = request.get_json()
+    first_error_step = data.get('first_error_step')
+    error_description = data.get('error_description', '')
+    propagated_steps_str = data.get('propagated_error_steps', '')
+    is_correct = data.get('is_correct', False)
+    
+    try:
+        current_example = examples[current_index]
+        
+        # Parse first error step
+        first_error_step_num = None
+        propagated_error_steps = []
+        
+        if not is_correct:
+            # Parse first error step
+            if first_error_step:
+                try:
+                    first_error_step_num = int(first_error_step)
+                except ValueError:
+                    return jsonify({'success': False, 'error': 'Invalid first error step number'}), 400
+            
+            # Parse propagated error steps
+            if propagated_steps_str.strip():
+                try:
+                    propagated_error_steps = [int(s.strip()) for s in propagated_steps_str.split(',') if s.strip()]
+                except ValueError:
+                    return jsonify({'success': False, 'error': 'Invalid propagated step numbers format'}), 400
+        
+        from datetime import datetime
+        current_example.natural_error_annotation = LateBenchNaturalErrorAnnotation(
+            has_errors=first_error_step_num is not None and not is_correct,
+            first_error_step=first_error_step_num,
+            error_description=error_description.strip() if error_description.strip() else None,
+            propagated_error_steps=propagated_error_steps,
+            is_correct=is_correct,
+            annotator="dashboard_user",
+            timestamp=datetime.utcnow().isoformat() + "Z"
+        )
+        
+        # Update the example in our examples list
+        examples[current_index] = current_example
+        
+        # Save to persistent file
+        save_examples_to_persistent_file()
+        
+        return jsonify({
+            'success': True,
+            'has_errors': current_example.natural_error_annotation.has_errors,
+            'is_correct': current_example.natural_error_annotation.is_correct,
+            'first_error_step': current_example.natural_error_annotation.first_error_step,
+            'propagated_error_steps': current_example.natural_error_annotation.propagated_error_steps,
             'example_id': current_example.id
         })
         
